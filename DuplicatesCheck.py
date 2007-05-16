@@ -23,6 +23,8 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
         sizes = {}
         files = pkg.files()
         for f in files.keys():
+            if f in pkg.ghostFiles():
+                continue
             enreg=files[f]
             mode=enreg[0]
             user=enreg[1]
@@ -44,7 +46,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
         sum=0
         for f in md5s.keys():
             if len(md5s[f]) == 1: continue
-            st = os.lstat(pkg.dirName() + md5s[f][0])
+            st = os.stat(pkg.dirName() + md5s[f][0])
             diff = len(md5s[f]) - st[stat.ST_NLINK]
             if diff <= 0: continue
             prefix=get_prefix(md5s[f][0])
