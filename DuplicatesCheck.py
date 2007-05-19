@@ -1,3 +1,9 @@
+#############################################################################
+# File          : DuplicatesCheck.py
+# Package       : rpmlint
+# Author        : Stephan Kulow
+# Purpose       : Check for duplicate files being packaged separately
+#############################################################################
 # vim:sw=4:et
 from Filter import *
 import AbstractCheck
