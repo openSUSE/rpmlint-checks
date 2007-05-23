@@ -1,10 +1,11 @@
+# vim:sw=4:et
 #############################################################################
 # File          : DuplicatesCheck.py
 # Package       : rpmlint
 # Author        : Stephan Kulow
 # Purpose       : Check for duplicate files being packaged separately
 #############################################################################
-# vim:sw=4:et
+
 from Filter import *
 import AbstractCheck
 import rpm
@@ -25,21 +26,21 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
 
     def check(self, pkg):
 
+        if pkg.isSource():
+            return
+
         md5s = {}
         sizes = {}
         files = pkg.files()
         for f in files.keys():
             if f in pkg.ghostFiles():
                 continue
-            enreg=files[f]
-            mode=enreg[0]
-            user=enreg[1]
-            group=enreg[2]
-            links=enreg[3]
-            size=enreg[4]
-            md5=enreg[5]
-            time=enreg[6]
-            rdev=enreg[7]
+            enreg = files[f]
+            mode = enreg[0]
+            links = enreg[3]
+            size = enreg[4]
+            md5 = enreg[5]
+            rdev = enreg[7]
 
             if not stat.S_ISREG(mode):
                 continue
