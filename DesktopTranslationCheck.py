@@ -5,6 +5,7 @@ import rpm
 import re
 import commands
 import Config
+import os.path
 
 desktop_re=re.compile('(services|applets)/.*\.desktop$')
 
@@ -13,7 +14,7 @@ class DesktopCheck(AbstractCheck.AbstractFilesCheck):
         AbstractCheck.AbstractFilesCheck.__init__(self, "DesktopCheck", ".*\.desktop")
 
     def check_file(self, pkg, filename):
-        lines = open(pkg.dirName() + filename).readlines()
+        lines = open(os.path.join(pkg.dirName(), filename)).readlines()
         for line in lines:
             if line.startswith('X-SuSE-translate='):
                 return
