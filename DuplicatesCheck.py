@@ -14,7 +14,6 @@ import commands
 import stat
 import Config
 import os
-import os.path
 import string
 
 def get_prefix(file):
@@ -54,7 +53,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
         sum=0
         for f in md5s.keys():
             if len(md5s[f]) == 1: continue
-            st = os.stat(os.path.join(pkg.dirName(), md5s[f][0]))
+            st = os.stat(pkg.dirName() + '/' + md5s[f][0])
             diff = len(md5s[f]) - st[stat.ST_NLINK]
             if diff <= 0: continue
             prefix=get_prefix(md5s[f][0])
