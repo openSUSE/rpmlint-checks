@@ -20,7 +20,15 @@ class DesktopCheck(AbstractCheck.AbstractFilesCheck):
         AbstractCheck.AbstractFilesCheck.__init__(self, "DesktopCheck", ".*\.desktop")
 
     def check_file(self, pkg, filename):
-        lines = open(pkg.dirName() + '/' + filename).readlines()
+        if pkg.isSource() or filename in pkg.ghostFiles():
+            return
+
+        try:
+            lines = open(pkg.dirName() + '/' + filename).readlines()
+        except Exception, e:
+            printWarning(pkg, "read-error", e)
+            return 0
+
         for line in lines:
             if line.startswith('X-SuSE-translate='):
                 return
