@@ -62,7 +62,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
                     diff = diff - 1
             sum += sizes[f] * diff
 
-        if sum > 20000:
+        if sum > 100000:
             printError(pkg, 'files-duplicated-waste', sum)
 
 check=DuplicatesCheck()
