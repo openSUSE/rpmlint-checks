@@ -30,6 +30,13 @@ def libname_from_soname (soname):
     libname = libname.replace('.', '_')
     return libname
 
+def in_one_of (dirs, f):
+    d = os.path.dirname(f)
+    for dir in dirs:
+        if dir[:len(d)] == d:
+            return 1
+    return 0
+
 class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
@@ -64,36 +71,34 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
 
         # If this package should be or should be splitted into shlib
         # package(s)
-        wrong_name = 0
         if len(libs) > 0 and len(std_dirs) > 0:
             # If the package contains a single shlib, name after soname
             if len(libs) == 1:
                 soname = libs.copy().pop()
                 libname = libname_from_soname (soname)
                 if pkg.name != libname:
-                    printError(pkg, 'shlib-name-error', libname)
+                    printError(pkg, 'shlib-policy-name-error', libname)
 
             elif not pkg.name[-1:].isdigit():
-                printWarning(pkg, 'library-name-suffix', libs)
-                wrong_name = 1
+                printError(pkg, 'shlib-policy-missing-suffix', libs)
         else:
             return
 
         # Verify no non-lib stuff is in the package
         dirs = set()
         for f in files.keys():
-            sf = string.split(f, '.')
-            if os.path.dirname(f) in std_dirs and \
-               (sf[-1] == 'so' or sf[-1] == 'a' or sf[-1] == 'la') and \
-               not os.path.basename(f) in libs:
-                printError(pkg, 'devel-file-in-shlib-pkg', f)
             if os.path.isdir(pkg.dirName()+f):
                 dirs.add(f)
+	    else:
+                sf = string.split(f, '.')
+	        if os.path.dirname(f)[:len('/usr/include')] == '/usr/include':
+		    printError(pkg, 'shlib-policy-devel-file', f)
+                if os.path.dirname(f) in std_dirs and (sf[-1] == 'so' or sf[-1] == 'a' or sf[-1] == 'la') and not os.path.basename(f) in libs:
+                    printError(pkg, 'shlib-policy-devel-file', f)
 
         # Check for non-versioned directories beyond sysdirs in package
-        sysdirs = set( ( '/lib', '/lib64', '/usr/lib', '/usr/lib64',
-                         '/usr/share', '/usr/share/doc/packages' ) )
-        cdirs = set()
+	sysdirs = set( ( '/lib', '/lib64', '/usr/lib', '/usr/lib64', '/usr/share', '/usr/share/doc/packages' ) )
+	cdirs = set()
         for sysdir in sysdirs:
             done = set()
             for dir in dirs:
@@ -105,18 +110,18 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                     done.add(dir)
             dirs = dirs.difference(done)
         if len(cdirs) > 0:
-            printError(pkg, 'nonversioned-dirs-in-shlib-pkg', cdirs)
+            printError(pkg, 'shlib-policy-nonversioned-dirs', cdirs)
 
 check=LibraryPolicyCheck()
 
 if Config.info:
     addDetails(
-'library-name-suffix',
-"""Your package containing shared libraries does not end in a digit and should probably be split.""",
-'devel-file-in-shlib-pkg',
+'shlib-policy-missing-suffix',
+"""Your package containing shared libraries does not end in a digit and should probably be split.  Containing library SONAMEs are""",
+'shlib-policy-devel-file',
 """Your shared library package contains development files.""",
-'shlib-name-error',
+'shlib-policy-name-error',
 """Your package contains a single shared library but is not named after its SONAME.""",
-'nonversioned-dir-in-shlib-pkg',
-"""Your shared library package contains a non-versioned directory."""
+'shlib-policy-nonversioned-dirs',
+"""Your shared library package contains non-versioned directories:"""
 )
