@@ -89,16 +89,19 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         for f in files.keys():
             if os.path.isdir(pkg.dirName()+f):
                 dirs.add(f)
-	    else:
+            else:
                 sf = string.split(f, '.')
-	        if os.path.dirname(f)[:len('/usr/include')] == '/usr/include':
-		    printError(pkg, 'shlib-policy-devel-file', f)
-                if os.path.dirname(f) in std_dirs and (sf[-1] == 'so' or sf[-1] == 'a' or sf[-1] == 'la') and not os.path.basename(f) in libs:
+                if os.path.dirname(f)[:len('/usr/include')] == '/usr/include':
+                    printError(pkg, 'shlib-policy-devel-file', f)
+                if os.path.dirname(f) in std_dirs \
+                   and (sf[-1] == 'so' or sf[-1] == 'a' or sf[-1] == 'la') \
+                   and not os.path.basename(f) in libs:
                     printError(pkg, 'shlib-policy-devel-file', f)
 
         # Check for non-versioned directories beyond sysdirs in package
-	sysdirs = set( ( '/lib', '/lib64', '/usr/lib', '/usr/lib64', '/usr/share', '/usr/share/doc/packages' ) )
-	cdirs = set()
+        sysdirs = set( ( '/lib', '/lib64', '/usr/lib', '/usr/lib64',
+                         '/usr/share', '/usr/share/doc/packages' ) )
+        cdirs = set()
         for sysdir in sysdirs:
             done = set()
             for dir in dirs:
@@ -117,7 +120,8 @@ check=LibraryPolicyCheck()
 if Config.info:
     addDetails(
 'shlib-policy-missing-suffix',
-"""Your package containing shared libraries does not end in a digit and should probably be split.  Containing library SONAMEs are""",
+"""Your package containing shared libraries does not end in a digit and 
+should probably be split.  Containing library SONAMEs are""",
 'shlib-policy-devel-file',
 """Your shared library package contains development files.""",
 'shlib-policy-name-error',
