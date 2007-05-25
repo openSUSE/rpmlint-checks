@@ -57,6 +57,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Search for shared libraries in this package
         libs = set()
         dirs = set()
+        shlib_requires = map(lambda x: string.split(x[0],'(')[0], pkg.requires())
         for f in files.keys():
             ff = f.split('/')[-1]
             sf = string.split(f, '.so')
@@ -64,8 +65,12 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                 continue
             bi = BinaryInfo(pkg, pkg.dirName()+f, f, 0)
             if bi.soname != 0:
-                libs.add(bi.soname)
-                dirs.add(string.join(f.split('/')[:-1], '/'))
+                # But not if the library is used by the pkg itself
+                # This avoids program packages with their own private lib
+                # FIXME: we'd need to check if somebody else links to this lib
+                if not bi.soname in shlib_requires:
+               	    libs.add(bi.soname)
+               	    dirs.add(string.join(f.split('/')[:-1], '/'))
 
         std_dirs = dirs.intersection(set( ('/lib', '/lib64', '/usr/lib', '/usr/lib64') ))
 
