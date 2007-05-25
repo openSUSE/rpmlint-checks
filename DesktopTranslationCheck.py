@@ -24,12 +24,12 @@ class DesktopCheck(AbstractCheck.AbstractFilesCheck):
             return
 
         try:
-            lines = open(pkg.dirName() + '/' + filename).readlines()
+            f = open(pkg.dirName() + '/' + filename)
         except Exception, e:
             printWarning(pkg, "read-error", e)
             return 0
 
-        for line in lines:
+        for line in f:
             if line.startswith('X-SuSE-translate='):
                 return
         printWarning(pkg, "untranslated-desktop-file", filename)
