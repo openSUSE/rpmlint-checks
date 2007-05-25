@@ -32,7 +32,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
         md5s = {}
         sizes = {}
         files = pkg.files()
-        for f in files.keys():
+        for f in files:
             if f in pkg.ghostFiles():
                 continue
             enreg = files[f]
@@ -51,7 +51,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
             #print f, links, size, md5, rdev
 
         sum=0
-        for f in md5s.keys():
+        for f in md5s:
             if len(md5s[f]) == 1: continue
             st = os.stat(pkg.dirName() + '/' + md5s[f][0])
             diff = len(md5s[f]) - st[stat.ST_NLINK]
