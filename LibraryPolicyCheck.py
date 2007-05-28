@@ -85,7 +85,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                     printError(pkg, 'shlib-policy-name-error', libname)
 
             elif not pkg.name[-1:].isdigit():
-                printError(pkg, 'shlib-policy-missing-suffix', libs)
+                map(lambda lib: printError(pkg, 'shlib-policy-missing-suffix', lib), libs);
         else:
             return
 
