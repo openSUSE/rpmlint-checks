@@ -110,15 +110,13 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         for sysdir in sysdirs:
             done = set()
             for dir in dirs:
-                sdir = string.split(dir, sysdir)
+                sdir = string.split(dir, sysdir + '/')
                 if sdir[-1] != dir:
-                    ssdir = string.split(sdir[-1],'/')[1]
-                    if not ssdir[-1].isdigit():
-                        cdirs.add(sysdir+'/'+ssdir)
+                    if not sdir[-1].isdigit():
+                        cdirs.add(sysdir+'/'+sdir[-1])
                     done.add(dir)
             dirs = dirs.difference(done)
-        if len(cdirs) > 0:
-            printError(pkg, 'shlib-policy-nonversioned-dirs', cdirs)
+        map(lambda dir: printError(pkg, 'shlib-policy-nonversioned-dir', dir), cdirs);
 
 check=LibraryPolicyCheck()
 
