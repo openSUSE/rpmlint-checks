@@ -61,6 +61,8 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
                 if prefix != get_prefix(md5s[f][idx]):
                     diff = diff - 1
             sum += sizes[f] * diff
+            if diff > 0:
+                printWarning(pkg, 'files-duplicate', ":".join(md5s[f]))
 
         if sum > 100000:
             printError(pkg, 'files-duplicated-waste', sum)
