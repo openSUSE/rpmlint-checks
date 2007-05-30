@@ -1,4 +1,11 @@
 # vim:sw=4:et
+#---------------------------------------------------------------
+# Module          : rpmlint
+# File            : CheckExecDocs.py
+# Author          : Stephan Kulow, Dirk Mueller
+# Purpose         : Check for executable files in %doc
+#---------------------------------------------------------------
+
 from Filter import *
 import AbstractCheck
 import rpm
@@ -15,17 +22,16 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
         AbstractCheck.AbstractCheck.__init__(self, "ExecDocsCheck")
 
     def check(self, pkg):
-        files = pkg.files()
 
-        for f in files.keys():
+        if pkg.isSource():
+            return
+
+        files = pkg.files()
+        for f in pkg.docFiles():
             enreg=files[f]
-            if not stat.S_ISREG(enreg[0]):
+            mode=enreg[0]
+            if not stat.S_ISREG(mode) or not mode & 0111:
                continue
-            mode=stat.S_IMODE(enreg[0])
-            if not (mode & 0111):
-               continue
-            if f.find('/share/') == -1:
-               continue # the rest can go
             for ext in ['txt', 'gif', 'jpg', 'html', 'pdf', 'ps', 'pdf.gz', 'ps.gz']:
                if f.endswith("." + ext):
                    printError(pkg, 'executable-docs', f)
