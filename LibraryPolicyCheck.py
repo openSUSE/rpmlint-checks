@@ -104,16 +104,16 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                     printError(pkg, 'shlib-policy-devel-file', f)
 
         # Check for non-versioned directories beyond sysdirs in package
-        sysdirs = set( ( '/lib', '/lib64', '/usr/lib', '/usr/lib64',
-                         '/usr/share', '/usr/share/doc/packages' ) )
+        sysdirs = [ '/lib', '/lib64', '/usr/lib', '/usr/lib64',
+                    '/usr/share/doc/packages', '/usr/share' ]
         cdirs = set()
         for sysdir in sysdirs:
             done = set()
             for dir in dirs:
-                sdir = string.split(dir, sysdir + '/')
-                if sdir[-1] != dir:
-                    if not sdir[-1].isdigit():
-                        cdirs.add(sysdir+'/'+sdir[-1])
+                if dir.find(sysdir + '/') == 0:
+                    ssdir = string.split(dir[len(sysdir)+1:],'/')[0]
+                    if not ssdir[-1].isdigit():
+                        cdirs.add(sysdir+'/'+ssdir)
                     done.add(dir)
             dirs = dirs.difference(done)
         map(lambda dir: printError(pkg, 'shlib-policy-nonversioned-dir', dir), cdirs);
