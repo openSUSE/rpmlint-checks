@@ -17,7 +17,7 @@ desktop_re=re.compile('(services|applets)/.*\.desktop$')
 
 class DesktopCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
-        AbstractCheck.AbstractFilesCheck.__init__(self, "DesktopCheck", ".*\.desktop")
+        AbstractCheck.AbstractFilesCheck.__init__(self, "DesktopCheck", ".*\.desktop$")
 
     def check_file(self, pkg, filename):
         if pkg.isSource() or filename in pkg.ghostFiles():
