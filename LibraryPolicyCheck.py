@@ -129,6 +129,6 @@ should probably be split.  Containing library SONAMEs are""",
 """Your shared library package contains development files.""",
 'shlib-policy-name-error',
 """Your package contains a single shared library but is not named after its SONAME.""",
-'shlib-policy-nonversioned-dirs',
-"""Your shared library package contains non-versioned directories:"""
+'shlib-policy-nonversioned-dir',
+"""Your shared library package contains non-versioned directories."""
 )
