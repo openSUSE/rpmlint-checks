@@ -58,19 +58,16 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         libs = set()
         dirs = set()
         shlib_requires = map(lambda x: string.split(x[0],'(')[0], pkg.requires())
-        for f in files.keys():
-            ff = f.split('/')[-1]
-            sf = string.split(f, '.so')
-            if len(sf) != 2:
-                continue
-            bi = BinaryInfo(pkg, pkg.dirName()+f, f, 0)
-            if bi.soname != 0:
-                # But not if the library is used by the pkg itself
-                # This avoids program packages with their own private lib
-                # FIXME: we'd need to check if somebody else links to this lib
-                if not bi.soname in shlib_requires:
-               	    libs.add(bi.soname)
-               	    dirs.add(string.join(f.split('/')[:-1], '/'))
+        for f in files:
+            if f.endswith('.so'):
+                bi = BinaryInfo(pkg, pkg.dirName() + '/' + f, f, 0)
+                if bi.soname != 0:
+                    # But not if the library is used by the pkg itself
+                    # This avoids program packages with their own private lib
+                    # FIXME: we'd need to check if somebody else links to this lib
+                    if not bi.soname in shlib_requires:
+                        libs.add(bi.soname)
+                        dirs.add(string.join(f.split('/')[:-1], '/'))
 
         std_dirs = dirs.intersection(set( ('/lib', '/lib64', '/usr/lib', '/usr/lib64') ))
 
@@ -110,7 +107,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         for sysdir in sysdirs:
             done = set()
             for dir in dirs:
-                if dir.find(sysdir + '/') == 0:
+                if dir.startswith(sysdir + '/'):
                     ssdir = string.split(dir[len(sysdir)+1:],'/')[0]
                     if not ssdir[-1].isdigit():
                         cdirs.add(sysdir+'/'+ssdir)
@@ -123,12 +120,14 @@ check=LibraryPolicyCheck()
 if Config.info:
     addDetails(
 'shlib-policy-missing-suffix',
-"""Your package containing shared libraries does not end in a digit and 
-should probably be split.  Containing library SONAMEs are""",
+"""Your package containing shared libraries does not end in a digit and
+should probably be split.""",
 'shlib-policy-devel-file',
-"""Your shared library package contains development files.""",
+"""Your shared library package contains development files. Split them into
+a -devel subpackage.""",
 'shlib-policy-name-error',
 """Your package contains a single shared library but is not named after its SONAME.""",
 'shlib-policy-nonversioned-dir',
-"""Your shared library package contains non-versioned directories."""
+"""Your shared library package contains non-versioned directories. Those will not
+allow to install multiple versions of the package in parallel."""
 )
