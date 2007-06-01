@@ -81,7 +81,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                     printError(pkg, 'shlib-policy-name-error', libname)
 
             elif not pkg.name[-1:].isdigit():
-                map(lambda lib: printError(pkg, 'shlib-policy-missing-suffix', lib), libs);
+                printError(pkg, 'shlib-policy-missing-suffix')
         else:
             return
 
@@ -112,7 +112,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                         cdirs.add(sysdir+'/'+ssdir)
                     done.add(dir)
             dirs = dirs.difference(done)
-        map(lambda dir: printError(pkg, 'shlib-policy-nonversioned-dir', dir), cdirs);
+        map(lambda dir: printError(pkg, 'shlib-policy-nonversioned-dir', dir), cdirs)
 
 check=LibraryPolicyCheck()
 
