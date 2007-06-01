@@ -48,7 +48,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             return
 
         # Only check unsuffixed lib* packages
-        if pkg.name.endswith('-devel') or pkg.name.endswith('doc')
+        if pkg.name.endswith('-devel') or pkg.name.endswith('doc'):
             return
 
         files = pkg.files()
