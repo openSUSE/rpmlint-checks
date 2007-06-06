@@ -36,8 +36,6 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
             md5 = enreg[5]
             rdev = enreg[7]
 
-            print "bla ", f, md5
-
             if len(md5) and md5 in (
                     'c59cbaf0df9bcf35feca0d0f1fc01dae',
                     'cf8c4d1a5ab88db006c47ae2b51a6b30',
