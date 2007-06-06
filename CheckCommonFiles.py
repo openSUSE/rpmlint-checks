@@ -45,6 +45,12 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                     '0d6be33865b76025c20b48bcac87adb7'):
                 printError(pkg, "generic-build-instructions", f)
 
+            if len(md5) and md5 in (
+                    '94d55d512a9ba36caa9b7df079bae19f'):
+                printError(pkg, "duplicated-file-gpl-v2", f)
+
+
+
 check=CommonFilesCheck()
 
 if Config.info:
@@ -52,5 +58,10 @@ if Config.info:
 'generic-build-instructions',
 """Your package contains a file that contains the FSF generic
 configure/make/make install instructions. Those are useless
-for a binary package. Consider removing it to save 3kb of rpm size."""
+for a binary package. Consider removing it to save 3kb of rpm size.""",
+
+'duplicated-file-gpl-v2',
+"""Your package contains a file that contains the FSF GPLv2
+license. If you really have to ship it, consider symlinking it
+from the licenses package."""
 )
