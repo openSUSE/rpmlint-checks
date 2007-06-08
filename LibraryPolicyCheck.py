@@ -56,25 +56,32 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Search for shared libraries in this package
         libs = set()
         dirs = set()
+        reqlibs = set()
         shlib_requires = map(lambda x: string.split(x[0],'(')[0], pkg.requires())
         for f in files:
-            if f.find('.so.') != -1:
+            if f.find('.so.') != -1 or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
                 try:
                     if stat.S_ISREG(os.stat(filename)[stat.ST_MODE]):
                         bi = BinaryInfo(pkg, filename, f, 0)
-                    if bi and bi.soname != 0:
-                        # But not if the library is used by the pkg itself
-                        # This avoids program packages with their own private lib
-                        # FIXME: we'd need to check if somebody else links to this lib
-                        if not bi.soname in shlib_requires:
+                        if bi.soname != 0:
                             libs.add(bi.soname)
                             dirs.add(string.join(f.split('/')[:-1], '/'))
+                        if bi.soname in shlib_requires:
+                            # But not if the library is used by the pkg itself
+                            # This avoids program packages with their own private lib
+                            # FIXME: we'd need to check if somebody else links to this lib
+                            reqlibs.add(bi.soname)
                 except:
                     pass
             pass
 
         std_dirs = dirs.intersection(set( ('/lib', '/lib64', '/usr/lib', '/usr/lib64') ))
+
+        # If this is a program package (all libs it provides are
+        # required by itself), bail out
+        if len(libs.difference(reqlibs)) == 0:
+            return
 
         # If this package should be or should be splitted into shlib
         # package(s)
