@@ -48,7 +48,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             return
 
         # Only check unsuffixed lib* packages
-        if pkg.name.endswith('-devel') or pkg.name.endswith('doc'):
+        if pkg.name.endswith('-devel') or pkg.name.endswith('-doc'):
             return
 
         files = pkg.files()
@@ -58,7 +58,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         dirs = set()
         shlib_requires = map(lambda x: string.split(x[0],'(')[0], pkg.requires())
         for f in files:
-            if f.endswith('.so'):
+            if f.find('.so.') != -1:
                 filename = pkg.dirName() + '/' + f
                 try:
                     if stat.S_ISREG(os.stat(filename)[stat.ST_MODE]):
