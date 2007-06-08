@@ -48,7 +48,8 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                 printError(pkg, "duplicated-file-gpl-v2", f)
 
             if len(md5) and f.rsplit('.',1)[-1].lower() in (
-               'os2', 'win32', 'win', 'solaris'):
+              'aix', 'bsd', 'dos', 'hpux', 'irix', 'os2', 'mac', 'macos', 'tru64',
+              'sco', 'vms', 'win32', 'win', 'solaris'):
                 printWarning(pkg, "non-linux-readme", f)
 
 check=CommonFilesCheck()
@@ -63,5 +64,9 @@ for a binary package. Consider removing it to save 3kb of rpm size.""",
 'duplicated-file-gpl-v2',
 """Your package contains a file that contains the FSF GPLv2
 license. If you really have to ship it, consider symlinking it
-from the licenses package."""
+from the licenses package.""",
+'non-linux-readme',
+"""Your package contains a file that contains instructions
+for non-linux platforms. They're most likely unneccessary bloat, 
+consider removing them from your package."""
 )
