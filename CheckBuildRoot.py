@@ -21,7 +21,7 @@ class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
         self.build_root_re = re.compile('/var/tmp/[\w\!-\.]{1,60}-build')
 
     def check_file(self, pkg, filename):
-        if filename.startswith('/usr/lib/debug'):
+        if filename.startswith('/usr/lib/debug') or Pkg.isSource():
             return
         if not stat.S_ISREG(pkg.files()[filename][0]):
             return
