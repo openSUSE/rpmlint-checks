@@ -1,4 +1,11 @@
 # vim:sw=4:et
+#############################################################################
+# File          : CheckBuildRoot.py
+# Package       : rpmlint
+# Author        : Dirk Mueller, Stephan Kulow
+# Purpose       : Check for files containing $RPM_BUILD_ROOT
+#############################################################################
+
 from Filter import *
 import AbstractCheck
 import rpm
@@ -16,12 +23,9 @@ class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
     def check_file(self, pkg, filename):
         if filename.startswith('/usr/lib/debug'):
             return
+        if not stat.S_ISREG(pkg.files()[filename][0]):
+            return
 
-        try:
-           if not stat.S_ISREG(os.stat(filename)[0]):
-              return
-        except OSError:
-              return
         if len(pkg.grep(self.build_root_re, filename)):
             printError(pkg, "file-contains-buildroot", filename)
 
