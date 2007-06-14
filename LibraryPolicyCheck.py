@@ -15,6 +15,7 @@ import stat
 import Config
 import os
 import string
+import Pkg
 
 from BinariesCheck import BinaryInfo
 
@@ -29,13 +30,6 @@ def libname_from_soname (soname):
         libname = soname[:-3]
     libname = libname.replace('.', '_')
     return libname
-
-def in_one_of (dirs, f):
-    d = os.path.dirname(f)
-    for dir in dirs:
-        if dir[:len(d)] == d:
-            return 1
-    return 0
 
 class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -62,7 +56,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             if f.find('.so.') != -1 or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
                 try:
-                    if stat.S_ISREG(os.stat(filename)[stat.ST_MODE]):
+                    if stat.S_ISREG(files[filename][0]):
                         bi = BinaryInfo(pkg, filename, f, 0)
                         if bi.soname != 0:
                             libs.add(bi.soname)
