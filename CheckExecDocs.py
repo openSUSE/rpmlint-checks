@@ -27,6 +27,17 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
             return
 
         files = pkg.files()
+        complete_size=0
+        for f in files:
+            complete_size += files[f][4]
+
+        doc_size=0
+        for f in pkg.docFiles():
+            doc_size += files[f][4]
+
+        if doc_size * 2 >= complete_size and pkg.name.find('-doc') < 0:
+            printWarning(pkg, "package-with-huge-docs")
+
         for f in pkg.docFiles():
             enreg=files[f]
             mode=enreg[0]
@@ -41,5 +52,8 @@ check=ExecDocsCheck()
 if Config.info:
     addDetails(
 'executable-docs',
-"Documentation should not be executable."
+"Documentation should not be executable.",
+'package-with-huge-docs',
+"""More than half the size of your package is documentation.
+Consider splitting it into a -doc subpackage."""
 )
