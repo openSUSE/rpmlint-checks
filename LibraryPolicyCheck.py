@@ -21,6 +21,7 @@ _policy_legacy_exceptions = (
         "libacl1",
         "libadns1",
         "libaio1",
+        "libakode_mpeg_decoder",
         "libalut0",
         "libapr-1-0",
         "libapr_dbd_mysql",
