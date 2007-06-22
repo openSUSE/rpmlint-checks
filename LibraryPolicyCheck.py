@@ -214,6 +214,7 @@ _policy_legacy_exceptions = (
         "libpqxx-2_5_5",
         "libpythonize0",
         "libPropList0",
+        "libpri1_0",
         "libpth20",
         "libqca1",
         "libqnotify0",
