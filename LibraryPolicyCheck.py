@@ -166,6 +166,7 @@ _policy_legacy_exceptions = (
         "libjack0",
         "libjackasyn0",
         "libjasper1",
+        "libJNIChangeHat1",
         "libjpeg62",
         "libkakasi2",
         "libkbanking1",
