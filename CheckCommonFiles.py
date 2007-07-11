@@ -47,7 +47,8 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                     '94d55d512a9ba36caa9b7df079bae19f'):
                 printError(pkg, "duplicated-file-gpl-v2", f)
 
-            if len(md5) and f.rsplit('.',1)[-1].lower() in (
+            # bsd causes the false positive COPYING.BSD
+            if len(md5) and f.rsplit('/',1)[1][0].lower() == 'r' and f.rsplit('.',1)[-1].lower() in (
               'aix', 'bsd', 'dos', 'hpux', 'irix', 'os2', 'mac', 'macos', 'tru64',
               'sco', 'vms', 'win32', 'win', 'solaris'):
                 printWarning(pkg, "non-linux-readme", f)
