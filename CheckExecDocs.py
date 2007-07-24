@@ -35,7 +35,8 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
         for f in pkg.docFiles():
             doc_size += files[f][4]
 
-        if doc_size * 2 >= complete_size and pkg.name.find('-doc') < 0:
+        if doc_size * 2 >= complete_size and \
+           doc_size > 100*1024 and pkg.name.find('-doc') < 0:
             printWarning(pkg, "package-with-huge-docs")
 
         for f in pkg.docFiles():
