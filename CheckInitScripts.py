@@ -26,6 +26,9 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
             return
 
         files = pkg.files()
+        bins_list = filter(lambda f: f.startswith("/usr/bin") \
+                or f.startswith("/usr/sbin"), pkg.files())
+
         for f in files:
             enreg = files[f]
             mode = enreg[0]
@@ -49,6 +52,8 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
                             printError(pkg, "init-script-undefined-dependency", f, dep)
                         if dep in ('portmap', 'syslog', 'named', 'network', 'xntpd'):
                             printWarning(pkg, "init-script-non-var-dependency", f, dep)
+                        if dep in ('$local_fs', '$network', '$portmap', '$syslog') and bins_list:
+                            printWarning(pkg, "non-remote_fs-dependency", f, dep)
                 if l.startswith('# X-UnitedLinux-Should'):
                     printWarning(pkg, "obsolete-init-keyword", f, l)
                 if l.startswith('# Default-Start'):
@@ -77,5 +82,9 @@ using the LSB equivalent Should-Start instead.""",
 'init-script-wrong-start-level',
 """Your package contains a /etc/init.d script that specifies
 that it should be run in boot level but isn't named with a boot prefix
-or specifies a non-boot level but has boot prefix. Fix your script."""
+or specifies a non-boot level but has boot prefix. Fix your script.""",
+'non-remote_fs-dependency',
+"""Your package contains a /etc/init.d script that specifies
+a start dependency that is not behind $remote_fs, while it apparently
+needs $remote_fs dependency due to files being packaged under /usr."""
 )
