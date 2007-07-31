@@ -433,10 +433,12 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                 sf = string.split(f, '.')
                 if os.path.dirname(f)[:len('/usr/include')] == '/usr/include':
                     printError(pkg, 'shlib-policy-devel-file', f)
-                if os.path.dirname(f) in std_dirs \
-                   and (sf[-1] == 'so' or sf[-1] == 'a' or sf[-1] == 'la') \
-                   and not os.path.basename(f) in libs:
-                    printError(pkg, 'shlib-policy-devel-file', f)
+
+# duplicates devel-file-in-non-devel package which is more accurate
+#                if os.path.dirname(f) in std_dirs \
+#                   and (sf[-1] == 'so' or sf[-1] == 'a' or sf[-1] == 'la') \
+#           and not os.path.basename(f) in libs:
+#            printError(pkg, 'shlib-policy-devel-file', f)
 
         # Check for non-versioned directories beyond sysdirs in package
         sysdirs = [ '/lib', '/lib64', '/usr/lib', '/usr/lib64',
