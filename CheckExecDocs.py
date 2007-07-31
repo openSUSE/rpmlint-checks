@@ -29,14 +29,19 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
         complete_size=0
         for f in files:
-            complete_size += files[f][4]
+            if stat.S_ISREG(files[f][0]):
+                complete_size += files[f][4]
 
         doc_size=0
         for f in pkg.docFiles():
-            doc_size += files[f][4]
+            if stat.S_ISREG(files[f][0]):
+                doc_size += files[f][4]
 
-        if doc_size * 2 >= complete_size and \
-           doc_size > 100*1024 and pkg.name.find('-doc') < 0:
+        print "doc_size", doc_size, "complete_size", complete_size
+
+        if doc_size * 2 >= complete_size \
+           and doc_size > 100*1024 and (complete_size - doc_size) * 20 > complete_size \
+           and pkg.name.find('-doc') < 0:
             printWarning(pkg, "package-with-huge-docs")
 
         for f in pkg.docFiles():
