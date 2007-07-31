@@ -37,8 +37,6 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
             if stat.S_ISREG(files[f][0]):
                 doc_size += files[f][4]
 
-        print "doc_size", doc_size, "complete_size", complete_size
-
         if doc_size * 2 >= complete_size \
            and doc_size > 100*1024 and (complete_size - doc_size) * 20 > complete_size \
            and pkg.name.find('-doc') < 0:
