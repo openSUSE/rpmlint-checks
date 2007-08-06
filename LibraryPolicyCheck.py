@@ -44,7 +44,6 @@ _policy_legacy_exceptions = (
         "libavahi-qt4-1",
         "libblocxx4",
         "libbluetooth2",
-        "libbotan-1_6_2",
         "libcairo2",
         "libcairomm-1_0-1",
         "libcap1",
