@@ -20,6 +20,7 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
         AbstractCheck.AbstractCheck.__init__(self, "CommonFilesCheck")
+        self.sources_am_re = re.compile('([\w\d_]+_SOURCES\s*=|\s*SUBDIRS\s*=)')
 
     def check(self, pkg):
 
@@ -53,6 +54,13 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
               'sco', 'vms', 'win32', 'win', 'solaris'):
                 printWarning(pkg, "non-linux-readme", f)
 
+            if f.endswith("/Makefile.am") and f[:-3] + ".in" in files and  f in pkg.docFiles():
+                if not len(pkg.grep(self.sources_am_re, f)):
+                    printError(pkg, "makefile-junk", f)
+                    printError(pkg, "makefile-junk", f[:-3] + ".in")
+                    if f[:-3] in files:
+                        printError(pkg, "makefile-junk", f[:-3])
+
 check=CommonFilesCheck()
 
 if Config.info:
@@ -69,5 +77,9 @@ from the licenses package.""",
 'non-linux-readme',
 """Your package contains a file that contains instructions
 for non-linux platforms. They're most likely unneccessary bloat, 
-consider removing them from your package."""
+consider removing them from your package.""",
+'makefile-junk',
+"""Your package contains Makefile that only make sense in a
+source package. Did you package a complete directory from the
+tarball by using %doc? Consider removing them to reduce bloat."""
 )
