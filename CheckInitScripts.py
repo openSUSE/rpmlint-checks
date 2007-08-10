@@ -26,8 +26,8 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
             return
 
         files = pkg.files()
-        bins_list = filter(lambda f: f.startswith("/usr/bin") \
-                or f.startswith("/usr/sbin"), pkg.files())
+        bins_list = filter(lambda f: (f.startswith("/usr/bin") \
+                or f.startswith("/usr/sbin")) and stat.S_ISREG(files[f][0]), files)
 
         for f in files:
             enreg = files[f]
