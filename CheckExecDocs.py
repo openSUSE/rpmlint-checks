@@ -51,6 +51,10 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
                if f.endswith("." + ext):
                    printError(pkg, 'executable-docs', f)
 
+            for name in ['README', 'NEWS', 'COPYING', 'AUTHORS']:
+                if f.endswith("/" + name):
+                    printError(pkg, 'executable-docs', f)
+
 check=ExecDocsCheck()
 
 if Config.info:
