@@ -423,9 +423,12 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         else:
             return
 
+        if not pkg.name.startswith('lib'):
+            return
+
         # Verify no non-lib stuff is in the package
         dirs = set()
-        for f in files.keys():
+        for f in files:
             if os.path.isdir(pkg.dirName()+f):
                 dirs.add(f)
             else:
