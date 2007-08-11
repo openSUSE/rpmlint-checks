@@ -79,7 +79,8 @@ from the licenses package.""",
 for non-linux platforms. They're most likely unneccessary bloat, 
 consider removing them from your package.""",
 'makefile-junk',
-"""Your package contains Makefile that only make sense in a
+"""Your package contains makefiles that only make sense in a
 source package. Did you package a complete directory from the
-tarball by using %doc? Consider removing them to reduce bloat."""
+tarball by using %doc? Consider removing Makefile* from this 
+directory at the end of your %install section to reduce package bloat."""
 )
