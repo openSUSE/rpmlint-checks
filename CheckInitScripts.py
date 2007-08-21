@@ -39,6 +39,7 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
             boot_script = f.startswith('/etc/init.d/boot.')
 
             input_f = file(pkg.dirName() + '/' + f, "r")
+            found_remote_fs = False
             for l in input_f:
                 if l.startswith('# Required-Start') or l.startswith('# Should-Start'):
                     for dep in l.split()[2:]:
@@ -52,8 +53,8 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
                             printError(pkg, "init-script-undefined-dependency", f, dep)
                         if dep in ('portmap', 'syslog', 'named', 'network', 'xntpd'):
                             printWarning(pkg, "init-script-non-var-dependency", f, dep)
-                        if dep in ('$local_fs', '$network', '$portmap', '$syslog') and bins_list:
-                            printWarning(pkg, "non-remote_fs-dependency", f, dep)
+                        if dep in ('$remote_fs'):
+                            found_remote_fs = True
                 if l.startswith('# X-UnitedLinux-Should'):
                     printWarning(pkg, "obsolete-init-keyword", f, l)
                 if l.startswith('# Default-Start'):
@@ -62,6 +63,10 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
                             printError(pkg, "init-script-wrong-start-level", f, dep)
                         if not boot_script and dep in ('B'):
                             printError(pkg, "init-script-wrong-start-level", f, dep)
+
+            if not found_remote_fs and bins_list:
+                printWarning(pkg, "non-remote_fs-dependency", f)
+
 
 check=InitScriptsCheck()
 
@@ -84,7 +89,8 @@ using the LSB equivalent Should-Start instead.""",
 that it should be run in boot level but isn't named with a boot prefix
 or specifies a non-boot level but has boot prefix. Fix your script.""",
 'non-remote_fs-dependency',
-"""Your package contains a /etc/init.d script that specifies
-a start dependency that is not behind $remote_fs, while it apparently
-needs $remote_fs dependency due to files being packaged under /usr."""
+"""Your package contains a /etc/init.d script that does not specify
+$remote_fs as a start dependency, but the package also contains
+files packaged in /usr. Make sure that your start script does not
+call any of them, or add the missing $remote_fs dependency."""
 )
