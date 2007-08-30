@@ -17,7 +17,7 @@ import os
 import string
 
 def get_prefix(file):
-    return string.join(string.split(file, '/')[0:3], '/')
+    return "/".join(string.split(file, '/')[0:3])
 
 class DuplicatesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -32,6 +32,8 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
         md5s = {}
         sizes = {}
         files = pkg.files()
+        configFiles = pkg.configFiles()
+
         for f in files:
             if f in pkg.ghostFiles():
                 continue
@@ -44,25 +46,39 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
 
             if not stat.S_ISREG(mode):
                 continue
-            if not md5s.has_key(md5):
-               md5s[md5] = []
-            md5s[md5].append(f)
+
+            md5s.setdefault(md5, set()).add(f)
             sizes[md5] = size
             #print f, links, size, md5, rdev
 
         sum=0
         for f in md5s:
             if len(md5s[f]) == 1: continue
-            st = os.stat(pkg.dirName() + '/' + md5s[f][0])
+
+            duplicates=md5s[f]
+            one=duplicates.pop()
+            one_is_config = False
+            if one in configFiles:
+                one_is_config = True
+
+            partition=get_prefix(one)
+
+            st = os.stat(pkg.dirName() + '/' + one)
             diff = len(md5s[f]) - st[stat.ST_NLINK]
-            if diff <= 0: continue
-            prefix=get_prefix(md5s[f][0])
-            for idx in range(1, len(md5s[f])):
-                if prefix != get_prefix(md5s[f][idx]):
+            if diff <= 0: 
+                for dupe in duplicates:
+                    if partition != get_prefix(dupe):
+                        printError(pkg,"hardlink-across-partition",one,dupe)
+                    if one_is_config and dupe in configFiles:
+                        printError(pkg,"hardlink-across-config-files",one,dupe)
+                continue
+
+            for dupe in duplicates:
+                if partition != get_prefix(dupe):
                     diff = diff - 1
             sum += sizes[f] * diff
             if sizes[f] and diff > 0:
-                printWarning(pkg, 'files-duplicate', ":".join(md5s[f]))
+                printWarning(pkg, 'files-duplicate', ":".join(one, duplicates))
 
         if sum > 100000:
             printError(pkg, 'files-duplicated-waste', sum)
@@ -73,5 +89,15 @@ if Config.info:
     addDetails(
 'files-duplicated-waste',
 """Your package contains duplicated files that are not hard- or symlinks.
-You should use fdupes to link the files to one."""
+You should use fdupes to link the files to one.""",
+'hardlink-accross-partition',
+"""Your package contains two files that are apparently hardlinked and
+that are likely on different partitions. Installation of such an RPM will fail
+due to RPM being unable to unpack the hardlink. do not hardlink across
+the first two levels of a path, e.g. between /srv/ftp and /srv/www or
+/etc and /usr. """,
+'hardlink-across-config-files',
+"""Your package contains two config files that are apparently hardlinked.
+Hardlinking a config file is probably not what you want. Please double
+check and report false positives."""
 )
