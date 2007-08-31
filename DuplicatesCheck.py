@@ -78,7 +78,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
                     diff = diff - 1
             sum += sizes[f] * diff
             if sizes[f] and diff > 0:
-                printWarning(pkg, 'files-duplicate', ":".join(one, duplicates))
+                printWarning(pkg, 'files-duplicate', one,":".join(duplicates))
 
         if sum > 100000:
             printError(pkg, 'files-duplicated-waste', sum)
