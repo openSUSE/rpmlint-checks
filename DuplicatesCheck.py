@@ -17,7 +17,11 @@ import os
 import string
 
 def get_prefix(file):
-    return "/".join(string.split(file, '/')[0:3])
+    pathlist = string.split(file, '/')
+    if len(pathlist) == 3:
+        return "/".join(pathlist[0:2])
+
+    return "/".join(pathlist[0:3])
 
 class DuplicatesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
