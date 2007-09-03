@@ -53,9 +53,9 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
 
         sum=0
         for f in md5s:
-            if len(md5s[f]) == 1: continue
-
             duplicates=md5s[f]
+            if len(duplicates) == 1: continue
+
             one=duplicates.pop()
             one_is_config = False
             if one in configFiles:
@@ -64,7 +64,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
             partition=get_prefix(one)
 
             st = os.stat(pkg.dirName() + '/' + one)
-            diff = len(md5s[f]) - st[stat.ST_NLINK]
+            diff = 1 + len(duplicates) - st[stat.ST_NLINK]
             if diff <= 0: 
                 for dupe in duplicates:
                     if partition != get_prefix(dupe):
@@ -90,7 +90,7 @@ if Config.info:
 'files-duplicated-waste',
 """Your package contains duplicated files that are not hard- or symlinks.
 You should use fdupes to link the files to one.""",
-'hardlink-accross-partition',
+'hardlink-across-partition',
 """Your package contains two files that are apparently hardlinked and
 that are likely on different partitions. Installation of such an RPM will fail
 due to RPM being unable to unpack the hardlink. do not hardlink across
