@@ -402,7 +402,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
 
         # If this is a program package (all libs it provides are
         # required by itself), bail out
-        if len(libs.difference(reqlibs)) == 0:
+        if not pkg.name.startswith("lib") and len(libs.difference(reqlibs)) == 0:
             return
 
         # If this package should be or should be splitted into shlib
@@ -420,8 +420,6 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
 
             elif not pkg.name[-1:].isdigit():
                 printError(pkg, 'shlib-policy-missing-suffix')
-        else:
-            return
 
         if not pkg.name.startswith('lib'):
             return
