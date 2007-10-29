@@ -424,7 +424,8 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                     pass
             pass
 
-        std_dirs = dirs.intersection(('/lib', '/lib64', '/usr/lib', '/usr/lib64'))
+        std_dirs = dirs.intersection(('/lib', '/lib64', '/usr/lib', '/usr/lib64', 
+            '/opt/kde3/lib'))
 
         # If this is a program package (all libs it provides are
         # required by itself), bail out
