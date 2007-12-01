@@ -16,6 +16,9 @@ import Config
 import os
 import string
 
+insserv_regex=re.compile('^\s*sbin/insserv', re.MULTILINE)
+preun_regex=re.compile('^\s*/etc/init.d/\S+ stop', re.MULTILINE)
+
 class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
         AbstractCheck.AbstractFilesCheck.__init__(self, "InitScriptsCheck", "/etc/init.d/.*")
