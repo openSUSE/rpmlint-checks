@@ -31,5 +31,11 @@ check=PkgConfigCheck()
 if Config.info:
     addDetails(
 'invalid-pkgconfig-file',
-"Your .pc file contains traces of $RPM_BUILD_ROOT or $RPM_BUILD_DIR."
+'''Your .pc file appears to be invalid. Possible causes are:
+- it contains traces of $RPM_BUILD_ROOT or $RPM_BUILD_DIR.
+- it contains unreplaced macros (@have_foo@)
+- it references invalid paths (e.g. /home or /tmp)
+
+Please double-check and report false positives.
+'''
 )
