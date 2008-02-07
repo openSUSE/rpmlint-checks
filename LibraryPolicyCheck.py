@@ -404,6 +404,12 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         if not pkg.name.startswith('lib'):
             return
 
+        if not libs:
+            if pkg.name in _policy_legacy_exceptions:
+                printWarning(pkg, 'shlib-legacy-policy-missing-lib', pkg.name)
+            else:
+                printError(pkg, 'shlib-policy-missing-lib')
+
         # Verify no non-lib stuff is in the package
         dirs = set()
         for f in files:
@@ -453,5 +459,9 @@ allow to install multiple versions of the package in parallel.""",
 'shlib-legacy-policy-name-error',
 """Your shared library package is not named after its SONAME, but it has been added to the list
 of legacy exceptions. Please do ot rename the package until SONAME changes, but if you have
-to rename it for another reason, make sure you name it correctly."""
+to rename it for another reason, make sure you name it correctly.""",
+'shlib-policy-missing-lib',
+"""Your package starts with 'lib' as part of it's name, but does not provide
+any libraries. It must not be called a lib-package then. Give it a more
+sensible name."""
 )
