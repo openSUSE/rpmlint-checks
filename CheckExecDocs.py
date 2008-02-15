@@ -39,7 +39,7 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
 
         if doc_size * 2 >= complete_size \
            and doc_size > 100*1024 and (complete_size - doc_size) * 20 > complete_size \
-           and pkg.name.find('-doc') < 0:
+           and pkg.name.find('-doc') < 0 and not pkg.name.startswith('bundle-'):
             printWarning(pkg, "package-with-huge-docs")
 
         for f in pkg.docFiles():
