@@ -99,6 +99,7 @@ _policy_legacy_exceptions = (
         "libghttp1",
         "libgif4",
         "libgimpprint1",
+        "libgfortran1", # gcc41
         "libglade-2_0-0",
         "libgladesharpglue-2",
         "libgle3",
@@ -180,6 +181,7 @@ _policy_legacy_exceptions = (
         "libmono-profiler-heap-buddy0",
         "libmp3lame0",
         "libmpcdec3",
+        "libmpeg-0_3_0", # kdemultimedia3-mad
         "libmsrpc0",
         "libmthca-rdmav2",
         "libnasl2",
