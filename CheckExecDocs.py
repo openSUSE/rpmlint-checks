@@ -16,6 +16,16 @@ import Config
 import os
 import string
 
+def ignore_pkg(name):
+    if name.startswith('bundle-'):
+       return True
+    if name.find('-devel') != -1:
+        return True
+    if name.find('-doc') != -1:
+        return True
+
+    return False
+
 class ExecDocsCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
@@ -42,12 +52,12 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
 
         if doc_size * 2 >= complete_size \
            and doc_size > 100*1024 and (complete_size - doc_size) * 20 > complete_size \
-           and pkg.name.find('-doc') < 0 and not pkg.name.startswith('bundle-'):
+           and not ignore_pkg(pkg.name):
             printWarning(pkg, "package-with-huge-docs", ("%3d%%" % (doc_size * 100 / complete_size)) )
 
         if lang_size * 2 >= complete_size \
            and lang_size > 100*1024 and (complete_size - lang_size) * 20 > complete_size \
-           and pkg.name.find('-doc') < 0 and not pkg.name.startswith('bundle-'):
+           and not ignore_pkg(pkg.name):
             printWarning(pkg, "package-with-huge-translation", ("%3d%%" % (lang_size * 100 / complete_size)))
 
         for f in pkg.docFiles():
