@@ -46,7 +46,7 @@ class IconSizesCheck(AbstractCheck.AbstractCheck):
 check=IconSizesCheck()
 
 if Config.info:
-addDetails(
+    addDetails(
 'wrong-icon-size',
 """Your icon file is installed in a fixed-size directory, but has a largely incorrect size.
 Some desktop environments (e.g. GNOME) display them incorrectly."""

@@ -28,9 +28,12 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
 
         files = pkg.files()
         complete_size=0
+        lang_size=0
         for f in files:
             if stat.S_ISREG(files[f][0]):
                 complete_size += files[f][4]
+                if pkg.fileLang(f) != '':
+                    lang_size += files[f][4]
 
         doc_size=0
         for f in pkg.docFiles():
@@ -40,7 +43,12 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
         if doc_size * 2 >= complete_size \
            and doc_size > 100*1024 and (complete_size - doc_size) * 20 > complete_size \
            and pkg.name.find('-doc') < 0 and not pkg.name.startswith('bundle-'):
-            printWarning(pkg, "package-with-huge-docs")
+            printWarning(pkg, "package-with-huge-docs", ("%3d%%" % (doc_size * 100 / complete_size)) )
+
+        if lang_size * 2 >= complete_size \
+           and lang_size > 100*1024 and (complete_size - lang_size) * 20 > complete_size \
+           and pkg.name.find('-doc') < 0 and not pkg.name.startswith('bundle-'):
+            printWarning(pkg, "package-with-huge-translation", ("%3d%%" % (lang_size * 100 / complete_size)))
 
         for f in pkg.docFiles():
             enreg=files[f]
@@ -63,5 +71,8 @@ if Config.info:
 "Documentation should not be executable.",
 'package-with-huge-docs',
 """More than half the size of your package is documentation.
-Consider splitting it into a -doc subpackage."""
+Consider splitting it into a -doc subpackage.""",
+'package-with-huge-translation',
+"""More than half the size of your package is language-specific.
+Consider splitting it into a -lang subpackage."""
 )
