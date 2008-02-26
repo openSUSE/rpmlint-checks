@@ -26,6 +26,16 @@ def ignore_pkg(name):
 
     return False
 
+def lang_ignore_pkg(name):
+    if ignore_pkg(name):
+        return True
+    if name.endswith('-lang'):
+        return True
+    if name.find('-trans-') != -1:
+        return True
+
+    return False
+
 class ExecDocsCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
@@ -57,7 +67,7 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
 
         if lang_size * 2 >= complete_size \
            and lang_size > 100*1024 and (complete_size - lang_size) * 20 > complete_size \
-           and not ignore_pkg(pkg.name):
+           and not lang_ignore_pkg(pkg.name):
             printWarning(pkg, "package-with-huge-translation", ("%3d%%" % (lang_size * 100 / complete_size)))
 
         for f in pkg.docFiles():
