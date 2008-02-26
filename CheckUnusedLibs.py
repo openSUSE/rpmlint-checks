@@ -36,7 +36,7 @@ class UnusedLibsCheck(AbstractCheck.AbstractCheck):
                     string.find(file[1], 'ELF') == -1:
                 continue
 
-            ret, output = Pkg.getstatusoutput("ldd -u '%s'" % (filename))
+            ret, output = Pkg.getstatusoutput("ldd -r -u '%s'" % (filename))
             for l in output.split():
                 if not l.startswith('/'):
                     continue
