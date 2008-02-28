@@ -93,7 +93,7 @@ if Config.info:
     addDetails(
 'files-duplicated-waste',
 """Your package contains duplicated files that are not hard- or symlinks.
-You should use fdupes to link the files to one.""",
+You should use the %fdupes macro to link the files to one.""",
 'hardlink-across-partition',
 """Your package contains two files that are apparently hardlinked and
 that are likely on different partitions. Installation of such an RPM will fail
