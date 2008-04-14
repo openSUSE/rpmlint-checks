@@ -48,6 +48,10 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                     '94d55d512a9ba36caa9b7df079bae19f'):
                 printError(pkg, "duplicated-file-gpl-v2", f)
 
+            if len(md5) and md5 in (
+                    'd32239bcb673463ab874e80d47fae504'):
+                printError(pkg, "duplicated-file-gpl-v3", f)
+
             # bsd causes the false positive COPYING.BSD
             if len(md5) and f.rsplit('/',1)[1][0].lower() == 'r' and f.rsplit('.',1)[-1].lower() in (
               'aix', 'bsd', 'dos', 'hpux', 'irix', 'os2', 'mac', 'macos', 'tru64',
@@ -69,7 +73,10 @@ if Config.info:
 """Your package contains a file that contains the FSF generic
 configure/make/make install instructions. Those are useless
 for a binary package. Consider removing it to save 3kb of rpm size.""",
-
+'duplicated-file-gpl-v3',
+"""Your package contains a file that contains the FSF GPLv3
+license. If you really have to ship it, consider symlinking it
+from the licenses package.""",
 'duplicated-file-gpl-v2',
 """Your package contains a file that contains the FSF GPLv2
 license. If you really have to ship it, consider symlinking it
