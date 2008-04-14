@@ -598,7 +598,7 @@ a -devel subpackage.""",
 allow to install multiple versions of the package in parallel.""",
 'shlib-legacy-policy-name-error',
 """Your shared library package is not named after its SONAME, but it has been added to the list
-of legacy exceptions. Please do ot rename the package until SONAME changes, but if you have
+of legacy exceptions. Please do not rename the package until SONAME changes, but if you have
 to rename it for another reason, make sure you name it correctly.""",
 'shlib-policy-excessive-dependency',
 """Your package starts with 'lib' as part of it's name, but also contains binaries
