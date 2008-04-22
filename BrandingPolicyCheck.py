@@ -64,9 +64,8 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         if not branding_provide:
             printError(pkg,'suse-branding-no-branding-provide')
         else:
-            if (branding_provide[2] != rpm.RPMSENSE_EQUAL or
-                    not branding_provide[1].startswith('1')):
-                printError(pkg, 'suse-branding-unversioned-prov', branding_provide)
+            if (len(branding_provide) < 2 or branding_provide[2] != rpm.RPMSENSE_EQUAL):
+                printError(pkg, 'suse-branding-unversioned-prov', branding_provide[0])
 
         for r in pkg.requires():
             if r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0:
