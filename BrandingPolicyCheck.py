@@ -32,11 +32,11 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         pkg_conflicts = set(map(lambda x: string.split(x[0],'(')[0], pkg.conflicts()))
 
         # verify that only generic branding is required by non-branding packages
-        for r in pkg_requires:
+        for r in pkg.requires():
             if (pkg.name.find('-branding-') < 0 and
-                    (r.find('-theme-') >= 0 or r.find('-branding-') >= 0)):
+                    (r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0)):
                 printError(pkg,'suse-branding-specific-branding-req', r)
-            if r.endswith('branding') or r.endswith('theme'):
+            if r[0].endswith('branding') or r[0].endswith('theme'):
                 if (r[2] != rpm.RPMSENSE_EQUAL or not r[1].startswith('1')):
                     printError(pkg,'suse-branding-unversioned-req', r[0])
 
@@ -53,6 +53,30 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         generic_branding = ("%s-branding" % (branding_basename))
 
         pkg_provides = set(map(lambda x: string.split(x[0],'(')[0], pkg.provides()))
+        pkg_supplements = set(map(lambda x: x[0], pkg.supplements()))
+
+        # verify that it only supplements with packageand
+        found_correct=False
+        for s in pkg_supplements:
+            if s.startswith('packageand('):
+                correct_supplement="packageand(%s:branding-%s)" % (branding_basename, branding_style)
+                if s != correct_supplement:
+                    printError(pkg,'suse-branding-wrong-branding-supplement', s)
+                else:
+                    found_correct=True
+            else:
+                printError(pkg,'suse-branding-excessive-supplement', s)
+
+        if not found_correct:
+            printError(pkg,'suse-branding-supplement-missing')
+
+        # nothing else
+        for r in pkg.recommends():
+            printError(pkg,'suse-branding-excessive-recommends', r[0])
+        for r in pkg.suggests():
+            printError(pkg,'suse-branding-excessive-suggests', r[0])
+        for r in pkg.enhances():
+            printError(pkg,'suse-branding-excessive-enhances', r[0])
 
         # check for provide foo-branding
         branding_provide=None
@@ -81,4 +105,8 @@ if Config.info:
 """bla""",
 'suse-branding-no-branding-provides',
 """bla""",
+'suse-branding-supplement-missing',
+"""branding packages should provide a supplemnent in the form
+Supplements: packageand(basepackage:branding-<flavour>)
+"""
 )
