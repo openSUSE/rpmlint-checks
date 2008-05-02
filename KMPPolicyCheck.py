@@ -43,11 +43,11 @@ class KMPPolicyCheck(AbstractCheck.AbstractCheck):
         if not have_requires:
             printError(pkg, 'suse-policy-kmp-missing-requires', kernel_flavour)
 
-        # verify that if an enhances is there, it points to the right kernel flavor
-        for p in pkg.enhances():
-            if p[0].startswith('kernel-'):
-                if p[0] != kernel_flavour:
-                    printError(pkg, 'suse-policy-kmp-wrong-enhances', p[0])
+        # verify that exactly one enhances on the kernel flavor is present
+        if len(pkg.enhances()) > 1:
+            printError(pkg, 'suse-policy-kmp-excessive-enhances', str(pkg.enhances()))
+        elif len(pkg.enhances()) < 1:
+            printError(pkg, 'suse-policy-kmp-missing-enhances', kernel_flavour)
 
         # check that only modalias supplements are present
         have_only_modalias=True
@@ -57,8 +57,9 @@ class KMPPolicyCheck(AbstractCheck.AbstractCheck):
             if s[0].startswith('modalias('):
                 have_modalias = True
                 continue
-            if s[0].startswith('packageand(-%s:' % (kernel_flavour)):
+            if s[0].startswith('packageand(%s:' % (kernel_flavour)):
                 have_proper_suppl = True
+                continue
 
             printWarning(pkg, 'suse-policy-kmp-excessive-supplements', s[0])
             have_only_modalias = False
@@ -73,15 +74,7 @@ if Config.info:
 'suse-policy-kmp-excessive-supplements',
 """ """,
 'suse-policy-kmp-missing-supplements',
-"""If your kmp modules match some specific hardware, i.e. if the
-"find-supplements" search done at the end of a build creates some
-modalias() dependencies, you don't need to do anything. If your
-module is hardware independent, you need to add the dependencies manually.
-
-To do this, add a preamble (-p) to your %suse_kernel_module_package
-macro. the file should look like this:
-
- Supplements: packageand(kernel-%1:%{-n*})
-
+"""make sure that your buildrequires includes kernel-syms and module-init-tools
+for proper dependencies to be built.
 """,
 )
