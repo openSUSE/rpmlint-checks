@@ -35,7 +35,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         for r in pkg.requires():
             if (pkg.name.find('-branding-') < 0 and
                     (r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0)):
-                printError(pkg,'suse-branding-specific-branding-req', r)
+                printError(pkg,'suse-branding-specific-branding-req', r[0])
             if r[0].endswith('branding') or r[0].endswith('theme'):
                 if (r[2] != rpm.RPMSENSE_EQUAL or not r[1].startswith('1')):
                     printError(pkg,'suse-branding-unversioned-req', r[0])
