@@ -64,9 +64,9 @@ class KDE4Check(AbstractCheck.AbstractCheck):
 
         if not pkg.name.startswith("lib"):
             if "libkdepimlibs4" in pkg_requires and not kdepimlibs4_dep:
-                printError(pkg,"suse-kde4-missing-pimlibs-dependency")
-            if not "libkdepimlibs4" in pkg_requires and kdepimlibs4_dep:
                 printError(pkg,"suse-kde4-excessive-pimlibs-dependency")
+            if not "libkdepimlibs4" in pkg_requires and kdepimlibs4_dep:
+                printError(pkg,"suse-kde4-missing-pimlibs-dependency")
 
 check=KDE4Check()
 
