@@ -44,13 +44,14 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                     '0d6be33865b76025c20b48bcac87adb7'):
                 printError(pkg, "generic-build-instructions", f)
 
-            if len(md5) and md5 in (
-                    '94d55d512a9ba36caa9b7df079bae19f'):
-                printError(pkg, "duplicated-file-gpl-v2", f)
+            # bnc 379919
+            #if len(md5) and md5 in (
+            #        '94d55d512a9ba36caa9b7df079bae19f'):
+            #    printError(pkg, "duplicated-file-gpl-v2", f)
 
-            if len(md5) and md5 in (
-                    'd32239bcb673463ab874e80d47fae504'):
-                printError(pkg, "duplicated-file-gpl-v3", f)
+            #if len(md5) and md5 in (
+            #        'd32239bcb673463ab874e80d47fae504'):
+            #    printError(pkg, "duplicated-file-gpl-v3", f)
 
             # bsd causes the false positive COPYING.BSD
             if len(md5) and f.rsplit('/',1)[1][0].lower() == 'r' and f.rsplit('.',1)[-1].lower() in (
