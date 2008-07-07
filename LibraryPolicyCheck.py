@@ -155,7 +155,6 @@ _policy_legacy_exceptions = (
         "libkdegames5",
         "libkexiv2-1",
         "libkeyutils1",
-        "libkonq5",
         "libksba8",
         "libkscan1",
         "libktoblzcheck1",
