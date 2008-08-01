@@ -57,9 +57,9 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
 
         # verify that it only supplements with packageand
         found_correct=False
+        correct_supplement="packageand(%s:branding-%s)" % (branding_basename, branding_style)
         for s in pkg_supplements:
             if s.startswith('packageand('):
-                correct_supplement="packageand(%s:branding-%s)" % (branding_basename, branding_style)
                 if s != correct_supplement:
                     printError(pkg,'suse-branding-wrong-branding-supplement', s)
                 else:
@@ -68,7 +68,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
                 printError(pkg,'suse-branding-excessive-supplement', s)
 
         if not found_correct:
-            printError(pkg,'suse-branding-supplement-missing')
+            printError(pkg,'suse-branding-supplement-missing', correct_supplement)
 
         # nothing else
         for r in pkg.recommends():
