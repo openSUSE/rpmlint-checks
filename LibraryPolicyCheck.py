@@ -38,7 +38,6 @@ _policy_legacy_exceptions = (
         "libauthpgsql0",
         "libauthpipe0",
         "libauthuserdb0",
-        "libbluetooth2",
         "libcairo2",
         "libcairomm-1_0-1",
         "libcap1",
