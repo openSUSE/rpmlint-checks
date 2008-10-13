@@ -85,6 +85,17 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
                 branding_provide=p
                 break
 
+        # check for Conflicts: otherproviders(kde4-kdm-branding)
+        conflict_prop = "otherproviders(%s)" % (generic_branding)
+        have_conflict_prop = False
+        for c in pkg_conflicts:
+            if c[0] == conflict_prop:
+                have_conflict_prop = True
+                break
+
+        if not have_conflict_prop:
+            printError(pkg,'suse-branding-missing-conflicts', conflict_prop)
+
         if not branding_provide:
             printError(pkg,'suse-branding-no-branding-provide')
         else:
@@ -108,5 +119,9 @@ if Config.info:
 'suse-branding-supplement-missing',
 """branding packages should provide a supplemnent in the form
 Supplements: packageand(basepackage:branding-<flavour>)
-"""
+""",
+'suse-branding-missing-conflicts',
+"""Any branding flavor package that provides the generic branding
+must also conflict with all other branding packages via a special
+otherproviders()""",
 )
