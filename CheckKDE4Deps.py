@@ -38,6 +38,13 @@ _kde4_pimlibs=(
         "libsyndication.so.4"
 )
 
+_kde4_libkdepim4 = (
+        "libkdepim.so.4",
+        "libkontactinterfaces.so.4",
+        "libkleopatraclientcore.so.0.2.0",
+        "libkleopatraclientgui.so.0.2.0",
+)
+
 class KDE4Check(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "KDE4Check")
@@ -62,11 +69,22 @@ class KDE4Check(AbstractCheck.AbstractCheck):
                 kdepimlibs4_dep=True
                 break
 
+        libkdepim4_dep=False
+        for r in pkg_requires:
+            if r in _kde4_libkdepim4:
+                libkdepim4_dep =True
+                break
+
         if not pkg.name.startswith("lib"):
             if "libkdepimlibs4" in pkg_requires and not kdepimlibs4_dep:
                 printError(pkg,"suse-kde4-excessive-pimlibs-dependency")
             if not "libkdepimlibs4" in pkg_requires and kdepimlibs4_dep:
                 printError(pkg,"suse-kde4-missing-pimlibs-dependency")
+
+            if "libkdepim4" in pkg_requires and not libkdepim4_dep:
+                printError(pkg,"suse-kde4-excessive-libkdepim4-dependency")
+            if not "libkdepim4" in pkg_requires and libkdepim4_dep:
+                printError(pkg,"suse-kde4-missing-libkdepim4-dependency")
 
 check=KDE4Check()
 
