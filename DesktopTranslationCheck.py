@@ -39,6 +39,6 @@ check=DesktopCheck()
 if Config.info:
     addDetails(
 'untranslated-desktop-file',
-"""Your desktop file hasn't been handled by suse_update_desktop.sh.
+"""Your desktop file hasn't been handled by %suse_update_desktop_file
 Please use it to make the desktop file translate-able by Novell translations."""
 )
