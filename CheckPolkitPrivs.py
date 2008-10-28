@@ -82,7 +82,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                     for a in xml.getElementsByTagName("action"):
                         action = a.getAttribute('id')
                         if not action in self.privs:
-                            unauth = 0
+                            iserr = 0
                             foundno = 0
                             anyseen = 0
                             try:
@@ -96,16 +96,18 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                                         if i.firstChild.data == 'no':
                                             foundno = 1
                                         else:
-                                            unauth = 1
+                                            iserr = 1
                             except:
-                                unauth = 1
+                                iserr = 1
 
-                            if unauth:
+                            if iserr:
                                 printError(pkg, 'polkit-unauthorized-privilege', action)
+                            else:
+                                printWarning(pkg, 'polkit-unauthorized-privilege', action)
+
                             if foundno or not anyseen:
                                 printWarning(pkg, 'polkit-cant-acquire-privilege', action)
             except:
-                raise
                 continue
 
 check=PolkitCheck()
