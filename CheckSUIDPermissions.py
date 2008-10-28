@@ -3,7 +3,7 @@
 # File          : CheckSUIDPermissions.py
 # Package       : rpmlint
 # Author        : Ludwig Nussel
-# Purpose       : Check /etc/permissions violations
+# Purpose       : Check for /etc/permissions violations
 #############################################################################
 
 from Filter import *
@@ -11,7 +11,6 @@ import AbstractCheck
 import re
 import os
 import string
-import glob
 
 _permissions_d_whitelist = (
 "lprng",
@@ -31,15 +30,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckSUIDPermissions")
         self.perms = {}
-        files = [ "/etc/permissions" ]
-        files += glob.glob("/etc/permissions.d/*")
+        files = [ "/etc/permissions", "/etc/permissions.secure" ]
 
         for file in files:
-                if os.path.exists(file):
-                    self._parsefile(file)
-                file += '.secure'
-                if os.path.exists(file):
-                    self._parsefile(file)
+            if os.path.exists(file):
+                self._parsefile(file)
 
     def _parsefile(self,file):
         for line in open(file):
@@ -57,7 +52,33 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         if pkg.isSource():
             return
+
         files = pkg.files()
+
+        permfiles = {}
+        # first pass, find and parse permissions.d files
+        for f in files:
+            if f in pkg.ghostFiles():
+                continue
+
+            if f.startswith("/etc/permissions.d/"):
+
+                bn = f[19:]
+                if not bn in _permissions_d_whitelist:
+                    printError(pkg, "permissions-unauthorized-file", f)
+
+                bn = bn.split('.')[0]
+                if not bn in permfiles:
+                    permfiles[bn] = 1
+
+        for f in permfiles:
+            f = pkg.dirName() + "/etc/permissions.d/" + f
+            if os.path.exists(f+".secure"):
+                self._parsefile(f + ".secure")
+            else:
+                self._parsefile(f)
+
+        # second pass, find permissions violations
         for f in files:
             if f in pkg.ghostFiles():
                 continue
@@ -69,24 +90,18 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             md5 = enreg[5]
             rdev = enreg[7]
 
-            if f.startswith("/etc/permissions.d/"):
-
-                basename = f[19:]
-                if not basename in _permissions_d_whitelist:
-                    printError(pkg, "unauthorized-permissions-file", f)
-
-#       S_IFSOCK   014   socket
-#       S_IFLNK    012   symbolic link
-#       S_IFREG    010   regular file
-#       S_IFBLK    006   block device
-#       S_IFDIR    004   directory
-#       S_IFCHR    002   character device
-#       S_IFIFO    001   FIFO
+#           S_IFSOCK   014   socket
+#           S_IFLNK    012   symbolic link
+#           S_IFREG    010   regular file
+#           S_IFBLK    006   block device
+#           S_IFDIR    004   directory
+#           S_IFCHR    002   character device
+#           S_IFIFO    001   FIFO
             type = (mode>>12)&017;
             mode &= 07777
             if f in self.perms or (type == 04 and f+"/" in self.perms):
                 if type == 012:
-                    printWarning(pkg, "permissions-handling-useless", f)
+                    printWarning(pkg, "permissions-symlink", f)
                     continue
 
                 m = 0
@@ -101,28 +116,28 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 o = self.perms[f]['owner']
 
                 if mode != m:
-                    printError(pkg, 'wrong-permissions', '%(file)s has mode 0%(mode)o but should be 0%(m)o' % \
+                    printError(pkg, 'permissions-incorrect', '%(file)s has mode 0%(mode)o but should be 0%(m)o' % \
                             { 'file':f, 'mode':mode, 'm':m })
 
                 if owner != o:
-                    printError(pkg, 'wrong-owner', '%(file)s belongs to %(owner)s but should be %(o)s' % \
+                    printError(pkg, 'permissions-incorrect-owner', '%(file)s belongs to %(owner)s but should be %(o)s' % \
                             { 'file':f, 'owner':owner, 'o':o })
 
             elif type != 012:
 
                 if f+'/' in self.perms:
-                    printWarning(pkg, 'file-listed-as-dir', f+' is a file but listed as directory')
+                    printWarning(pkg, 'permissions-file-as-dir', f+' is a file but listed as directory')
 
                 if mode&06000:
+                    msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % { 'file':f, 'mode':mode }
                     if type != 04:
-                        printError(pkg, 'packaged-with-setuid-bit', '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % \
-                                { 'file':f, 'mode':mode })
+                        printError(pkg, 'permissions-setuid-bit', msg)
                     else:
-                        printWarning(pkg, 'packaged-with-setuid-bit', '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % \
-                                { 'file':f, 'mode':mode })
+                        printWarning(pkg, 'permissions-setuid-bit', msg)
 
                 if mode&02:
-                    printError(pkg, 'packaged-world-writable', '%(file)s is packaged with world writable permissions (0%(mode)o)' % \
+                    printError(pkg, 'permissions-world-writable', \
+                            '%(file)s is packaged with world writable permissions (0%(mode)o)' % \
                             { 'file':f, 'mode':mode })
 
 
@@ -130,19 +145,25 @@ check=SUIDCheck()
 
 if Config.info:
     addDetails(
-'unauthorized-permissions-file',
+'permissions-unauthorized-file',
 """Please remove the unauthorized files or contact security@suse.de for review.""",
-'permissions-handling-useless',
-"""permissions handling for symlinks is useless""",
-'dir-without-slash',
+'permissions-symlink',
+"""permissions handling for symlinks is useless. Please contact
+security@suse.de to remove the entry.""",
+'permissions-dir-without-slash',
 """the entry in the permissions file refers to a directory. Please
-append a slash to the entry to avoid security problems""",
-'wrong-permissions',
-"""please use the %attr macro to set the correct permissions""",
-'wrong-owner',
-"""please use the %attr macro to set the correct ownership""",
-'packaged-with-setuid-bit',
+contact security@suse.de to append a slash to the entry in order to
+avoid security problems.""",
+'permissions-file-as-dir',
+"""the entry in the permissions file refers to a directory but the
+package actually contains a file. Please contact security@suse.de to
+remove the slash.""",
+'permissions-incorrect',
+"""please use the %attr macro to set the correct permissions.""",
+'permissions-incorrect-owner',
+"""please use the %attr macro to set the correct ownership.""",
+'permissions-setuid-bit',
 """Please remove the setuid/setgid bits or contact security@suse.de for review.""",
-'packaged-world-writable',
+'permissions-world-writable',
 """Please remove the world writable permissions or contact security@suse.de for review."""
 )
