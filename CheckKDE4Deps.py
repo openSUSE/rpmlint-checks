@@ -45,6 +45,14 @@ _kde4_libkdepim4 = (
         "libkleopatraclientgui.so.0.2.0",
 )
 
+_kde4_libakonadi4 = (
+        "libakonadi-kde.so.4",
+        "libakonadi-kabc.so.4",
+        "libakonadi-kcal.so.4",
+        "libakonadi-kmime.so.4",
+        "libakonadiprotocolinternals.so.1",
+)
+
 class KDE4Check(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "KDE4Check")
@@ -75,16 +83,28 @@ class KDE4Check(AbstractCheck.AbstractCheck):
                 libkdepim4_dep =True
                 break
 
+        libakonadi4_dep=False
+        for r in pkg_requires:
+            if r in _kde4_libakonadi4:
+                libakonadi4_dep =True
+                break
+
         if not pkg.name.startswith("lib"):
-            if "libkdepimlibs4" in pkg_requires and not kdepimlibs4_dep:
-                printError(pkg,"suse-kde4-excessive-pimlibs-dependency")
-            if not "libkdepimlibs4" in pkg_requires and kdepimlibs4_dep:
-                printError(pkg,"suse-kde4-missing-pimlibs-dependency")
+            if "kdepimlibs4" in pkg_requires and not kdepimlibs4_dep:
+                printError(pkg,"suse-kde4-excessive-dependency", "%kde4_pimlibs_requires")
+            if not "kdepimlibs4" in pkg_requires and kdepimlibs4_dep:
+                printError(pkg,"suse-kde4-missing-dependency", "%kde4_pimlibs_requires")
 
             if "libkdepim4" in pkg_requires and not libkdepim4_dep:
-                printError(pkg,"suse-kde4-excessive-libkdepim4-dependency")
+                printError(pkg,"suse-kde4-excessive-dependency", "libkdepim4")
             if not "libkdepim4" in pkg_requires and libkdepim4_dep:
-                printError(pkg,"suse-kde4-missing-libkdepim4-dependency")
+                printError(pkg,"suse-kde4-missing-dependency", "libkdepim4")
+
+            if "akonadi-runtime" in pkg_requires and not libakonadi4_dep:
+                printError(pkg,"suse-kde4-excessive-dependency", "%kde4_akonadi_requires")
+            if not "akonadi-runtime" in pkg_requires and libakonadi4_dep:
+                printError(pkg,"suse-kde4-missing-dependency", "%kde4_akonadi_requires")
+
 
 check=KDE4Check()
 
