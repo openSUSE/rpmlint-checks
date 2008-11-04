@@ -108,7 +108,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 o = "invalid"
                 if type == 04:
                     if f in self.perms:
-                        printWarning(pkg, 'dir-without-slash', f)
+                        printWarning(pkg, 'permissions-dir-without-slash', f)
                     else:
                         f += '/'
 
