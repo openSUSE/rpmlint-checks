@@ -29,10 +29,14 @@ class DesktopCheck(AbstractCheck.AbstractFilesCheck):
             printWarning(pkg, "read-error", e)
             return 0
 
+        found_desktop_group=False
         for line in f:
             if line.startswith('X-SuSE-translate='):
                 return
-        printWarning(pkg, "untranslated-desktop-file", filename)
+            if line.startswith('[Desktop Entry]'):
+                found_desktop_group=True
+        if found_desktop_group:
+            printWarning(pkg, "untranslated-desktop-file", filename)
 
 check=DesktopCheck()
 
