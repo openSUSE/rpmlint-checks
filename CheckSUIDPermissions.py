@@ -108,7 +108,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 o = "invalid"
                 if type == 04:
                     if f in self.perms:
-                        printWarning(pkg, 'dir-without-slash', f)
+                        printWarning(pkg, 'permissions-dir-without-slash', f)
                     else:
                         f += '/'
 
@@ -131,9 +131,9 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 if mode&06000:
                     msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % { 'file':f, 'mode':mode }
                     if type != 04:
-                        printError(pkg, 'permissions-setuid-bit', msg)
+                        printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
-                        printWarning(pkg, 'permissions-setuid-bit', msg)
+                        printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
                 if mode&02:
                     printError(pkg, 'permissions-world-writable', \
@@ -162,8 +162,10 @@ remove the slash.""",
 """please use the %attr macro to set the correct permissions.""",
 'permissions-incorrect-owner',
 """please use the %attr macro to set the correct ownership.""",
-'permissions-setuid-bit',
+'permissions-file-setuid-bit',
 """Please remove the setuid/setgid bits or contact security@suse.de for review.""",
+'permissions-directory-setuid-bit',
+"""Please contact security@suse.de for review.""",
 'permissions-world-writable',
 """Please remove the world writable permissions or contact security@suse.de for review."""
 )
