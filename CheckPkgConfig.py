@@ -13,6 +13,7 @@ import re
 import commands
 import Config
 import os
+import stat
 
 class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
@@ -32,19 +33,16 @@ class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
 
 
     def check_file(self, pkg, filename):
-        if pkg.isSource():
+        if pkg.isSource() or not stat.S_ISREG(pkg.files()[filename][0]):
             return
 
         if pkg.grep(self.suspicious_dir, filename):
             printError(pkg, "invalid-pkgconfig-file", filename)
 
-        try:
-            pc_file=file(pkg.dirName() + "/" + filename, "r")
-            for l in pc_file:
-                if l.startswith('Libs:') and self.wronglib_dir.search(l):
-                    printError(pkg, 'pkgconfig-invalid-libs-dir', filename, l)
-        except IOError:
-            pass
+        pc_file=file(pkg.dirName() + "/" + filename, "r")
+        for l in pc_file:
+            if l.startswith('Libs:') and self.wronglib_dir.search(l):
+                printError(pkg, 'pkgconfig-invalid-libs-dir', filename, l)
 
 check=PkgConfigCheck()
 
