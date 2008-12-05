@@ -527,6 +527,17 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         if not pkg.name.startswith("lib") and len(libs.difference(reqlibs)) == 0:
             return
 
+        std_lib_package = False
+        if pkg.name.startswith("lib") and pkg.name[-1].isdigit():
+            std_lib_package = True
+
+        # Check for non-versioned libs in a std lib package
+        if std_lib_package:
+            for lib in libs.copy():
+                if not lib[-1].isdigit():
+                    printWarning(pkg, "shlib-unversioned-lib", lib)
+                    libs.remove(lib)
+
         # If this package should be or should be splitted into shlib
         # package(s)
         if len(libs) > 0 and len(std_dirs) > 0:
@@ -606,5 +617,10 @@ a seperate one to reduce the additional dependencies for other users of this lib
 'shlib-policy-missing-lib',
 """Your package starts with 'lib' as part of it's name, but does not provide
 any libraries. It must not be called a lib-package then. Give it a more
-sensible name."""
+sensible name.""",
+'shlib-unversioned-lib',
+"""Your package matches the Shared Library Policy Naming Scheme but contains an
+unversioned library. Therefore it is very unlikely that your package can be installed
+in parallel to another version of this library package. Consider moving unversioned
+parts into a runtime package."""
 )
