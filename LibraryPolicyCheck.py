@@ -351,6 +351,7 @@ _essential_dependencies = (
       "libgcrypt.so.11",
       "libgdbm_compat.so.3",
       "libgdbm.so.3",
+      "libgfortran3",
       "libgio-2.0.so.0",
       "libglib-2.0.so.0",
       "libgmodule-2.0.so.0",
@@ -496,6 +497,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Search for shared libraries in this package
         libs = set()
         libs_needed = set()
+        libs_to_dir = dict()
         dirs = set()
         reqlibs = set()
         pkg_requires = set(map(lambda x: string.split(x[0],'(')[0], pkg.requires()))
@@ -508,8 +510,10 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                         bi = BinaryInfo(pkg, filename, f, 0)
                         libs_needed = libs_needed.union(bi.needed)
                         if bi.soname != 0:
+                            lib_dir = string.join(f.split('/')[:-1], '/')
                             libs.add(bi.soname)
-                            dirs.add(string.join(f.split('/')[:-1], '/'))
+                            libs_to_dir[bi.soname] = lib_dir
+                            dirs.add(lib_dir)
                         if bi.soname in pkg_requires:
                             # But not if the library is used by the pkg itself
                             # This avoids program packages with their own private lib
@@ -522,6 +526,8 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         std_dirs = dirs.intersection(('/lib', '/lib64', '/usr/lib', '/usr/lib64', 
             '/opt/kde3/lib'))
 
+        non_std_dirs = dirs.difference(std_dirs)
+
         # If this is a program package (all libs it provides are
         # required by itself), bail out
         if not pkg.name.startswith("lib") and len(libs.difference(reqlibs)) == 0:
@@ -530,6 +536,17 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         std_lib_package = False
         if pkg.name.startswith("lib") and pkg.name[-1].isdigit():
             std_lib_package = True
+
+        # ignore libs in a versioned non_std_dir
+        if std_lib_package:
+            for lib in libs.copy():
+                lib_dir = libs_to_dir[lib]
+                for lib_part in lib_dir.split('/'):
+                    if len(lib_part) == 0:
+                        continue
+                    if lib_part[-1].isdigit() and not lib_part.endswith("lib64"):
+                        libs.remove(lib)
+                        break
 
         # Check for non-versioned libs in a std lib package
         if std_lib_package:
