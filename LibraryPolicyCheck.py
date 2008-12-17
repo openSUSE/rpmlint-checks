@@ -133,6 +133,7 @@ _policy_legacy_exceptions = (
         "libICE6",
         "libid3-3_8-3",
         "libid3tag0",
+        "libieee1284-3",
         "libIDL-2-0",
         "libidmef0",
         "libidn11",
