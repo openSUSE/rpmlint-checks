@@ -378,40 +378,47 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
 
         files = pkg.files()
 
-        for f in files:
+        for check in _checks:
 
-            for check in _checks:
-
-                if 'ignoreif' in check:
-                    if check['ignoreif'](pkg):
-                        continue
-
-                if 'msg' in check:
-                    msg = check['msg']
-                else:
-                    msg = _defaultmsg
-
-                msg = msg % { 'file':f }
-
-                if 'error' in check:
-                    error = check['error']
-                else:
-                    error = _defaulterror
-
-                isok = False
-                if 'good' in check:
-                    for pattern in check['good']:
-                        if fnmatch.fnmatch(f, pattern):
-                            isok = True
-                            break
-
-                if isok:
+            if 'ignoreif' in check:
+                if check['ignoreif'](pkg):
                     continue
 
-                if 'bad' in check:
-                    for pattern in check['bad']:
-                        if fnmatch.fnmatch(f, pattern):
-                            printError(pkg, error, msg)
+            if 'msg' in check:
+                msg = check['msg']
+            else:
+                msg = _defaultmsg
+
+            if 'error' in check:
+                error = check['error']
+            else:
+                error = _defaulterror
+
+            good = []
+            if 'good' in check:
+                import re
+                for pattern in check['good']:
+                    r = fnmatch.translate(pattern)
+                    good.append(re.compile(r))
+
+            bad = []
+            for pattern in check['bad']:
+                r = fnmatch.translate(pattern)
+                bad.append(re.compile(r))
+
+            for f in files:
+                ok = False
+                for g in good:
+                    if g.match(f):
+                        ok = True
+                        break
+                if ok:
+                    continue
+
+                for b in bad:
+                    if b.match(f):
+                        msg = msg % { 'file':f }
+                        printError(pkg, error, msg)
 
 
 check=FilelistCheck()
