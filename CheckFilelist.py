@@ -22,6 +22,8 @@ def notnoarch(pkg):
 
 def isdebuginfo(pkg):
     if pkg.name.endswith('-debuginfo') \
+    or pkg.name.endswith('-debuginfo-32bit') \
+    or pkg.name.endswith('-debuginfo-64bit') \
     or pkg.name.endswith('-debugsource') \
     or pkg.name.endswith('-debug'):
         return True
@@ -367,6 +369,21 @@ _checks = [
 class FilelistCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckFilelist")
+        import re
+
+        for check in _checks:
+            if 'good' in check:
+                for i in range(len(check['good'])):
+                    pattern = check['good'][i]
+                    if '*' in pattern:
+                        r = fnmatch.translate(pattern)
+                        check['good'][i] = re.compile(r)
+
+            for i in range(len(check['bad'])):
+                pattern = check['bad'][i]
+                if '*' in pattern:
+                    r = fnmatch.translate(pattern)
+                    check['bad'][i] = re.compile(r)
 
     def check(self, pkg):
         global _checks
@@ -394,29 +411,18 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
             else:
                 error = _defaulterror
 
-            good = []
-            if 'good' in check:
-                import re
-                for pattern in check['good']:
-                    r = fnmatch.translate(pattern)
-                    good.append(re.compile(r))
-
-            bad = []
-            for pattern in check['bad']:
-                r = fnmatch.translate(pattern)
-                bad.append(re.compile(r))
-
             for f in files:
                 ok = False
-                for g in good:
-                    if g.match(f):
-                        ok = True
-                        break
+                if 'good' in check:
+                    for g in check['good']:
+                        if (not isinstance(g, str)) and  g.match(f) or g == f:
+                            ok = True
+                            break
                 if ok:
                     continue
 
-                for b in bad:
-                    if b.match(f):
+                for b in check['bad']:
+                    if (not isinstance(b, str)) and  b.match(f) or b == f:
                         msg = msg % { 'file':f }
                         printError(pkg, error, msg)
 
