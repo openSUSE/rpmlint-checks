@@ -3,7 +3,7 @@
 # File          : CheckFilelist.py
 # Package       : rpmlint
 # Author        : Ludwig Nussel
-# Purpose       : Check for /etc/permissions violations
+# Purpose       : Check for wrongly packaged files
 #############################################################################
 
 from Filter import *
@@ -12,7 +12,6 @@ import re
 import os
 import string
 import fnmatch
-from rpm import RPMTAG_ARCH
 
 _defaulterror = 'suse-filelist-forbidden'
 _defaultmsg = '%(file)s is not allowed anymore in SUSE Linux'
@@ -75,6 +74,18 @@ _checks = [
                 '/usr/lib/perl5/vendor_perl/5.*/auto',
                 '/usr/lib/perl5/vendor_perl/5.*/*-linux-*/auto',
                 ],
+            },
+        {
+            'error': 'suse-filelist-forbidden-devel-in-lib',
+            'details': 'please move la files, static libs and .so symlinks out of /',
+            'bad': [
+                "/lib/*.so",
+                "/lib/*.la",
+                "/lib/*.a",
+                "/lib64/*.la",
+                "/lib64/*.a",
+                "/lib64/*.so",
+                ]
             },
         {
             'error': 'suse-filelist-forbidden-fhs22',
@@ -394,6 +405,10 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
             return
 
         files = pkg.files()
+
+        if not files:
+            printError(pkg, 'suse-filelist-empty', 'packages without any files are not allowed anymore in SUSE Linux')
+            return
 
         for check in _checks:
 
