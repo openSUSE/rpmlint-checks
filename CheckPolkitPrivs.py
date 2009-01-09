@@ -103,7 +103,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                             if iserr:
                                 printError(pkg, 'polkit-unauthorized-privilege', action)
                             else:
-                                printWarning(pkg, 'polkit-unauthorized-privilege', action)
+                                printInfo(pkg, 'polkit-unauthorized-privilege', action)
 
                             if foundno or not anyseen:
                                 printWarning(pkg, 'polkit-cant-acquire-privilege', action)
