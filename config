@@ -1,0 +1,11 @@
+# -*- python -*-
+# Configuration for the rpmlint utility.
+# Loaded before ~/.rpmlintrc
+# $Id: config,v 1.39 2003/12/22 11:20:55 flepied Exp $
+
+# This line is mandatory to access the configuration functions
+from Config import *
+
+resetChecks()
+
+addCheck("CheckFilelist")

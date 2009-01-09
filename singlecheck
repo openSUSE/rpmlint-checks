@@ -1,0 +1,5 @@
+#!/bin/bash
+check="$1"
+check=${check%.py}
+shift
+exec rpmlint -i -f ./config -C $PWD --check="$check" "$@"
