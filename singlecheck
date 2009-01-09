@@ -1,5 +1,10 @@
 #!/bin/bash
+set -e
+config=`mktemp`
+trap "rm -f $config" EXIT
 check="$1"
 check=${check%.py}
 shift
-exec rpmlint -i -f ./config -C $PWD --check="$check" "$@"
+cat config >> "$config"
+echo "addCheck(\"$check\")" >> $config
+rpmlint -i -f $config -C $PWD "$@"
