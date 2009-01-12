@@ -27,6 +27,13 @@ def isdebuginfo(pkg):
     or pkg.name.endswith('-debug'):
         return True
 
+def notsymlink(pkg, f):
+    files = pkg.files()
+    enreg = files[f]
+    mode = enreg[0]
+    type = (mode>>12)&017
+    return type != 012
+
 _checks = [
         {
             'good': [
@@ -79,13 +86,26 @@ _checks = [
             'error': 'suse-filelist-forbidden-devel-in-lib',
             'details': 'please move la files, static libs and .so symlinks out of /',
             'bad': [
-                "/lib/*.so",
                 "/lib/*.la",
                 "/lib/*.a",
                 "/lib64/*.la",
                 "/lib64/*.a",
-                "/lib64/*.so",
                 ]
+            },
+        {
+            'error': 'suse-filelist-forbidden-devel-in-lib',
+            'details': 'please move la files, static libs and .so symlinks out of /',
+            'good': [
+                # exception for pam
+                "/lib/security/*.so",
+                "/lib64/security/*.so",
+                ],
+            'bad': [
+                "/lib/*.so",
+                "/lib64/*.so",
+                ],
+            # some libs without proper soname are packaged directly
+            'ignorefileif': notsymlink,
             },
         {
             'error': 'suse-filelist-forbidden-fhs22',
@@ -147,7 +167,7 @@ _checks = [
                     '/opt/kde3/lib64/*',
                     '/usr/lib/pkgconfig/*',
                     ],
-                'ignoreif': notnoarch,
+                'ignorepkgif': notnoarch,
                 },
         {
                 'error': 'suse-filelist-forbidden-debuginfo',
@@ -155,7 +175,7 @@ _checks = [
                 'bad': [
                     '/usr/lib/debug/*',
                     ],
-                'ignoreif': isdebuginfo,
+                'ignorepkgif': isdebuginfo,
                 },
         {
                 'error': 'suse-filelist-forbidden-locale',
@@ -370,6 +390,9 @@ _checks = [
                     '/emul/*',
                     '/srv',
                     '/srv/*',
+                    # KDE3 legacy exception
+                    '/opt/kde3',
+                    '/opt/kde3/*',
                     ],
                     'bad': [
                         '*',
@@ -412,8 +435,8 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
 
         for check in _checks:
 
-            if 'ignoreif' in check:
-                if check['ignoreif'](pkg):
+            if 'ignorepkgif' in check:
+                if check['ignorepkgif'](pkg):
                     continue
 
             if 'msg' in check:
@@ -430,14 +453,17 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                 ok = False
                 if 'good' in check:
                     for g in check['good']:
-                        if (not isinstance(g, str)) and  g.match(f) or g == f:
+                        if (not isinstance(g, str) and  g.match(f)) or g == f:
                             ok = True
                             break
                 if ok:
                     continue
 
                 for b in check['bad']:
-                    if (not isinstance(b, str)) and  b.match(f) or b == f:
+                    if 'ignorefileif' in check:
+                        if check['ignorefileif'](pkg, f):
+                            continue
+                    if (not isinstance(b, str) and  b.match(f)) or b == f:
                         msg = msg % { 'file':f }
                         printError(pkg, error, msg)
 
