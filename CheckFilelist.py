@@ -475,8 +475,8 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                         if check['ignorefileif'](pkg, f):
                             continue
                     if (not isinstance(b, str) and  b.match(f)) or b == f:
-                        msg = msg % { 'file':f }
-                        printError(pkg, error, msg)
+                        m = msg % { 'file':f }
+                        printError(pkg, error, m)
 
 
 check=FilelistCheck()
