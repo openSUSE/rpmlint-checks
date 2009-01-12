@@ -262,6 +262,18 @@ _checks = [
                     ],
                 },
         {
+                'error': 'suse-filelist-forbidden-opt',
+                'details': """/opt may not be used by a distribution. It is reserved for 3rd party packagers""",
+                'good': [
+                    # KDE3 legacy exception
+                    '/opt/kde3',
+                    '/opt/kde3/*',
+                    ],
+                'bad': [
+                    '/opt/*',
+                    ],
+                },
+        {
                 'error': 'suse-filelist-forbidden-fhs22',
                 'good': [
                     '/bin',
@@ -283,6 +295,8 @@ _checks = [
                     '/media/*',
                     '/mnt',
                     '/opt',
+                    # handled in separate check
+                    '/opt/*',
                     '/proc',
                     '/root',
                     '/root/.exrc',
@@ -390,9 +404,6 @@ _checks = [
                     '/emul/*',
                     '/srv',
                     '/srv/*',
-                    # KDE3 legacy exception
-                    '/opt/kde3',
-                    '/opt/kde3/*',
                     ],
                     'bad': [
                         '*',

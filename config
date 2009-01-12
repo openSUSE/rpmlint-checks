@@ -6,4 +6,6 @@
 # This line is mandatory to access the configuration functions
 from Config import *
 
+setOption("BadnessThreshold", 1000)
+
 resetChecks()
