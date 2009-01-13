@@ -3,7 +3,7 @@
 # File          : CheckFilelist.py
 # Package       : rpmlint
 # Author        : Ludwig Nussel
-# Purpose       : Check for wrongly packaged files
+# Purpose       : Check for wrongly packaged files and FHS violations
 #############################################################################
 
 from Filter import *
@@ -36,6 +36,52 @@ def notsymlink(pkg, f):
     mode = enreg[0]
     type = (mode>>12)&017
     return type != 012
+
+_goodprefixes = (
+        '/bin/',
+        '/boot/',
+        '/etc/',
+        '/lib/',
+        '/lib64/',
+        '/media/',
+        # SUSE policy handled in separate check
+        '/opt/',
+        '/sbin/',
+        '/srv/',
+        # SUSE policy handled in separate check
+        '/usr/X11R6/',
+        '/usr/bin/',
+        '/usr/games/',
+        '/usr/include/',
+        '/usr/lib/',
+        '/usr/lib64/',
+        '/usr/sbin/',
+        '/usr/share/',
+        # actually only linux is allowed by fhs
+        '/usr/src/linux',
+        '/usr/src/debug/',
+        '/usr/src/packages/',
+        '/var/account/',
+        '/var/cache/',
+        '/var/crash/',
+        '/var/games/',
+        '/var/lib/',
+        '/var/lock/',
+        '/var/log/',
+        '/var/mail/',
+        '/var/opt/',
+        '/var/run/',
+        '/var/spool/',
+        '/var/yp/',
+        # there are not in FHS!
+        '/var/adm/',
+        '/var/nis/',
+        '/emul/',
+        )
+
+# computed from goodprefixes.
+# Directories that are only allowed to have defined subdirs (such as /usr)
+_restricteddirs = set()
 
 _checks = [
         {
@@ -255,65 +301,9 @@ _checks = [
         {
                 'error': 'suse-filelist-forbidden-opt',
                 'details': """/opt may not be used by a distribution. It is reserved for 3rd party packagers""",
-                'good': [
-                    # KDE3 legacy exception
-                    '/opt/kde3',
-                    '/opt/kde3/*',
-                    ],
-                'bad': [
-                    '/opt/*',
-                    ],
-                },
         {
-                'error': 'suse-filelist-forbidden-fhs23',
-                'good': [
-                    '/bin/*',
-                    '/boot/*',
-                    '/etc/*',
-                    '/lib/*',
-                    '/lib64/*',
-                    '/media/*',
-                    # SUSE policy handled in separate check
-                    '/opt/*',
-                    '/sbin/*',
-                    '/srv/*',
-                    # SUSE policy handled in separate check
-                    '/usr/X11R6/*',
-                    '/usr/bin/*',
-                    '/usr/games/*',
-                    '/usr/include/*',
-                    '/usr/lib/*',
-                    '/usr/lib64/*',
-                    '/usr/sbin/*',
-                    '/usr/share/*',
-                    # actually only linux is allowed by fhs
-                    '/usr/src/linux*',
-                    '/usr/src/debug/*',
-                    '/usr/src/packages/*',
-                    # /var
-                    '/var/account/*',
-                    '/var/cache/*',
-                    '/var/crash/*',
-                    '/var/games/*',
-                    '/var/lib/*',
-                    '/var/lock/*',
-                    '/var/log/*',
-                    '/var/mail/*',
-                    '/var/opt/*',
-                    '/var/run/*',
-                    '/var/spool/*',
-                    #'/var/tmp',
-                    '/var/yp/*',
-                    # we have these below /var, but not nice to have:
-                    '/var/adm/*',
-                    '/var/nis/*',
-                    # allowed, but not nice to have:
-                    '/emul/*',
-                    ],
-                    'bad': [
-                        '*',
-                        ],
-                'ignorepkgif': isfilesystem,
+                'error': 'suse-filelist-fhs23',
+                'details': 'see http://www.pathname.com/fhs/ to find a better location',
                 },
         ]
 
@@ -321,6 +311,11 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckFilelist")
         import re
+
+        _restricteddirs.add('/')
+        for d in _goodprefixes:
+            if d.count('/') > 2:
+                _restricteddirs.add(d[0:-1].rpartition('/')[0])
 
         for check in _checks:
             if 'good' in check:
@@ -330,16 +325,19 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                         r = fnmatch.translate(pattern)
                         check['good'][i] = re.compile(r)
 
-            for i in range(len(check['bad'])):
-                pattern = check['bad'][i]
-                if '*' in pattern:
-                    r = fnmatch.translate(pattern)
-                    check['bad'][i] = re.compile(r)
+            if 'bad' in check:
+                for i in range(len(check['bad'])):
+                    pattern = check['bad'][i]
+                    if '*' in pattern:
+                        r = fnmatch.translate(pattern)
+                        check['bad'][i] = re.compile(r)
 
     def check(self, pkg):
         global _checks
         global _defaultmsg
         global _defaulterror
+        global _goodprefixes
+        global _restricteddirs
 
         if pkg.isSource():
             return
@@ -366,24 +364,49 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
             else:
                 error = _defaulterror
 
-            for f in files:
-                ok = False
-                if 'good' in check:
-                    for g in check['good']:
-                        if (not isinstance(g, str) and  g.match(f)) or g == f:
-                            ok = True
-                            break
-                if ok:
+            if 'good' in check or 'bad' in check:
+                for f in files:
+                    ok = False
+                    if 'good' in check:
+                        for g in check['good']:
+                            if (not isinstance(g, str) and  g.match(f)) or g == f:
+                                ok = True
+                                break
+                    if ok:
+                        continue
+
+                    if 'bad' in check:
+                        for b in check['bad']:
+                            if 'ignorefileif' in check:
+                                if check['ignorefileif'](pkg, f):
+                                    continue
+                            if (not isinstance(b, str) and  b.match(f)) or b == f:
+                                m = msg % { 'file':f }
+                                printError(pkg, error, m)
+
+        invalidprefixes = set()
+        for f in files:
+            if not f.startswith(_goodprefixes):
+                base = f.rpartition('/')
+                pfx = base[0]
+                # find the first invalid path component (/usr/foo/bar/baz -> /usr)
+                while base[0] and not base[0].startswith(_goodprefixes) and not base[0] in _restricteddirs:
+                    pfx = base[0]
+                    base = base[0].rpartition('/')
+
+                if not pfx:
+                    invalidprefixes.add(f)
+                else:
+                    invalidprefixes.add(pfx)
+
+            if f.startswith('/opt'):
+                if f.startswith('/opt/kde3/'):
                     continue
+                d = '/opt/'+f.split('/')[1]
+                print d
 
-                for b in check['bad']:
-                    if 'ignorefileif' in check:
-                        if check['ignorefileif'](pkg, f):
-                            continue
-                    if (not isinstance(b, str) and  b.match(f)) or b == f:
-                        m = msg % { 'file':f }
-                        printError(pkg, error, m)
-
+        for pfx in invalidprefixes:
+            printError(pkg, 'suse-filelist-fhs23', "%(file)s is not allowed in SUSE Linux" % { 'file': pfx })
 
 check=FilelistCheck()
 
