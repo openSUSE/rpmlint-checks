@@ -74,7 +74,7 @@ _goodprefixes = (
         '/var/run/',
         '/var/spool/',
         '/var/yp/',
-        # there are not in FHS!
+        # those are not in FHS!
         '/var/adm/',
         '/var/nis/',
         '/emul/',
