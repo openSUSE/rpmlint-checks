@@ -155,13 +155,10 @@ _checks = [
             'ignorefileif': notsymlink,
             },
         {
-            'error': 'suse-filelist-forbidden-fhs22',
-            'msg': '%(file)s is not allowed in FHS 2.2',
+            'error': 'suse-filelist-forbidden-fhs23',
+            'msg': '%(file)s is not allowed in FHS 2.3',
             'details': 'see http://www.pathname.com/fhs/ to find a better location',
             'bad': [
-                "/usr/dict",
-                "/var/locale",
-                "/var/locale/*",
                 "/etc/X11/app-defaults/*",
                 "/usr/local/man/*/*",
                 "/var/lib/games",
@@ -301,8 +298,9 @@ _checks = [
         {
                 'error': 'suse-filelist-forbidden-opt',
                 'details': """/opt may not be used by a distribution. It is reserved for 3rd party packagers""",
+                },
         {
-                'error': 'suse-filelist-fhs23',
+                'error': 'suse-filelist-forbidden-fhs23',
                 'details': 'see http://www.pathname.com/fhs/ to find a better location',
                 },
         ]
@@ -384,7 +382,8 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                                 m = msg % { 'file':f }
                                 printError(pkg, error, m)
 
-        invalidprefixes = set()
+        invalidfhs = set()
+        invalidopt = set()
         for f in files:
             if not f.startswith(_goodprefixes):
                 base = f.rpartition('/')
@@ -395,18 +394,21 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                     base = base[0].rpartition('/')
 
                 if not pfx:
-                    invalidprefixes.add(f)
+                    invalidfhs.add(f)
                 else:
-                    invalidprefixes.add(pfx)
+                    invalidfhs.add(pfx)
 
             if f.startswith('/opt'):
                 if f.startswith('/opt/kde3/'):
                     continue
-                d = '/opt/'+f.split('/')[1]
-                print d
+                d = '/opt/'+f.split('/')[2]
+                invalidopt.add(d)
 
-        for pfx in invalidprefixes:
-            printError(pkg, 'suse-filelist-fhs23', "%(file)s is not allowed in SUSE Linux" % { 'file': pfx })
+        for f in invalidfhs:
+            printError(pkg, 'suse-filelist-forbidden-fhs23', "%(file)s is not allowed in SUSE Linux" % { 'file': f })
+
+        for f in invalidopt:
+            printError(pkg, 'suse-filelist-forbidden-opt', '%(file)s is not allowed for official SUSE packages' % { 'file': f })
 
 check=FilelistCheck()
 
