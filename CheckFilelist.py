@@ -404,7 +404,10 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                     invalidfhs.add(pfx)
 
             if f.startswith('/opt'):
-                provider = f.split('/')[2]
+                try:
+                    provider = f.split('/')[2]
+                except:
+                    continue
                 # legacy exception
                 if provider == 'kde3':
                     continue
