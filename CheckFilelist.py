@@ -387,6 +387,8 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
         else:
             isSUSE = False
 
+        # the checks here only warn about a directory once rather
+        # than reporting potentially hundreds of files individually
         for f in files:
             if not f.startswith(_goodprefixes):
                 base = f.rpartition('/')
@@ -413,7 +415,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                 invalidopt.add(d)
 
         for f in invalidfhs:
-            printError(pkg, 'suse-filelist-forbidden-fhs23', "%(file)s is not allowed in SUSE Linux" % { 'file': f })
+            printError(pkg, 'suse-filelist-forbidden-fhs23', "%(file)s is not allowed in FHS 2.3" % { 'file': f })
 
         for f in invalidopt:
             printError(pkg, 'suse-filelist-forbidden-opt', '%(file)s is not allowed for official SUSE packages' % { 'file': f })
