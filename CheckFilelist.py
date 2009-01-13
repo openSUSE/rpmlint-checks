@@ -12,6 +12,7 @@ import re
 import os
 import string
 import fnmatch
+from rpm import RPMTAG_VENDOR
 
 _defaulterror = 'suse-filelist-forbidden'
 _defaultmsg = '%(file)s is not allowed in SUSE Linux'
@@ -384,10 +385,16 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
 
         invalidfhs = set()
         invalidopt = set()
+
+        if pkg.header[RPMTAG_VENDOR] and pkg.header[RPMTAG_VENDOR].find('SUSE') != -1:
+            isSUSE = True
+        else:
+            isSUSE = False
+
         for f in files:
             if not f.startswith(_goodprefixes):
                 base = f.rpartition('/')
-                pfx = base[0]
+                pfx = None
                 # find the first invalid path component (/usr/foo/bar/baz -> /usr)
                 while base[0] and not base[0].startswith(_goodprefixes) and not base[0] in _restricteddirs:
                     pfx = base[0]
@@ -399,9 +406,14 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                     invalidfhs.add(pfx)
 
             if f.startswith('/opt'):
-                if f.startswith('/opt/kde3/'):
+                provider = f.split('/')[2]
+                # legacy exception
+                if provider == 'kde3':
                     continue
-                d = '/opt/'+f.split('/')[2]
+                if isSUSE and (provider == 'suse' or provider == 'novell'):
+                    continue
+
+                d = '/opt/'+provider
                 invalidopt.add(d)
 
         for f in invalidfhs:
