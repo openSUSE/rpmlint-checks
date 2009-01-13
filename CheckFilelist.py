@@ -390,6 +390,14 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
         # the checks here only warn about a directory once rather
         # than reporting potentially hundreds of files individually
         for f in files:
+            enreg = files[f]
+            mode = enreg[0]
+            type = (mode>>12)&017
+
+            # append / to directories
+            if type == 04:
+                f +=  '/'
+
             if not f.startswith(_goodprefixes):
                 base = f.rpartition('/')
                 pfx = None
