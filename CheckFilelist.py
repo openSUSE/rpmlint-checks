@@ -14,10 +14,13 @@ import string
 import fnmatch
 
 _defaulterror = 'suse-filelist-forbidden'
-_defaultmsg = '%(file)s is not allowed anymore in SUSE Linux'
+_defaultmsg = '%(file)s is not allowed in SUSE Linux'
 
 def notnoarch(pkg):
     return pkg.arch != 'noarch'
+
+def isfilesystem(pkg):
+    return pkg.name == 'filesystem'
 
 def isdebuginfo(pkg):
     if pkg.name.endswith('-debuginfo') \
@@ -74,8 +77,6 @@ _checks = [
                 '/etc/rc.config.d/*',
                 '/etc/init.d/*/*',
                 '/usr/share/locale/LC_MESSAGES',
-                '/usr/X11R6/lib/locale',
-                '/usr/X11R6/lib/X11/locale/LC_MESSAGES*',
                 '/opt/gnome',
                 '/usr/lib/perl5/site_perl/*',
                 '/usr/lib/perl5/vendor_perl/5.*/auto',
@@ -196,19 +197,9 @@ _checks = [
                 'error': 'suse-filelist-forbidden-xorg',
                 'details': """Please use the updated paths for Xorg 7.1 and above""",
                 'bad': [
-                    '/usr/X11R6/include/X11',
-                    '/usr/X11R6/include/X11/*',
-                    '/usr/X11R6/lib/X11',
-                    '/usr/X11R6/lib/X11/*',
-                    '/usr/X11R6/lib/modules',
-                    '/usr/X11R6/lib/modules/*',
-                    '/usr/X11R6/lib64/modules',
-                    '/usr/X11R6/lib64/modules/*',
-                    '/usr/X11R6/lib/X11/app-defaults',
-                    '/usr/X11R6/lib/X11/app-defaults/*',
-                    '/usr/X11R6/lib64/X11/app-defaults',
-                    '/usr/X11R6/lib64/X11/app-defaults/*',
+                    '/usr/X11R6/*',
                     ],
+                'ignorepkgif': isfilesystem,
                 },
         {
                 'error': 'suse-filelist-forbidden-suseconfig',
@@ -274,140 +265,55 @@ _checks = [
                     ],
                 },
         {
-                'error': 'suse-filelist-forbidden-fhs22',
+                'error': 'suse-filelist-forbidden-fhs23',
                 'good': [
-                    '/bin',
                     '/bin/*',
-                    '/boot',
                     '/boot/*',
-                    '/cdrom',
-                    '/dev',
-                    '/dev/*',
-                    '/etc',
                     '/etc/*',
-                    '/floppy',
-                    '/home',
-                    '/lib',
                     '/lib/*',
-                    '/lib64',
                     '/lib64/*',
-                    '/media',
                     '/media/*',
-                    '/mnt',
-                    '/opt',
-                    # handled in separate check
+                    # SUSE policy handled in separate check
                     '/opt/*',
-                    '/proc',
-                    '/root',
-                    '/root/.exrc',
-                    '/root/.gnupg',
-                    '/root/.gnupg/*',
-                    '/root/.kbackrc',
-                    '/root/.xinitrc',
-                    '/root/bin',
-                    '/sbin',
                     '/sbin/*',
-                    '/subdomain',
-                    '/sys',
-                    '/tmp',
-                    '/tmp/.X11-unix',
-                    '/tmp/.ICE-unix',
-                    '/usr',
-                    '/usr/*-linux-libc5',
-                    '/usr/*-linux-libc5/*',
-                    '/usr/*-linux',
-                    '/usr/*-linux/*',
-                    '/usr/X11',
-                    '/usr/X11R6',
+                    '/srv/*',
+                    # SUSE policy handled in separate check
                     '/usr/X11R6/*',
-                    '/usr/bin',
                     '/usr/bin/*',
-                    '/usr/games',
                     '/usr/games/*',
-                    '/usr/include',
                     '/usr/include/*',
-                    '/usr/lib',
                     '/usr/lib/*',
-                    '/usr/lib64',
                     '/usr/lib64/*',
-                    '/usr/local',
-                    '/usr/local/bin',
-                    '/usr/local/games',
-                    '/usr/local/include',
-                    '/usr/local/lib',
-                    '/usr/local/lib64',
-                    '/usr/local/man',
-                    '/usr/local/man/*',
-                    '/usr/local/sbin',
-                    '/usr/local/share',
-                    '/usr/local/src',
-                    '/usr/sbin',
                     '/usr/sbin/*',
-                    '/usr/share',
                     '/usr/share/*',
-                    '/usr/spool',
-                    '/usr/src',
-                    '/usr/src/debug*',
+                    # actually only linux is allowed by fhs
                     '/usr/src/linux*',
-                    '/usr/src/kernel-modules*',
-                    '/usr/src/packages',
+                    '/usr/src/debug/*',
                     '/usr/src/packages/*',
-                    '/usr/src/bxform*',
-                    '/usr/src/dicts',
-                    '/usr/src/dicts/*',
-                    '/usr/tmp',
-                    '/var',
-                    '/var/X11R6',
-                    '/var/X11R6/*',
-                    '/var/account',
+                    # /var
                     '/var/account/*',
-                    '/var/agentx',
-                    '/var/agentx/*',
-                    '/var/cache',
                     '/var/cache/*',
-                    '/var/crash',
                     '/var/crash/*',
-                    '/var/games',
                     '/var/games/*',
-                    '/var/lib',
                     '/var/lib/*',
-                    '/var/local',
-                    '/var/lock',
                     '/var/lock/*',
-                    '/var/log',
                     '/var/log/*',
-                    '/var/mail',
                     '/var/mail/*',
-                    '/var/opt',
                     '/var/opt/*',
-                    '/var/preserve',
-                    '/var/run',
                     '/var/run/*',
-                    '/var/spool',
                     '/var/spool/*',
-                    '/var/tmp',
-                    '/var/tmp/vi.recover',
-                    '/var/yp',
+                    #'/var/tmp',
                     '/var/yp/*',
                     # we have these below /var, but not nice to have:
-                    '/var/adm',
                     '/var/adm/*',
-                    '/var/db',
-                    '/var/db/*',
-                    '/var/nis',
                     '/var/nis/*',
-                    '/var/heimdal',
                     # allowed, but not nice to have:
-                    '/afs',
-                    '/afs/*',
-                    '/emul',
                     '/emul/*',
-                    '/srv',
-                    '/srv/*',
                     ],
                     'bad': [
                         '*',
-                        ]
+                        ],
+                'ignorepkgif': isfilesystem,
                 },
         ]
 
@@ -441,7 +347,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
 
         if not files:
-            printError(pkg, 'suse-filelist-empty', 'packages without any files are not allowed anymore in SUSE Linux')
+            printError(pkg, 'suse-filelist-empty', 'packages without any files are not allowed in SUSE Linux')
             return
 
         for check in _checks:
