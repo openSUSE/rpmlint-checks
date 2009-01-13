@@ -132,7 +132,7 @@ _checks = [
             },
         {
             'error': 'suse-filelist-forbidden-devel-in-lib',
-            'details': 'please move la files, static libs and .so symlinks out of /',
+            'details': 'please move la files, static libs and .so symlinks to /usr/lib(64)',
             'bad': [
                 "/lib/*.la",
                 "/lib/*.a",
@@ -142,7 +142,7 @@ _checks = [
             },
         {
             'error': 'suse-filelist-forbidden-devel-in-lib',
-            'details': 'please move la files, static libs and .so symlinks out of /',
+            'details': 'please move la files, static libs and .so symlinks to /usr/lib(64)',
             'good': [
                 # exception for pam
                 "/lib/security/*.so",
@@ -299,10 +299,6 @@ _checks = [
         {
                 'error': 'suse-filelist-forbidden-opt',
                 'details': """/opt may not be used by a distribution. It is reserved for 3rd party packagers""",
-                },
-        {
-                'error': 'suse-filelist-forbidden-fhs23',
-                'details': 'see http://www.pathname.com/fhs/ to find a better location',
                 },
         ]
 
