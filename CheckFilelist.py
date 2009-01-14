@@ -124,7 +124,6 @@ _checks = [
                 '/etc/rc.config.d/*',
                 '/etc/init.d/*/*',
                 '/usr/share/locale/LC_MESSAGES',
-                '/opt/gnome',
                 '/usr/lib/perl5/site_perl/*',
                 '/usr/lib/perl5/vendor_perl/5.*/auto',
                 '/usr/lib/perl5/vendor_perl/5.*/*-linux-*/auto',
