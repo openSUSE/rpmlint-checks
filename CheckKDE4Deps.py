@@ -108,6 +108,12 @@ class KDE4Check(AbstractCheck.AbstractCheck):
 
 check=KDE4Check()
 
-#if Config.info:
-#    addDetails(
-#)
+if Config.info:
+    addDetails('suse-kde4-missing-runtime-dependency',
+"""Please add %kde4_runtime_requires to the (sub-)package to have the right versioned
+dependency on the KDE version it was built against.""",
+'suse-kde4-missing-dependency',
+"""The package builds against a KDE4 related library, but it is missing the runtime 
+depencency macro. please add the suggested macro to the (sub-)package listing in
+the spec file."""
+)
