@@ -38,6 +38,10 @@ def notsymlink(pkg, f):
     type = (mode>>12)&017
     return type != 012
 
+def ghostfile(pkg, f):
+    ghosts = pkg.ghostFiles()
+    return f in ghosts
+
 _goodprefixes = (
         '/bin/',
         '/boot/',
@@ -86,6 +90,7 @@ _restricteddirs = set()
 
 _checks = [
         {
+            # TODO: split this into several checks
             'good': [
                 '/etc/sysconfig/cbq',
                 '/etc/sysconfig/scripts',
@@ -103,7 +108,6 @@ _checks = [
                 ],
             'bad': [
                 '/usr/share/info/dir',
-                '*~',
                 '*/CVS',
                 '*/CVS/*',
                 '*/.cvsignore',
@@ -111,7 +115,6 @@ _checks = [
                 '*/RCS',
                 '*/RCS/*',
                 '*,v',
-                '*.bak',
                 '*/.xvpics',
                 '*.orig',
                 '*.orig.gz',
@@ -128,6 +131,13 @@ _checks = [
                 '/usr/lib/perl5/vendor_perl/5.*/auto',
                 '/usr/lib/perl5/vendor_perl/5.*/*-linux-*/auto',
                 ],
+            },
+        {
+            'bad': [
+                '*~',
+                '*.bak',
+                ],
+            'ignorefileif': ghostfile,
             },
         {
             'error': 'suse-filelist-forbidden-devel-in-lib',
