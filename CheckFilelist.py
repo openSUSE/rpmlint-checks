@@ -15,7 +15,7 @@ import fnmatch
 from rpm import RPMTAG_VENDOR
 
 _defaulterror = 'suse-filelist-forbidden'
-_defaultmsg = '%(file)s is not allowed in SUSE Linux'
+_defaultmsg = '%(file)s is not allowed in SUSE'
 
 def notnoarch(pkg):
     return pkg.arch != 'noarch'
@@ -127,12 +127,21 @@ _checks = [
                 '/etc/rc.config.d/*',
                 '/etc/init.d/*/*',
                 '/usr/share/locale/LC_MESSAGES',
+                ],
+            },
+        {
+            'error': 'suse-filelist-forbidden-perl-dir',
+            'details': '''perl files installed a non-vendor installed path, 
+                          which is not allowed in SUSE.''',
+            'bad': [
                 '/usr/lib/perl5/site_perl/*',
                 '/usr/lib/perl5/vendor_perl/5.*/auto',
                 '/usr/lib/perl5/vendor_perl/5.*/*-linux-*/auto',
                 ],
-            },
+        },
         {
+            'error': 'suse-filelist-forbidden-backup-file',
+            'details': 'backup files (e.g. files ending in ~ or .bak) are not allowed',
             'bad': [
                 '*~',
                 '*.bak',
@@ -349,7 +358,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
 
         if not files:
-            printError(pkg, 'suse-filelist-empty', 'packages without any files are not allowed in SUSE Linux')
+            printError(pkg, 'suse-filelist-empty', 'packages without any files are not allowed in SUSE')
             return
 
         for check in _checks:
