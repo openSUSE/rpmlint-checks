@@ -107,7 +107,6 @@ _checks = [
                 '/etc/sysconfig/uml',
                 ],
             'bad': [
-                '/usr/share/info/dir',
                 '*/CVS',
                 '*/CVS/*',
                 '*/.cvsignore',
