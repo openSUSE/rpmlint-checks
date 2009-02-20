@@ -29,7 +29,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
             return
 
         pkg_requires = set(map(lambda x: string.split(x[0],'(')[0], pkg.requires()))
-        pkg_conflicts = set(map(lambda x: string.split(x[0],'(')[0], pkg.conflicts()))
+        pkg_conflicts = set(map(lambda x: x[0], pkg.conflicts()))
 
         # verify that only generic branding is required by non-branding packages
         for r in pkg.requires():
@@ -89,7 +89,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         conflict_prop = "otherproviders(%s)" % (generic_branding)
         have_conflict_prop = False
         for c in pkg_conflicts:
-            if c[0] == conflict_prop:
+            if c == conflict_prop:
                 have_conflict_prop = True
                 break
 
