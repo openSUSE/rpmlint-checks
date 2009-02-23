@@ -90,7 +90,22 @@ _restricteddirs = set()
 
 _checks = [
         {
-            # TODO: split this into several checks
+            'bad': [
+                '*/.xvpics',
+                '*.orig',
+                '*.orig.gz',
+                '/usr/share/*/.libs*',
+                '/usr/share/*/.deps*',
+                '/var/adm/setup',
+                '/etc/httpd/*',
+                '/etc/init.d/*/*',
+                '/usr/share/locale/LC_MESSAGES',
+                ],
+            },
+        {
+            'error': 'suse-filelist-forbidden-sysconfig',
+            'details': '''Please use /var/adm/fillup-templates/sysconfig.<packagename>
+                        and call %fillup_and_insserv to install new sysconfig files''',
             'good': [
                 '/etc/sysconfig/cbq',
                 '/etc/sysconfig/scripts',
@@ -107,27 +122,11 @@ _checks = [
                 '/etc/sysconfig/uml',
                 ],
             'bad': [
-                '*/CVS',
-                '*/CVS/*',
-                '*/.cvsignore',
-                '*/.svn',
-                '*/RCS',
-                '*/RCS/*',
-                '*,v',
-                '*/.xvpics',
-                '*.orig',
-                '*.orig.gz',
-                '/usr/share/*/.libs*',
-                '/usr/share/*/.deps*',
                 '/var/adm/fillup-templates/rc.config.*',
-                '/var/adm/setup',
-                '/etc/httpd/*',
                 '/etc/sysconfig/*',
                 '/etc/rc.config.d/*',
-                '/etc/init.d/*/*',
-                '/usr/share/locale/LC_MESSAGES',
                 ],
-            },
+        },
         {
             'error': 'suse-filelist-forbidden-perl-dir',
             'details': '''perl files installed a non-vendor installed path, 
