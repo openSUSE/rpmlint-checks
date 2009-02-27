@@ -525,7 +525,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             pass
 
         std_dirs = dirs.intersection(('/lib', '/lib64', '/usr/lib', '/usr/lib64', 
-            '/opt/kde3/lib'))
+            '/opt/kde3/lib', '/opt/kde3/lib64'))
 
         non_std_dirs = dirs.difference(std_dirs)
 
@@ -542,6 +542,8 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         if std_lib_package:
             for lib in libs.copy():
                 lib_dir = libs_to_dir[lib]
+                if lib_dir.startswith("/opt/kde3"):
+                    continue
                 for lib_part in lib_dir.split('/'):
                     if len(lib_part) == 0:
                         continue
