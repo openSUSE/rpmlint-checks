@@ -508,7 +508,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                 filename = pkg.dirName() + '/' + f
                 try:
                     if stat.S_ISREG(files[f][0]):
-                        bi = BinaryInfo(pkg, filename, f, 0)
+                        bi = BinaryInfo(pkg, filename, f, False, True)
                         libs_needed = libs_needed.union(bi.needed)
                         if bi.soname != 0:
                             lib_dir = string.join(f.split('/')[:-1], '/')

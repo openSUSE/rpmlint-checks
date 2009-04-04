@@ -17,8 +17,6 @@ import os
 import string
 import Pkg
 
-from BinariesCheck import BinaryInfo
-
 class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
