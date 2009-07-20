@@ -5,6 +5,8 @@
 # Author        : Dirk Mueller
 # Purpose       : Check for binaries linking unused libraries
 #############################################################################
+# XXX: the check can not reliably work as binaries in the package
+# could require libraries the package itself provides.
 
 from Filter import *
 import AbstractCheck
@@ -30,13 +32,17 @@ class UnusedLibsCheck(AbstractCheck.AbstractCheck):
 
         for fname, pkgfile in files.items():
 
+            if pkgfile.is_ghost:
+                continue
+
             if fname.startswith('/usr/lib/debug') or \
                     not stat.S_ISREG(pkgfile.mode) or \
                     string.find(pkgfile.magic, 'ELF') == -1:
                 continue
 
-            ret, output = Pkg.getstatusoutput("ldd -r -u '%s'" % (fname))
-            for l in output.split():
+            ret, output = Pkg.getstatusoutput(['ldd', '-r', '-u',  pkgfile.path])
+            for l in output.split('\n'):
+                l = l.lstrip()
                 if not l.startswith('/'):
                     continue
                 lib = l.rsplit('/')[-1]
