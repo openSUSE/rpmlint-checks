@@ -19,9 +19,9 @@ import string
 insserv_regex=re.compile('^\s*sbin/insserv', re.MULTILINE)
 preun_regex=re.compile('^\s*/etc/init.d/\S+ stop', re.MULTILINE)
 
-class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
+class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
-        AbstractCheck.AbstractFilesCheck.__init__(self, "InitScriptsCheck", "/etc/init.d/.*")
+        AbstractCheck.AbstractFilesCheck.__init__(self, "CheckInitScripts", "/etc/init.d/.*")
 
     def check(self, pkg):
 
@@ -30,13 +30,11 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
 
         files = pkg.files()
         bins_list = filter(lambda f: (f.startswith("/usr/bin") \
-                or f.startswith("/usr/sbin")) and stat.S_ISREG(files[f][0]), files)
+                or f.startswith("/usr/sbin")) and stat.S_ISREG(files[f].mode), files.keys())
 
-        for f in files:
-            enreg = files[f]
-            mode = enreg[0]
+        for f, pkgfile in files.items():
 
-            if f in pkg.ghostFiles() or not stat.S_ISREG(mode) or not f.startswith("/etc/init.d/"):
+            if f in pkg.ghostFiles() or not stat.S_ISREG(pkgfile.mode) or not f.startswith("/etc/init.d/"):
                 continue
 
             boot_script = f.startswith('/etc/init.d/boot.')
@@ -71,7 +69,7 @@ class InitScriptsCheck(AbstractCheck.AbstractFilesCheck):
                 printWarning(pkg, "non-remote_fs-dependency", f)
 
 
-check=InitScriptsCheck()
+check=CheckInitScripts()
 
 if Config.info:
     addDetails(

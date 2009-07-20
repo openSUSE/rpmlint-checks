@@ -32,9 +32,7 @@ def isdebuginfo(pkg):
         return True
 
 def notsymlink(pkg, f):
-    files = pkg.files()
-    enreg = files[f]
-    mode = enreg[0]
+    mode = pkg.files()[f].mode
     type = (mode>>12)&017
     return type != 012
 
@@ -376,7 +374,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                 error = _defaulterror
 
             if 'good' in check or 'bad' in check:
-                for f in files:
+                for f in files.keys():
                     ok = False
                     if 'good' in check:
                         for g in check['good']:
@@ -405,10 +403,8 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
 
         # the checks here only warn about a directory once rather
         # than reporting potentially hundreds of files individually
-        for f in files:
-            enreg = files[f]
-            mode = enreg[0]
-            type = (mode>>12)&017
+        for f, pkgfile in files.items():
+            type = (pkgfile.mode>>12)&017
 
             # append / to directories
             if type == 04:

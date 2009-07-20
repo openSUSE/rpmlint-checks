@@ -19,7 +19,7 @@ import stat
 
 class UnusedLibsCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
-        AbstractCheck.AbstractCheck.__init__(self, "UnusedLibsCheck")
+        AbstractCheck.AbstractCheck.__init__(self, "CheckUnusedLibs")
 
     def check(self, pkg):
 
@@ -28,22 +28,21 @@ class UnusedLibsCheck(AbstractCheck.AbstractCheck):
 
         files = pkg.files()
 
-        for file in pkg.getFilesInfo():
-            filename = file[0]
+        for fname, pkgfile in files.items():
 
-            if filename.startswith('/usr/lib/debug') or \
-                    not stat.S_ISREG(files[filename][0]) or \
-                    string.find(file[1], 'ELF') == -1:
+            if fname.startswith('/usr/lib/debug') or \
+                    not stat.S_ISREG(pkgfile.mode) or \
+                    string.find(pkgfile.magic, 'ELF') == -1:
                 continue
 
-            ret, output = Pkg.getstatusoutput("ldd -r -u '%s'" % (filename))
+            ret, output = Pkg.getstatusoutput("ldd -r -u '%s'" % (fname))
             for l in output.split():
                 if not l.startswith('/'):
                     continue
                 lib = l.rsplit('/')[-1]
                 if lib in ('libdl.so.2', 'libm.so.6', 'libpthread.so.0'):
                     continue
-                printError(pkg, 'elf-binary-unused-dependency', filename, lib)
+                printError(pkg, 'elf-binary-unused-dependency', fname, lib)
 
 check=UnusedLibsCheck()
 

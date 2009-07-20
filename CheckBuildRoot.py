@@ -17,13 +17,13 @@ import stat
 
 class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
-        AbstractCheck.AbstractFilesCheck.__init__(self, "BuildRootCheck", ".*")
+        AbstractCheck.AbstractFilesCheck.__init__(self, "CheckBuildRoot", ".*")
         self.build_root_re = re.compile('/var/tmp/[\w\!-\.]{1,60}-build/')
 
     def check_file(self, pkg, filename):
         if filename.startswith('/usr/lib/debug') or pkg.isSource():
             return
-        if not stat.S_ISREG(pkg.files()[filename][0]):
+        if not stat.S_ISREG(pkg.files()[filename].mode):
             return
 
         if len(pkg.grep(self.build_root_re, filename)):

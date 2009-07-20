@@ -503,11 +503,11 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         reqlibs = set()
         pkg_requires = set(map(lambda x: string.split(x[0],'(')[0], pkg.requires()))
 
-        for f in files:
+        for f in files.keys():
             if f.find('.so.') != -1 or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
                 try:
-                    if stat.S_ISREG(files[f][0]):
+                    if stat.S_ISREG(files[f].mode):
                         bi = BinaryInfo(pkg, filename, f, False, True)
                         libs_needed = libs_needed.union(bi.needed)
                         if bi.soname != 0:

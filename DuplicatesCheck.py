@@ -38,22 +38,15 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
         configFiles = pkg.configFiles()
 
-        for f in files:
+        for f, pkgfile in files.items():
             if f in pkg.ghostFiles():
                 continue
-            enreg = files[f]
-            mode = enreg[0]
-            links = enreg[3]
-            size = enreg[4]
-            md5 = enreg[5]
-            rdev = enreg[7]
 
-            if not stat.S_ISREG(mode):
+            if not stat.S_ISREG(pkgfile.mode):
                 continue
 
-            md5s.setdefault(md5, set()).add(f)
-            sizes[md5] = size
-            #print f, links, size, md5, rdev
+            md5s.setdefault(pkgfile.md5, set()).add(f)
+            sizes[pkgfile.md5] = pkgfile.size
 
         sum=0
         for f in md5s:
