@@ -18,7 +18,7 @@ import stat
 
 class StaticLibrariesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
-        AbstractCheck.AbstractCheck.__init__(self, "StaticLibrariesCheck")
+        AbstractCheck.AbstractCheck.__init__(self, "CheckStaticLibraries")
         self.staticlibsre = re.compile(
            '(?:ruby - Copyright \(C\) 1993-%d Yukihiro Matsumoto|' + # ruby
            'inflate (\d.\d.\d) Copyright 1995-\d+ Mark Adler|' +
@@ -37,7 +37,7 @@ class StaticLibrariesCheck(AbstractCheck.AbstractCheck):
            'tag to <libexif-devel@lists.sourceforge.net>|' + # libexif
            'authorization function - should be SQLITE_OK|' + # libsqlite
            'Copyright \(c\) 1988-1996 Sam Leffler|' + # libtiff
-           'internal error: previously-checked referenced subpattern not found', # libpcre
+           'internal error: previously-checked referenced subpattern not found' + # libpcre
            ')')
 
     def check(self, pkg):
@@ -45,23 +45,19 @@ class StaticLibrariesCheck(AbstractCheck.AbstractCheck):
         if pkg.isSource():
             return;
 
-        files = pkg.files()
 
-        for file in pkg.getFilesInfo():
-            print "file",file
-            filename = file[0]
-
-            print "filename",filename
-
-            if filename.startswith('/usr/lib/debug') or \
-                    not stat.S_ISREG(files[filename][0]) or \
-                    string.find(file[1], 'ELF') == -1:
+        for fname, pkgfile in pkg.files().items():
+            if fname.startswith('/usr/lib/debug') or \
+                    not stat.S_ISREG(pkgfile.mode) or \
+                    string.find(pkgfile.magic, 'ELF') == -1:
                 continue
 
-            grep_result = pkg.grep(self.staticlibsre, filename)
+            # XXX: grep is meant for text files (line based)
+            grep_result = pkg.grep(self.staticlibsre, fname)
 
+            # XXX: grep result is meaningless
             if len(grep_result):
-                printError(pkg, "file-contains-system-library", filename, grep_result)
+                printError(pkg, "file-contains-system-library", fname, grep_result)
 
 check=StaticLibrariesCheck()
 
