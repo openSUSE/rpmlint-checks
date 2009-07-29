@@ -17,6 +17,7 @@ import string
 _services_whitelist = (
     "ConsoleKit.conf",
     "hal.conf",
+    "cups.conf", # bnc#515977
     "org.freedesktop.ConsoleKit.service",
     "org.freedesktop.PolicyKit.conf",
     "org.freedesktop.PolicyKit.service",
