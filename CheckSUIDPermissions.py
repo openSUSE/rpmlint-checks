@@ -11,7 +11,6 @@ import AbstractCheck
 import re
 import os
 import string
-import pprint
 
 _permissions_d_whitelist = (
 "lprng",
