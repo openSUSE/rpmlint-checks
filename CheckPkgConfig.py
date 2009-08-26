@@ -33,7 +33,7 @@ class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
 
 
     def check_file(self, pkg, filename):
-        if pkg.isSource() or not stat.S_ISREG(pkg.files()[filename][0]):
+        if pkg.isSource() or not stat.S_ISREG(pkg.files()[filename].mode):
             return
 
         if pkg.grep(self.suspicious_dir, filename):
