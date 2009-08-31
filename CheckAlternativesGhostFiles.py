@@ -22,7 +22,7 @@ class CheckAlternativesGhostFiles(AbstractCheck.AbstractCheck):
     def read_ghost_files(cls, script):
         ghost_files = []
 
-        if not 'update-alternatives' in script:
+        if not script or not 'update-alternatives' in script:
             return ghost_files
 
 
