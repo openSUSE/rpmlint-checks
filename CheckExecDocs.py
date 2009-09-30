@@ -39,7 +39,7 @@ def lang_ignore_pkg(name):
 class ExecDocsCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
-        AbstractCheck.AbstractCheck.__init__(self, "ExecDocsCheck")
+        AbstractCheck.AbstractCheck.__init__(self, "CheckExecDocs")
 
     def check(self, pkg):
 
@@ -49,16 +49,16 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
         complete_size=0
         lang_size=0
-        for f in files:
-            if stat.S_ISREG(files[f][0]):
-                complete_size += files[f][4]
-                if pkg.fileLang(f) != '':
-                    lang_size += files[f][4]
+        for f, pkgfile in files.items():
+            if stat.S_ISREG(pkgfile.mode):
+                complete_size += pkgfile.size
+                if pkgfile.lang != '':
+                    lang_size += pkgfile.size
 
         doc_size=0
         for f in pkg.docFiles():
-            if stat.S_ISREG(files[f][0]):
-                doc_size += files[f][4]
+            if stat.S_ISREG(files[f].mode):
+                doc_size += files[f].size
 
         if doc_size * 2 >= complete_size \
            and doc_size > 100*1024 and (complete_size - doc_size) * 20 > complete_size \
@@ -71,8 +71,7 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
             printWarning(pkg, "package-with-huge-translation", ("%3d%%" % (lang_size * 100 / complete_size)))
 
         for f in pkg.docFiles():
-            enreg=files[f]
-            mode=enreg[0]
+            mode=files[f].mode
             if not stat.S_ISREG(mode) or not mode & 0111:
                continue
             for ext in ['txt', 'gif', 'jpg', 'html', 'pdf', 'ps', 'pdf.gz', 'ps.gz']:

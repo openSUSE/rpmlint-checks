@@ -59,7 +59,7 @@ _kde4_knotificationdep = (
 
 class KDE4Check(AbstractCheck.AbstractCheck):
     def __init__(self):
-        AbstractCheck.AbstractCheck.__init__(self, "KDE4Check")
+        AbstractCheck.AbstractCheck.__init__(self, "CheckKDE4Deps")
 
     def check(self, pkg):
 

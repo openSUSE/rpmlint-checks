@@ -19,7 +19,7 @@ import string
 class CommonFilesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
-        AbstractCheck.AbstractCheck.__init__(self, "CommonFilesCheck")
+        AbstractCheck.AbstractCheck.__init__(self, "CheckCommonFiles")
         self.sources_am_re = re.compile('([\w\d_]+_SOURCES\s*=|\s*SUBDIRS\s*=)')
 
     def check(self, pkg):
@@ -27,15 +27,10 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
         if pkg.isSource():
             return
         files = pkg.files()
-        for f in files:
+        for f in files.keys():
             if f in pkg.ghostFiles():
                 continue
-            enreg = files[f]
-            mode = enreg[0]
-            links = enreg[3]
-            size = enreg[4]
-            md5 = enreg[5]
-            rdev = enreg[7]
+            md5 = files[f].md5
 
             if len(md5) and md5 in (
                     'c59cbaf0df9bcf35feca0d0f1fc01dae',

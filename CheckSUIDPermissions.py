@@ -57,7 +57,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         permfiles = {}
         # first pass, find and parse permissions.d files
-        for f in files:
+        for f in files.keys():
             if f in pkg.ghostFiles():
                 continue
 
@@ -79,16 +79,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 self._parsefile(f)
 
         # second pass, find permissions violations
-        for f in files:
+        for f, pkgfile in files.items():
             if f in pkg.ghostFiles():
                 continue
-            enreg = files[f]
-            mode = enreg[0]
-            owner = enreg[1]+':'+enreg[2]
-            links = enreg[3]
-            size = enreg[4]
-            md5 = enreg[5]
-            rdev = enreg[7]
+            mode = pkgfile.mode
+            owner = pkgfile.user+':'+pkgfile.group
 
 #           S_IFSOCK   014   socket
 #           S_IFLNK    012   symbolic link

@@ -17,7 +17,7 @@ import stat
 
 class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
-        AbstractCheck.AbstractFilesCheck.__init__(self, "PkgConfigCheck", ".*/pkgconfig/.*\.pc$")
+        AbstractCheck.AbstractFilesCheck.__init__(self, "CheckPkgConfig", ".*/pkgconfig/.*\.pc$")
         # currently causes too many failures (2008-03-05)
         #self.suspicious_dir=re.compile('(?:/usr/src/\w+/BUILD|/var/tmp|/tmp|/home|\@\w{1,50}\@)')
         self.suspicious_dir=re.compile('(?:/usr/src/\w+/BUILD|/var/tmp|/tmp|/home)')
@@ -33,7 +33,7 @@ class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
 
 
     def check_file(self, pkg, filename):
-        if pkg.isSource() or not stat.S_ISREG(pkg.files()[filename][0]):
+        if pkg.isSource() or not stat.S_ISREG(pkg.files()[filename].mode):
             return
 
         if pkg.grep(self.suspicious_dir, filename):
