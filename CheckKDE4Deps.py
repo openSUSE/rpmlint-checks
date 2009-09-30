@@ -53,6 +53,10 @@ _kde4_libakonadi4 = (
         "libakonadiprotocolinternals.so.1",
 )
 
+_kde4_knotificationdep = (
+        "libknotificationitem-1.so",
+)
+
 class KDE4Check(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "KDE4Check")
@@ -104,6 +108,8 @@ class KDE4Check(AbstractCheck.AbstractCheck):
                 printError(pkg,"suse-kde4-excessive-dependency", "%kde4_akonadi_requires")
             if not "akonadi-runtime" in pkg_requires and libakonadi4_dep:
                 printError(pkg,"suse-kde4-missing-dependency", "%kde4_akonadi_requires")
+            if not "libknotificationitem-1" in pkg_requires and _kde4_knotificationdep:
+                printError(pkg, "suse-kde4-missing-dependency", "kde4_knotification_requires")
 
 
 check=KDE4Check()
