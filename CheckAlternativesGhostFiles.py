@@ -57,12 +57,11 @@ class CheckAlternativesGhostFiles(AbstractCheck.AbstractCheck):
 
         files = pkg.files()
         ghost_files = pkg.ghostFiles()
-        for af in alt_files:
+        for af in (af for af in alt_files if not af in ghost_files):
             if af in files:
-                printWarning(pkg, 'alternative-file-is-not-marked-as-ghost %s' % (af))
-                continue
-            if not af in ghost_files:
-                printWarning(pkg, 'no-ghost-alternative-file %s' % af)
+                printWarning(pkg, 'generic-name-not-marked-as-ghost %s' % (af))
+            else:
+                printWarning(pkg, 'generic-name-not-in-filelist %s' % af)
 
 
 check=CheckAlternativesGhostFiles()
@@ -70,13 +69,13 @@ check=CheckAlternativesGhostFiles()
 if Config.info:
     addDetails(
 
-'alternative-file-is-not-marked-as-ghost',
-'''The alternative file is listed in filelist, but not marked as a ghost, which
-may cause a problems during update. Mark it as a %ghost.''',
+'generic-name-not-marked-as-ghost',
+'''The generic name is not marked as a ghost, which may cause a problems during
+update. Mark it as a %ghost in %files section.''',
 
-'no-ghost-alternative-file',
-'''The alternative file is not in a filelist, add it to list marked as %ghost.
-Note: this error will be raised, if you use a hash ($) in file name, so for
-suppress, use rpm macros in spec file instead.''',
+'generic-name-not-in-filelist',
+'''The generic name is not in a filelist of package, add it to list marked as
+%ghost. Note: this error will be raised, if you use a hash ($) in file name,
+use rpm macros in spec file instead.''',
 
 )
