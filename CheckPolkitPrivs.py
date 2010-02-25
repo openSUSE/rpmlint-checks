@@ -8,20 +8,20 @@
 
 from Filter import *
 import AbstractCheck
+import Config
 import re
 import os
 from xml.dom.minidom import parse
 
-_whitelist = ()
+POLKIT_PRIVS_WHITELIST = Config.getOption('PolkitPrivsWhiteList', ()) # set of file names
+POLKIT_PRIVS_FILES = Config.getOption('PolkitPrivsFiles', [ "/etc/polkit-default-privs.standard" ])
 
 class PolkitCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckPolkitPrivs")
         self.privs = {}
 
-        files = [ "/etc/polkit-default-privs.standard" ]
-
-        for file in files:
+        for file in POLKIT_PRIVS_FILES:
             if os.path.exists(file):
                 self._parsefile(file)
 
@@ -36,7 +36,6 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                 self.privs[priv] = value
 
     def check(self, pkg):
-        global _whitelist
 
         if pkg.isSource():
             return
@@ -52,7 +51,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             if f.startswith("/etc/polkit-default-privs.d/"):
 
                 bn = f[28:]
-                if not bn in _whitelist:
+                if not bn in POLKIT_PRIVS_WHITELIST:
                     printError(pkg, "polkit-unauthorized-file", f)
 
                 bn = bn.split('.')[0]
@@ -76,7 +75,8 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
             # catch xml exceptions 
             try:
-                if f.startswith("/usr/share/PolicyKit/policy/"):
+                if f.startswith("/usr/share/PolicyKit/policy/")\
+                or f.startswith("/usr/share/polkit-1/actions/"):
                     f = pkg.dirName() + f
                     xml = parse(f)
                     for a in xml.getElementsByTagName("action"):
