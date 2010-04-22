@@ -589,6 +589,13 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             if os.path.isdir(pkg.dirName()+f):
                 dirs.add(f)
 
+        # Verify it doesn't have hard dependency on non-lib packages 
+        for dep in pkg.requires():
+            if (dep[0].startswith('rpmlib(')):
+                continue
+            if (dep[2] & rpm.RPMSENSE_EQUAL) == rpm.RPMSENSE_EQUAL:
+                printWarning(pkg, "shlib-fixed-dependency", Pkg.formatRequire(dep[0], dep[1], dep[2]))
+
         # Verify non-lib stuff does not add dependencies
         if libs:
             for dep in pkg_requires.difference(_essential_dependencies):
@@ -638,6 +645,12 @@ a seperate one to reduce the additional dependencies for other users of this lib
 """Your package starts with 'lib' as part of it's name, but does not provide
 any libraries. It must not be called a lib-package then. Give it a more
 sensible name.""",
+'shlib-fixed-dependency',
+"""Your shared library package requires a fixed version of another package. The
+intention of the Shared Library Policy is to allow parallel installation of
+multiple versions of the same shared library, hard dependencies likely make that
+impossible. Please remove this dependency and instead move it to the runtime uses
+of your library.""",
 'shlib-unversioned-lib',
 """Your package matches the Shared Library Policy Naming Scheme but contains an
 unversioned library. Therefore it is very unlikely that your package can be installed
