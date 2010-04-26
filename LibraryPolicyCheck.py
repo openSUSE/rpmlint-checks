@@ -593,7 +593,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         for dep in pkg.requires():
             if (dep[0].startswith('rpmlib(')):
                 continue
-            if (dep[2] & rpm.RPMSENSE_EQUAL) == rpm.RPMSENSE_EQUAL:
+            if (dep[2] & (rpm.RPMSENSE_GREATER | rpm.RPMSENSE_EQUAL)) == rpm.RPMSENSE_EQUAL:
                 printWarning(pkg, "shlib-fixed-dependency", Pkg.formatRequire(dep[0], dep[1], dep[2]))
 
         # Verify non-lib stuff does not add dependencies
