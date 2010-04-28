@@ -590,7 +590,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                 dirs.add(f)
 
         # Verify shared lib policy package doesn't have hard dependency on non-lib packages
-        if len(libs) == 1:
+        if std_lib_package:
             for dep in pkg.requires():
                 if (dep[0].startswith('rpmlib(')):
                     continue
