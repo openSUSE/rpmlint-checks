@@ -131,8 +131,6 @@ _checks = [
                           which is not allowed in SUSE.''',
             'bad': [
                 '/usr/lib/perl5/site_perl/*',
-                '/usr/lib/perl5/vendor_perl/5.*/auto',
-                '/usr/lib/perl5/vendor_perl/5.*/*-linux-*/auto',
                 ],
         },
         {
