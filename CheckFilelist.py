@@ -223,6 +223,7 @@ _checks = [
                     '/opt/kde3/lib64',
                     '/opt/kde3/lib64/*',
                     '/usr/lib/pkgconfig/*',
+                    '/usr/lib/perl5/vendor_perl/5.*/*-linux-*/*',
                     ],
                 'ignorepkgif': notnoarch,
                 },
