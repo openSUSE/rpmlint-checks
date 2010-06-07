@@ -40,6 +40,8 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
 
         # verify that it doesn't conflict with branding
         for r in pkg_conflicts:
+            if r.startswith("otherproviders("):
+                continue
             if r.find('-theme-') >= 0 or r.find('-branding-') >= 0:
                 printError(pkg,'suse-branding-branding-conflict', r)
 
