@@ -1,22 +1,21 @@
-Name:		lib64
+Name:		sysconfig-bad
 Version:	0
 Release:	0
 Group:         Development/Tools/Building
 Summary:	Bar
 License:	GPL
 BuildRoot:	%_tmppath/%name-%version-build
-BuildArch:      noarch
 
 %description
 %_target
 %_target_cpu
 
 %install
-install -D -m 755 /lib/ld-linux.so.2 %buildroot/lib64/ld-linux.so.2
+install -D -m 644 /etc/motd %buildroot/etc/sysconfig/foo
 
 %clean
 rm -rf %buildroot
 
 %files
 %defattr(-,root,root)
-/lib64/ld-linux.so.2
+/etc/sysconfig/*

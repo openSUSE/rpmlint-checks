@@ -1,7 +1,7 @@
 Name:		opt2-good
 Version:	0
 Release:	0
-Group:		Foo
+Group:         Development/Tools/Building
 Summary:	Bar
 License:	GPL
 BuildRoot:	%_tmppath/%name-%version-build
@@ -19,4 +19,5 @@ install -D -m 644 /etc/motd %buildroot/opt/suse/blub
 rm -rf %buildroot
 
 %files
+%defattr(-,root,root)
 /opt/*

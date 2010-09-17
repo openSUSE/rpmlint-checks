@@ -1,7 +1,7 @@
 Name:		yast2
 Version:	0
 Release:	0
-Group:		Foo
+Group:         Development/Tools/Building
 Summary:	Bar
 License:	GPL
 BuildRoot:	%_tmppath/%name-%version-build
@@ -17,4 +17,5 @@ install -D -m 755 /bin/sh %buildroot/usr/lib/YaST2/foo.ycp
 rm -rf %buildroot
 
 %files
+%defattr(-,root,root)
 /usr/lib/YaST2
