@@ -9,7 +9,7 @@ import re
 import AbstractCheck
 import Config
 import Pkg
-from Filter import addDetails, printInfo, printError
+from Filter import *
 
 class BashismsCheck(AbstractCheck.AbstractFilesCheck):
     RE_BIN_SH = re.compile('#!\s*(/usr)?/bin/sh(\s+|$)')
