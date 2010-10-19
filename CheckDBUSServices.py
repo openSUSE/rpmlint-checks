@@ -51,6 +51,7 @@ check=DBUSServiceCheck()
 if Config.info:
     addDetails(
 'suse-dbus-unauthorized-service',
-"""The package installs an unauthorized DBUS service.
-Please contact security@suse.de for review.""",
+"""The package installs a DBUS system service file. If the package
+is intended for inclusion in any SUSE product please open a bug
+report to request review of the service by the security team.""",
 )

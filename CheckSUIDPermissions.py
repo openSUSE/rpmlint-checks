@@ -141,7 +141,9 @@ check=SUIDCheck()
 if Config.info:
     addDetails(
 'permissions-unauthorized-file',
-"""Please remove the unauthorized files or contact security@suse.de for review.""",
+"""If the package is intended for inclusion in any SUSE product
+please open a bug report to request review of the package by the
+security team""",
 'permissions-symlink',
 """permissions handling for symlinks is useless. Please contact
 security@suse.de to remove the entry.""",
@@ -158,9 +160,15 @@ remove the slash.""",
 'permissions-incorrect-owner',
 """please use the %attr macro to set the correct ownership.""",
 'permissions-file-setuid-bit',
-"""Please remove the setuid/setgid bits or contact security@suse.de for review.""",
+"""If the package is intended for inclusion in any SUSE product
+please open a bug report to request review of the program by the
+security team""",
 'permissions-directory-setuid-bit',
-"""Please contact security@suse.de for review.""",
+"""If the package is intended for inclusion in any SUSE product
+please open a bug report to request review of the package by the
+security team""",
 'permissions-world-writable',
-"""Please remove the world writable permissions or contact security@suse.de for review."""
+"""If the package is intended for inclusion in any SUSE product
+please open a bug report to request review of the package by the
+security team""",
 )
