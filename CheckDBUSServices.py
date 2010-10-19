@@ -14,14 +14,7 @@ import re
 import os
 import string
 
-_services_whitelist = (
-    "ConsoleKit.conf",
-    "hal.conf",
-    "cups.conf", # bnc#515977
-    "org.freedesktop.ConsoleKit.service",
-    "org.freedesktop.PolicyKit.conf",
-    "org.freedesktop.PolicyKit.service",
-)
+SERVICES_WHITELIST = Config.getOption('DBUSServices.WhiteList', ()) # set of file names
 
 # need to end with / so we don't catch directories
 _dbus_system_paths = [
@@ -34,7 +27,7 @@ class DBUSServiceCheck(AbstractCheck.AbstractCheck):
         AbstractCheck.AbstractCheck.__init__(self, "CheckDBUSServices")
 
     def check(self, pkg):
-        global _services_whitelist
+        global SERVICES_WHITELIST
         global _dbus_system_paths
 
         if pkg.isSource():
@@ -50,7 +43,7 @@ class DBUSServiceCheck(AbstractCheck.AbstractCheck):
                 if f.startswith(p):
 
                     bn = f[len(p):]
-                    if not bn in _services_whitelist:
+                    if not bn in SERVICES_WHITELIST:
                         printError(pkg, "suse-dbus-unauthorized-service", f)
 
 check=DBUSServiceCheck()
