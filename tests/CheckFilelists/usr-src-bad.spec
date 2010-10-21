@@ -1,7 +1,7 @@
 Name:		usr-src-bad
 Version:	0
 Release:	0
-Group:		Foo
+Group:         Development/Tools/Building
 Summary:	Bar
 License:	GPL
 BuildRoot:	%_tmppath/%name-%version-build
@@ -17,4 +17,5 @@ install -D -m 644 /etc/motd %buildroot/usr/src/test
 rm -rf %buildroot
 
 %files
+%defattr(-,root,root)
 /usr/src/*

@@ -115,9 +115,13 @@ check=PolkitCheck()
 if Config.info:
     addDetails(
 'polkit-unauthorized-file',
-"""Please contact security@suse.de for review.""",
+"""If the package is intended for inclusion in any SUSE product
+please open a bug report to request review of the package by the
+security team""",
 'polkit-unauthorized-privilege',
-"""Please contact security@suse.de for review.""",
+"""If the package is intended for inclusion in any SUSE product
+please open a bug report to request review of the package by the
+security team""",
 'polkit-cant-acquire-privilege',
 """Usability can be improved by allowing users to acquire privileges
 via authentication. Use e.g. 'auth_admin' instead of 'no' and make

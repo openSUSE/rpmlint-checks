@@ -1,7 +1,7 @@
 Name:		empty
 Version:	0
 Release:	0
-Group:		Foo
+Group:         Development/Tools/Building
 Summary:	Bar
 License:	GPL
 BuildRoot:	%_tmppath/%name-%version-build
@@ -14,3 +14,4 @@ BuildRoot:	%_tmppath/%name-%version-build
 rm -rf %buildroot
 
 %files
+%defattr(-,root,root)
