@@ -453,4 +453,10 @@ if Config.info:
         if not 'error' in check:
             continue
 
+        addDetails('suse-filelist-forbidden', """
+Your package installs files or directories in a location that have
+previously been blacklisted. Please have a look at the particular
+file and see if the SUSE Packaging Guidelines propose a better place
+on where to install the file or not install it at all.""")
+
         addDetails(check['error'], check['details'])
