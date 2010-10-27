@@ -35,8 +35,8 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
                     (r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0)):
                 printError(pkg,'suse-branding-specific-branding-req', r[0])
             if r[0].endswith('branding') or r[0].endswith('theme'):
-                if (r[2] != rpm.RPMSENSE_EQUAL or not r[1].startswith('1')):
-                    printError(pkg,'suse-branding-unversioned-req', r[0])
+                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2].startswith('1')):
+                    printError(pkg,'suse-branding-unversioned-requires', r[0])
 
         # verify that it doesn't conflict with branding
         for r in pkg_conflicts:
@@ -99,13 +99,13 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         if not branding_provide:
             printError(pkg,'suse-branding-no-branding-provide')
         else:
-            if (len(branding_provide) < 2 or branding_provide[2] != rpm.RPMSENSE_EQUAL):
-                printError(pkg, 'suse-branding-unversioned-prov', branding_provide[0])
+            if (len(branding_provide) < 2 or branding_provide[1] != rpm.RPMSENSE_EQUAL):
+                printError(pkg, 'suse-branding-unversioned-provides', branding_provide[0])
 
         for r in pkg.requires():
             if r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0:
-                if (r[2] != rpm.RPMSENSE_EQUAL or not r[1].startswith('1')):
-                    printError(pkg, 'suse-branding-unversioned-req', r[0])
+                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2].startswith('1')):
+                    printError(pkg, 'suse-branding-unversioned-requires', r[0])
 
 
 check=BrandingPolicyCheck()
@@ -115,11 +115,15 @@ if Config.info:
 'suse-branding-specific-branding-req',
 """bla""",
 'suse-branding-no-branding-provides',
-"""bla""",
+"""Please add a provides entry similar to 'Provides: %name-branding = %version'.""",
+'suse-branding-unversioned-provides',
+"""Please make sure that your provides entry reads like 'Provides: %name-branding = %version'.""",
 'suse-branding-supplement-missing',
 """branding packages should provide a supplemnent in the form
 Supplements: packageand(basepackage:branding-<flavour>)
 """,
+'suse-branding-unversioned-requires',
+"""Please make sure that your requires entry reads like 'Requires: %name-branding = <versionnumber>'.""",
 'suse-branding-missing-conflicts',
 """Any branding flavor package that provides the generic branding
 must also conflict with all other branding packages via a special
