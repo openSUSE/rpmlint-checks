@@ -35,7 +35,8 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
                     (r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0)):
                 printError(pkg,'suse-branding-specific-branding-req', r[0])
             if r[0].endswith('branding') or r[0].endswith('theme'):
-                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2].startswith('1')):
+                # XXX: that startswith 1 breaks with openSUSE 20...
+                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2][1].startswith('1')):
                     printError(pkg,'suse-branding-unversioned-requires', r[0])
 
         # verify that it doesn't conflict with branding
