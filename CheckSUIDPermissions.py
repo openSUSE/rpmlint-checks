@@ -37,15 +37,30 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 self._parsefile(file)
 
     def _parsefile(self,file):
+        lnr = 0
+        lastfn = None
         for line in open(file):
+            lnr+=1
             line = line.split('#')[0].split('\n')[0]
-            if len(line):
-                line = re.split(r'\s+', line)
+            line = line.lstrip()
+            if not len(line):
+                continue
+
+            if line.startswith("+capabilities "):
+                line = line[len("+capabilities "):]
+                if lastfn:
+                    self.perms[lastfn]['fscaps'] = line
+                continue
+
+            line = re.split(r'\s+', line)
+            if len(line) == 3:
                 fn = line[0]
                 owner = line[1].replace('.', ':')
                 mode = line[2]
 
                 self.perms[fn] = { "owner" : owner, "mode" : int(mode,8)&07777}
+            else:
+                print >>sys.stderr, "invalid line %d " % lnr
 
     def check(self, pkg):
         global _permissions_d_whitelist
@@ -82,6 +97,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         for f, pkgfile in files.items():
             if f in pkg.ghostFiles():
                 continue
+
+            if pkgfile.filecaps:
+                printError(pkg, 'permissions-fscaps', '%(file)s has fscaps "%(caps)s"' % \
+                        { 'file':f, 'caps':pkgfile.filecaps})
+
             mode = pkgfile.mode
             owner = pkgfile.user+':'+pkgfile.group
 
@@ -171,4 +191,9 @@ security team""",
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
 security team""",
+'permissions-fscaps',
+"""Packaging file capabilities is currently not supported. Please
+use normal permissions instead. You may contact the security team to
+request an entry that sets capabilities in /etc/permissions
+instead.""",
 )
