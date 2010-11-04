@@ -11,6 +11,7 @@ import AbstractCheck
 import re
 import os
 import string
+import rpm
 
 _permissions_d_whitelist = (
 "lprng",
@@ -59,6 +60,10 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 mode = line[2]
 
                 self.perms[fn] = { "owner" : owner, "mode" : int(mode,8)&07777}
+                # for permissions that don't change and therefore
+                # don't need special handling
+                if file == '/etc/permissions':
+                    self.perms[fn]['static'] = True
             else:
                 print >>sys.stderr, "invalid line %d " % lnr
 
@@ -93,6 +98,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             else:
                 self._parsefile(f)
 
+        need_run_permissions = False
         # second pass, find permissions violations
         for f, pkgfile in files.items():
             if f in pkg.ghostFiles():
@@ -114,10 +120,13 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 #           S_IFIFO    001   FIFO
             type = (mode>>12)&017;
             mode &= 07777
+            need_verifyscript = False
             if f in self.perms or (type == 04 and f+"/" in self.perms):
                 if type == 012:
                     printWarning(pkg, "permissions-symlink", f)
                     continue
+
+                need_verifyscript = True
 
                 m = 0
                 o = "invalid"
@@ -144,6 +153,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     printWarning(pkg, 'permissions-file-as-dir', f+' is a file but listed as directory')
 
                 if mode&06000:
+                    need_verifyscript = True
                     msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % { 'file':f, 'mode':mode }
                     if type != 04:
                         printError(pkg, 'permissions-file-setuid-bit', msg)
@@ -151,9 +161,28 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
                 if mode&02:
+                    need_verifyscript = True
                     printError(pkg, 'permissions-world-writable', \
                             '%(file)s is packaged with world writable permissions (0%(mode)o)' % \
                             { 'file':f, 'mode':mode })
+
+            if need_verifyscript and \
+                    (not f in self.perms or not 'static' in self.perms[f]):
+                need_run_permissions = True
+                script = pkg[rpm.RPMTAG_VERIFYSCRIPT] or pkg[rpm.RPMTAG_VERIFYSCRIPTPROG]
+                if not script or not "chkstat -n -e %s"%f in script:
+                    printError(pkg, 'permissions-missing-verifyscript', \
+                            "missing %%verify_permissions -e %s" % f)
+
+        if need_run_permissions:
+            postin = pkg[rpm.RPMTAG_POSTIN] or pkg[rpm.RPMTAG_POSTINPROG]
+            if not postin or not "SuSEconfig --module permissions" in postin:
+                printError(pkg, 'permissions-missing-postin', \
+                        "missing %run_permissions in %post")
+
+            if not 'permissions' in map(lambda x: x[0], pkg.prereq()):
+                printError(pkg, 'permissions-missing-requires', \
+                        "missing 'permissions' in PreReq")
 
 
 check=SUIDCheck()
@@ -196,4 +225,10 @@ security team""",
 use normal permissions instead. You may contact the security team to
 request an entry that sets capabilities in /etc/permissions
 instead.""",
+'permissions-missing-postin',
+"""Please add %run_permissions to %post""",
+'permissions-missing-requires',
+"""Please add \"PreReq: permissions\"""",
+'permissions-missing-verifyscript',
+"""Please add a %verifyscript section""",
 )
