@@ -170,7 +170,15 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     (not f in self.perms or not 'static' in self.perms[f]):
                 need_run_permissions = True
                 script = pkg[rpm.RPMTAG_VERIFYSCRIPT] or pkg[rpm.RPMTAG_VERIFYSCRIPTPROG]
-                if not script or not "chkstat -n -e %s"%f in script:
+
+                found = False
+                if script:
+                    for line in script.split("\n"):
+                        if "chkstat -n" in line and f in line:
+                            found = True
+                            break
+
+                if not script or not found:
                     printError(pkg, 'permissions-missing-verifyscript', \
                             "missing %%verify_permissions -e %s" % f)
 
