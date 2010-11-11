@@ -105,7 +105,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
 
         for r in pkg.requires():
             if r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0:
-                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2].startswith('1')):
+                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2][1].startswith('1')):
                     printError(pkg, 'suse-branding-unversioned-requires', r[0])
 
 
