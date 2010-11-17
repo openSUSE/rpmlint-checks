@@ -98,7 +98,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             else:
                 self._parsefile(f)
 
-        need_run_permissions = False
+        need_set_permissions = False
+        found_suseconfig = False
         # second pass, find permissions violations
         for f, pkgfile in files.items():
             if f in pkg.ghostFiles():
@@ -168,9 +169,22 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
             if need_verifyscript and \
                     (not f in self.perms or not 'static' in self.perms[f]):
-                need_run_permissions = True
+                need_set_permissions = True
                 script = pkg[rpm.RPMTAG_VERIFYSCRIPT] or pkg[rpm.RPMTAG_VERIFYSCRIPTPROG]
 
+                found = False
+                if script:
+                    for line in script.split("\n"):
+                        if "/chkstat" in line and f in line:
+                            found = True
+                            break
+
+                if not script or not found:
+                    printWarning(pkg, 'permissions-missing-verifyscript', \
+                            "missing %%verify_permissions -e %s" % f)
+
+
+                script = pkg[rpm.RPMTAG_POSTIN] or pkg[rpm.RPMTAG_POSTINPROG]
                 found = False
                 if script:
                     for line in script.split("\n"):
@@ -178,20 +192,23 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                             found = True
                             break
 
-                if not script or not found:
-                    printError(pkg, 'permissions-missing-verifyscript', \
-                            "missing %%verify_permissions -e %s" % f)
+                        if "SuSEconfig --module permissions" in line:
+                            found = True
+                            found_suseconfig = True
+                            break
 
-        if need_run_permissions:
-            postin = pkg[rpm.RPMTAG_POSTIN] or pkg[rpm.RPMTAG_POSTINPROG]
-            if not postin or not "SuSEconfig --module permissions" in postin:
-                printError(pkg, 'permissions-missing-postin', \
-                        "missing %run_permissions in %post")
+                if not script and not found:
+                    printError(pkg, 'permissions-missing-postin', \
+                            "missing %%set_permissions %s in %%post" % f)
 
+        if need_set_permissions:
             if not 'permissions' in map(lambda x: x[0], pkg.prereq()):
                 printError(pkg, 'permissions-missing-requires', \
                         "missing 'permissions' in PreReq")
 
+        if found_suseconfig:
+            printInfo(pkg, 'permissions-suseconfig-obsolete', \
+                    "%run_permissions is obsolete")
 
 check=SUIDCheck()
 
@@ -234,9 +251,13 @@ use normal permissions instead. You may contact the security team to
 request an entry that sets capabilities in /etc/permissions
 instead.""",
 'permissions-missing-postin',
-"""Please add %run_permissions to %post""",
+"""Please add an appropriate %post section""",
 'permissions-missing-requires',
 """Please add \"PreReq: permissions\"""",
 'permissions-missing-verifyscript',
 """Please add a %verifyscript section""",
+'permissions-suseconfig-obsolete',
+"""The %run_permissions macro calls SuSEconfig which sets permissions for all
+files in the system. Please use %set_permissions <filename> instead
+to only set permissions for files contained in this package""",
 )
