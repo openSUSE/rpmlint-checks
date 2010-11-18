@@ -102,8 +102,6 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         found_suseconfig = False
         # second pass, find permissions violations
         for f, pkgfile in files.items():
-            if f in pkg.ghostFiles():
-                continue
 
             if pkgfile.filecaps:
                 printError(pkg, 'permissions-fscaps', '%(file)s has fscaps "%(caps)s"' % \
