@@ -165,8 +165,26 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                             '%(file)s is packaged with world writable permissions (0%(mode)o)' % \
                             { 'file':f, 'mode':mode })
 
+            script = pkg[rpm.RPMTAG_POSTIN] or pkg[rpm.RPMTAG_POSTINPROG]
+            found = False
+            if script:
+                for line in script.split("\n"):
+                    if "chkstat -n" in line and f in line:
+                        found = True
+                        break
+
+                    if "SuSEconfig --module permissions" in line:
+                        found = True
+                        found_suseconfig = True
+                        break
+
             if need_verifyscript and \
                     (not f in self.perms or not 'static' in self.perms[f]):
+
+                if not script or not found:
+                    printError(pkg, 'permissions-missing-postin', \
+                            "missing %%set_permissions %s in %%post" % f)
+
                 need_set_permissions = True
                 script = pkg[rpm.RPMTAG_VERIFYSCRIPT] or pkg[rpm.RPMTAG_VERIFYSCRIPTPROG]
 
@@ -181,23 +199,6 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     printWarning(pkg, 'permissions-missing-verifyscript', \
                             "missing %%verify_permissions -e %s" % f)
 
-
-                script = pkg[rpm.RPMTAG_POSTIN] or pkg[rpm.RPMTAG_POSTINPROG]
-                found = False
-                if script:
-                    for line in script.split("\n"):
-                        if "chkstat -n" in line and f in line:
-                            found = True
-                            break
-
-                        if "SuSEconfig --module permissions" in line:
-                            found = True
-                            found_suseconfig = True
-                            break
-
-                if not script and not found:
-                    printError(pkg, 'permissions-missing-postin', \
-                            "missing %%set_permissions %s in %%post" % f)
 
         if need_set_permissions:
             if not 'permissions' in map(lambda x: x[0], pkg.prereq()):
