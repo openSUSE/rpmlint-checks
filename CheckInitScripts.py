@@ -50,7 +50,9 @@ class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
                                 '$portmap',
                                 '$remote_fs',
                                 '$syslog',
-                                '$time', '$ALL'):
+                                '$time',
+                                '$null',
+                                '$ALL'):
                             printError(pkg, "init-script-undefined-dependency", f, dep)
                         if dep in ('portmap', 'syslog', 'named', 'network', 'xntpd'):
                             printWarning(pkg, "init-script-non-var-dependency", f, dep)
