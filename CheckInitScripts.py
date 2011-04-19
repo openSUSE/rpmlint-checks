@@ -54,7 +54,7 @@ class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
                                 '$null',
                                 '$ALL'):
                             printError(pkg, "init-script-undefined-dependency", f, dep)
-                        if dep in ('portmap', 'syslog', 'named', 'network', 'xntpd'):
+                        if dep in ('portmap', 'syslog', 'named', 'network', 'ntp', 'ntpd', 'xntpd'):
                             printWarning(pkg, "init-script-non-var-dependency", f, dep)
                         if dep in ('$remote_fs'):
                             found_remote_fs = True
@@ -79,18 +79,22 @@ if Config.info:
 """Your package contains a /etc/init.d script that specifies a
 dependency that is not listed in /etc/insserv.conf. Check for
 typos.""",
+
 'init-script-non-var-dependency',
 """Your package contains a /etc/init.d script that specifies
 a hardcoded dependency that likely should be a variable dependency.
 For example portmap should actually be $portmap, and similar.""",
 'obsolete-init-keyword',
+
 """Your package contains a /etc/init.d script that specifies
 an obsolete keyword, like X-UnitedLinux-Should-Start. Consider
 using the LSB equivalent Should-Start instead.""",
+
 'init-script-wrong-start-level',
 """Your package contains a /etc/init.d script that specifies
 that it should be run in boot level but isn't named with a boot prefix
 or specifies a non-boot level but has boot prefix. Fix your script.""",
+
 'non-remote_fs-dependency',
 """Your package contains a /etc/init.d script that does not specify
 $remote_fs as a start dependency, but the package also contains
