@@ -63,9 +63,11 @@ class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
                 if l.startswith('# Default-Start'):
                     for dep in l.split()[2:]:
                         if boot_script and dep not in ('B', 'S'):
-                            printError(pkg, "init-script-wrong-start-level", f, dep)
+                            printError(pkg, "init-script-boot_d", f)
                         if not boot_script and dep in ('B'):
-                            printError(pkg, "init-script-wrong-start-level", f, dep)
+                            printError(pkg, "init-script-not-boot_d", f, dep)
+                        if dep == '4':
+                            printError(pkg, "init-script-runlevel-4", f)
 
             if not found_remote_fs and bins_list:
                 printWarning(pkg, "non-remote_fs-dependency", f)
@@ -90,14 +92,23 @@ For example portmap should actually be $portmap, and similar.""",
 an obsolete keyword, like X-UnitedLinux-Should-Start. Consider
 using the LSB equivalent Should-Start instead.""",
 
-'init-script-wrong-start-level',
-"""Your package contains a /etc/init.d script that specifies
-that it should be run in boot level but isn't named with a boot prefix
-or specifies a non-boot level but has boot prefix. Fix your script.""",
+'init-script-boot_d',
+"""The init script has a "boot." prefix but actually lacks 'B' in
+'Default-Start'. Either rename the script or add
+'B' to 'Default-Start'""",
+
+'init-script-not-boot_d',
+"""The init script specifies that it should be run in level 'B' but
+doesn't have a "boot." prefix. Either rename the script or remove
+the 'B' from 'Default-Start'""",
 
 'non-remote_fs-dependency',
 """Your package contains a /etc/init.d script that does not specify
 $remote_fs as a start dependency, but the package also contains
 files packaged in /usr. Make sure that your start script does not
-call any of them, or add the missing $remote_fs dependency."""
+call any of them, or add the missing $remote_fs dependency.""",
+
+'init-script-runlevel-4',
+"""The init script refers to runlevel 4 which is admin defined. No
+distribution script must use it. Remove '4' from 'Default-Start'.""",
 )
