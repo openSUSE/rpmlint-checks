@@ -6,5 +6,6 @@ check="$1"
 check=${check%.py}
 shift
 cat config >> "$config"
+echo "Config.resetChecks()" >> $config
 echo "addCheck(\"$check\")" >> $config
 rpmlint -i -f $config -C $PWD "$@"
