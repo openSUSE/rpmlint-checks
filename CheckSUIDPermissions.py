@@ -135,6 +135,10 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     else:
                         f += '/'
 
+                if type == 010:
+                    if not 'shared object' in pkgfile.magic:
+                        printError(pkg, 'not-a-position-independent-executable', f)
+
                 m = self.perms[f]['mode']
                 o = self.perms[f]['owner']
 
@@ -158,6 +162,10 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
+
+                    if type == 010:
+                        if not 'shared object' in pkgfile.magic:
+                            printError(pkg, 'not-a-position-independent-executable', f)
 
                 if mode&02:
                     need_verifyscript = True
