@@ -1,5 +1,10 @@
 #!/bin/bash
 set -e
+opt_all=
+if [ "$1" = "--all" ]; then
+	opt_all=1
+	shift
+fi
 config=`mktemp`
 trap "rm -f $config" EXIT
 check="$1"
@@ -7,5 +12,8 @@ check=${check%.py}
 shift
 cat config >> "$config"
 echo "Config.resetChecks()" >> $config
+if [ -n "$opt_all" ]; then
+	echo "Config._filters = []" >> $config
+fi
 echo "addCheck(\"$check\")" >> $config
 rpmlint -i -f $config -C $PWD "$@"
