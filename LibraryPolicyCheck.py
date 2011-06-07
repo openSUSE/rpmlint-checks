@@ -380,7 +380,8 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             if len(libs) == 1:
                 soname = libs.copy().pop()
                 libname = libname_from_soname (soname)
-                if libname.startswith('lib') and pkg.name != libname:
+                if libname.startswith('lib') and pkg.name != libname and \
+                        pkg.name != libname + "-mini":
                     if libname in _policy_legacy_exceptions:
                         printWarning(pkg, 'shlib-legacy-policy-name-error', libname)
                     else:
