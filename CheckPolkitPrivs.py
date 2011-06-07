@@ -77,37 +77,50 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             try:
                 if f.startswith("/usr/share/PolicyKit/policy/")\
                 or f.startswith("/usr/share/polkit-1/actions/"):
-                    f = pkg.dirName() + f
-                    xml = parse(f)
+                    xml = parse(pkg.dirName() + f)
                     for a in xml.getElementsByTagName("action"):
                         action = a.getAttribute('id')
                         if not action in self.privs:
                             iserr = 0
                             foundno = 0
-                            anyseen = 0
+                            foundundef = 0
+                            settings = {}
                             try:
                                 defaults = a.getElementsByTagName("defaults")[0]
                                 for i in defaults.childNodes:
                                     if not i.nodeType == i.ELEMENT_NODE:
                                         continue
-                                    if i.nodeName == 'allow_any':
-                                        anyseen = 1
-                                    if i.firstChild.data.find("auth_admin") != 0:
-                                        if i.firstChild.data == 'no':
-                                            foundno = 1
-                                        else:
-                                            iserr = 1
+
+                                    if i.nodeName in ('allow_any', 'allow_inactive', 'allow_active'):
+                                        settings[i.nodeName] = i.firstChild.data
+
                             except:
                                 iserr = 1
 
-                            if iserr:
-                                printError(pkg, 'polkit-unauthorized-privilege', action)
-                            else:
-                                printInfo(pkg, 'polkit-untracked-privilege', action)
+                            for i in ('allow_any', 'allow_inactive', 'allow_active'):
+                                if not i in settings:
+                                    foundundef = 1
+                                    settings[i] = '??'
+                                elif settings[i].find("auth_admin") != 0:
+                                    if settings[i] == 'no':
+                                        foundno = 1
+                                    else:
+                                        iserr = 1
 
-                            if foundno or not anyseen:
-                                printWarning(pkg, 'polkit-cant-acquire-privilege', action)
-            except:
+                            if iserr:
+                                printError(pkg, 'polkit-unauthorized-privilege', '%s (%s:%s:%s)' % (action, \
+                                    settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
+                            else:
+                                printInfo(pkg, 'polkit-untracked-privilege', '%s (%s:%s:%s)' % (action, \
+                                    settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
+
+                            if foundno or foundundef:
+                                printInfo(pkg,
+                                        'polkit-cant-acquire-privilege', '%s (%s:%s:%s)' % (action, \
+                                    settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
+
+            except Exception, x:
+                printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
                 continue
 
 check=PolkitCheck()
@@ -119,9 +132,11 @@ if Config.info:
 please open a bug report to request review of the package by the
 security team""",
 'polkit-unauthorized-privilege',
-"""If the package is intended for inclusion in any SUSE product
-please open a bug report to request review of the package by the
-security team""",
+"""The package allows unprivileged users to carry out privileged
+operations without authentication. This could cause security
+problems if not done carefully. If the package is intended for
+inclusion in any SUSE product please open a bug report to request
+review of the package by the security team""",
 'polkit-untracked-privilege',
 """The privilege is not listed in /etc/polkit-default-privs.*
 which makes it harder for admins to find. If the package is intended
@@ -130,4 +145,5 @@ request review of the package by the security team""",
 'polkit-cant-acquire-privilege',
 """Usability can be improved by allowing users to acquire privileges
 via authentication. Use e.g. 'auth_admin' instead of 'no' and make
-sure to define 'allow_any'.""")
+sure to define 'allow_any'. This is an issue only if the privilege
+is not listed in /etc/polkit-default-privs.*""")
