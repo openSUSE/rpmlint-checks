@@ -30,13 +30,13 @@ class BuildDateCheck(AbstractCheck.AbstractFilesCheck):
 
         grep_date = pkg.grep(self.istoday, filename)
 
-        if len(grep_date):
-            printWarning(pkg, "file-contains-current-date", filename)
-			
         grep_time = pkg.grep(self.looksliketime, filename)
 
-        if len(grep_date) and len(grep_time):
-            printError(pkg, "file-contains-date-and-time", filename)
+        if len(grep_date):
+            if len(grep_time):
+                printError(pkg, "file-contains-date-and-time", filename)
+            else:
+                printWarning(pkg, "file-contains-current-date", filename)
 
 check=BuildDateCheck()
 
