@@ -103,7 +103,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                             if iserr:
                                 printError(pkg, 'polkit-unauthorized-privilege', action)
                             else:
-                                printInfo(pkg, 'polkit-unauthorized-privilege', action)
+                                printInfo(pkg, 'polkit-untracked-privilege', action)
 
                             if foundno or not anyseen:
                                 printWarning(pkg, 'polkit-cant-acquire-privilege', action)
@@ -122,6 +122,11 @@ security team""",
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
 security team""",
+'polkit-untracked-privilege',
+"""The privilege is not listed in /etc/polkit-default-privs.*
+which makes it harder for admins to find. If the package is intended
+for inclusion in any SUSE product please open a bug report to
+request review of the package by the security team""",
 'polkit-cant-acquire-privilege',
 """Usability can be improved by allowing users to acquire privileges
 via authentication. Use e.g. 'auth_admin' instead of 'no' and make
