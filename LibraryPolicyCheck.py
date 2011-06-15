@@ -318,11 +318,11 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         reqlibs = set()
         pkg_requires = set(map(lambda x: string.split(x[0],'(')[0], pkg.requires()))
 
-        for f in files.keys():
+        for f, pkgfile in files.items():
             if f.find('.so.') != -1 or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
                 try:
-                    if stat.S_ISREG(files[f].mode):
+                    if stat.S_ISREG(files[f].mode) and 'ELF' in pkgfile.magic:
                         bi = BinaryInfo(pkg, filename, f, False, True)
                         libs_needed = libs_needed.union(bi.needed)
                         if bi.soname != 0:
