@@ -137,7 +137,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 if type == 010:
                     if not 'shared object' in pkgfile.magic:
-                        printError(pkg, 'not-a-position-independent-executable', f)
+                        printError(pkg, 'non-position-independent-executable', f)
 
                 m = self.perms[f]['mode']
                 o = self.perms[f]['owner']
@@ -165,7 +165,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                     if type == 010:
                         if not 'shared object' in pkgfile.magic:
-                            printError(pkg, 'not-a-position-independent-executable', f)
+                            printError(pkg, 'non-position-independent-executable', f)
 
                 if mode&02:
                     need_verifyscript = True
