@@ -135,8 +135,9 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     else:
                         f += '/'
 
-                if type == 010:
-                    if not 'shared object' in pkgfile.magic:
+                if type == 010 and mode&0111:
+                    # pie binaries have 'shared object' here
+                    if 'ELF' in pkgfile.magic and not 'shared object' in pkgfile.magic:
                         printError(pkg, 'non-position-independent-executable', f)
 
                 m = self.perms[f]['mode']
