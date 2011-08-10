@@ -454,12 +454,12 @@ allow to install multiple versions of the package in parallel.""",
 of legacy exceptions. Please do not rename the package until SONAME changes, but if you have
 to rename it for another reason, make sure you name it correctly.""",
 'shlib-policy-excessive-dependency',
-"""Your package starts with 'lib' as part of it's name, but also contains binaries
+"""Your package starts with 'lib' as part of its name, but also contains binaries
 that have more dependencies than those that already required by the libraries.
 Those binaries should probably not be part of the library package, but split into
 a seperate one to reduce the additional dependencies for other users of this library.""",
 'shlib-policy-missing-lib',
-"""Your package starts with 'lib' as part of it's name, but does not provide
+"""Your package starts with 'lib' as part of its name, but does not provide
 any libraries. It must not be called a lib-package then. Give it a more
 sensible name.""",
 'shlib-fixed-dependency',
