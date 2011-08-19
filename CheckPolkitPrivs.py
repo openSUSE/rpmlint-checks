@@ -21,12 +21,12 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
         AbstractCheck.AbstractCheck.__init__(self, "CheckPolkitPrivs")
         self.privs = {}
 
-        for file in POLKIT_PRIVS_FILES:
-            if os.path.exists(file):
-                self._parsefile(file)
+        for filename in POLKIT_PRIVS_FILES:
+            if os.path.exists(filename):
+                self._parsefile(filename)
 
-    def _parsefile(self,file):
-        for line in open(file):
+    def _parsefile(self,filename):
+        for line in file(filename):
             line = line.split('#')[0].split('\n')[0]
             if len(line):
                 line = re.split(r'\s+', line)
@@ -54,12 +54,15 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                 if not bn in POLKIT_PRIVS_WHITELIST:
                     printError(pkg, "polkit-unauthorized-file", f)
 
-                bn = bn.split('.')[0]
+                if bn.endswith(".restrictive") or bn.endswith(".standard") or bn.endswith(".relaxed"):
+                    bn = bn.split('.')[0]
+
                 if not bn in permfiles:
                     permfiles[bn] = 1
 
         for f in permfiles:
             f = pkg.dirName() + "/etc/polkit-default-privs.d/" + f
+
             if os.path.exists(f+".restrictive"):
                 self._parsefile(f + ".restrictive")
             elif os.path.exists(f+".standard"):
@@ -68,6 +71,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                 self._parsefile(f + ".relaxed")
             else:
                 self._parsefile(f)
+
 
         for f in files:
             if f in pkg.ghostFiles():
