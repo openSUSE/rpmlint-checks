@@ -353,7 +353,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
 
         if not files:
-            printError(pkg, 'suse-filelist-empty', 'packages without any files are not allowed in SUSE')
+            printWarning(pkg, 'suse-filelist-empty', 'packages without any files are discouraged in SUSE')
             return
 
         for check in _checks:
