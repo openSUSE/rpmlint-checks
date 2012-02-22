@@ -63,7 +63,8 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
                 if line.endswith('{'):
                     insection = True
                     for logfile in line.split(' '):
-                        if logfile == '{':
+                        logfile = logfile.strip()
+                        if len(logfile) == 0 or logfile == '{':
                             continue
                         dn = os.path.dirname(logfile)
                         if not dn in dirs:
