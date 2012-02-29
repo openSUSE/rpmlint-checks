@@ -435,7 +435,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Verify shared lib policy package doesn't have hard dependency on non-lib packages
         if std_lib_package:
             for dep in pkg.requires():
-                if (dep[0][0:7] == 'rpmlib('):
+                if (dep[0].startswith('rpmlib(') or dep[0].startswith('config(')): 
                     continue
                 if (dep[1] & (rpm.RPMSENSE_GREATER | rpm.RPMSENSE_EQUAL)) == rpm.RPMSENSE_EQUAL:
                     printWarning(pkg, "shlib-fixed-dependency", Pkg.formatRequire(dep[0], dep[1], dep[2]))
