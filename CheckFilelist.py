@@ -135,10 +135,11 @@ _checks = [
         },
         {
             'error': 'suse-filelist-forbidden-backup-file',
-            'details': 'backup files (e.g. files ending in ~ or .bak) are not allowed',
+            'details': 'backup files (e.g. files ending in ~, .swp or .bak) are not allowed',
             'bad': [
                 '*~',
                 '*.bak',
+                '*.swp',
                 ],
             'ignorefileif': ghostfile,
             },
