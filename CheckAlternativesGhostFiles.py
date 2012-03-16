@@ -37,7 +37,7 @@ class CheckAlternativesGhostFiles(AbstractCheck.AbstractCheck):
                 if not arg.startswith("--"):
                     command_args.append(arg)
                  
-            ghost_files.append(command_args[1])
+            ghost_files.append(command_args[0])
             
             if cls.SLAVE in command:
                 for sc in ( \
