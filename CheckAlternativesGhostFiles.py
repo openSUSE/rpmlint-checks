@@ -32,8 +32,12 @@ class CheckAlternativesGhostFiles(AbstractCheck.AbstractCheck):
                 if cls.INSTALL in c):
 
             #parse install
-            xs = command.split(None, 4)
-            ghost_files.append(xs[1])
+            command_args = []
+            for arg in command.split(None):
+                if not arg.startswith("--"):
+                    command_args.append(arg)
+                 
+            ghost_files.append(command_args[1])
             
             if cls.SLAVE in command:
                 for sc in ( \
@@ -70,12 +74,12 @@ if Config.info:
     addDetails(
 
 'generic-name-not-marked-as-ghost',
-'''The generic name is not marked as a ghost, which may cause a problems during
-update. Mark it as a %ghost in %files section.''',
+'''The update-alternatives generic name is not marked as a ghost in the %files section.
+This causes problems during update. Mark it as a %ghost in %files section.''',
 
 'generic-name-not-in-filelist',
-'''The generic name is not in a filelist of package, add it to list marked as
-%ghost. Note: this error will be raised, if you use a hash ($) in file name,
-use rpm macros in spec file instead.''',
+'''The update-alternatives generic name is not in a filelist of package.
+Add it to list marked as %ghost. Note: this error will be raised, 
+if you use a hash ($) in file name, use rpm macros in spec file instead.''',
 
 )
