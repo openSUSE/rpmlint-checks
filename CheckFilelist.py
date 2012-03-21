@@ -139,7 +139,7 @@ _checks = [
             'bad': [
                 '*~',
                 '*.bak',
-                '*.swp',
+                '*/.*.swp',
                 ],
             'ignorefileif': ghostfile,
             },
@@ -389,9 +389,8 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                             if 'ignorefileif' in check:
                                 if check['ignorefileif'](pkg, f):
                                     continue
-                            if (not isinstance(b, str) and  b.match(f)) or b == f:
-                                m = msg % { 'file':f }
-                                printError(pkg, error, m)
+                            if (not isinstance(b, str) and b.match(f)) or b == f:
+                                printError(pkg, error, msg % { 'file':f } )
 
         invalidfhs = set()
         invalidopt = set()
