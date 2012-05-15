@@ -24,7 +24,7 @@ _permissions_d_whitelist = (
 "sendmail.paranoid",
 "squid",
 "texlive",
-"texlive.paranoid",
+"texlive.texlive",
 )
 
 class SUIDCheck(AbstractCheck.AbstractCheck):
