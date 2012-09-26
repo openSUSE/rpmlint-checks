@@ -275,11 +275,19 @@ _checks = [
                 'error': 'suse-filelist-forbidden-systemd-userdirs',
                 'details': """This directory is for user files, use the system directory under /usr/lib""",
                 'bad': [
-                    # systemd installs files here, let's first discuss how to do it
-                    #'/etc/systemd/*',
+                    '/etc/systemd/*',
                     '/etc/modules-load.d/*',
                     '/etc/tmpfiles.d/*',
                     ],
+                },
+        {
+                'warning': 'suse-filelist-tmpfs',
+                'details': """/var/run and /var/lock are on tmpfs and thus you need to %ghost files and create directories via /usr/lib/tmpfiles.d (man tmpfiles.d)""",
+                'bad': [
+                    '/var/run/*',
+                    '/var/lock/*',
+                    ],
+            'ignorefileif': ghostfile,
                 },
         ]
 
