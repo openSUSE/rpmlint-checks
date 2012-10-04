@@ -280,15 +280,6 @@ _checks = [
                     '/etc/tmpfiles.d/*',
                     ],
                 },
-        {
-                'warning': 'suse-filelist-tmpfs',
-                'details': """/var/run and /var/lock are on tmpfs and thus you need to %ghost files and create directories via /usr/lib/tmpfiles.d (man tmpfiles.d)""",
-                'bad': [
-                    '/var/run/*',
-                    '/var/lock/*',
-                    ],
-            'ignorefileif': ghostfile,
-                },
         ]
 
 class FilelistCheck(AbstractCheck.AbstractCheck):
