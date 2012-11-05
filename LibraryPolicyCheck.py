@@ -98,6 +98,7 @@ _policy_legacy_exceptions = (
         "liboil-0_3-0",
         "liboop4",
         "libopenal0",
+        "libopenal1",
         "libpgeasy3",
         "libportaudio2",
         "libqnotify0",
