@@ -182,7 +182,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         found = True
                         break
 
-                    if "SuSEconfig --module permissions" in line:
+                    if "SuSEconfig --module permissions" in line \
+                            or "run_permissions is obsolete" in line:
                         found = True
                         found_suseconfig = True
                         break
