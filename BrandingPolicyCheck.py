@@ -31,10 +31,13 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
 
         # verify that only generic branding is required by non-branding packages
         for r in pkg.requires():
+            if r[0].startswith("config("):
+                continue
             if (pkg.name.find('-branding-') < 0 and
                     (r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0)):
                 printError(pkg,'suse-branding-specific-branding-req', r[0])
-            if r[0].endswith('branding') or r[0].endswith('theme'):
+            if (r[0].endswith('branding') or r[0].endswith('theme')) \
+                    and not r[0].endswith('-icon-theme'):
                 # XXX: that startswith 1 breaks with openSUSE 20...
                 if (r[1] != rpm.RPMSENSE_EQUAL or not r[2][1].startswith('1')):
                     printError(pkg,'suse-branding-unversioned-requires', r[0])
@@ -102,11 +105,6 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         else:
             if (len(branding_provide) < 2 or branding_provide[1] != rpm.RPMSENSE_EQUAL):
                 printError(pkg, 'suse-branding-unversioned-provides', branding_provide[0])
-
-        for r in pkg.requires():
-            if r[0].find('-theme-') >= 0 or r[0].find('-branding-') >= 0:
-                if (r[1] != rpm.RPMSENSE_EQUAL or not r[2][1].startswith('1')):
-                    printError(pkg, 'suse-branding-unversioned-requires', r[0])
 
 
 check=BrandingPolicyCheck()
