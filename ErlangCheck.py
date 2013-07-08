@@ -1,6 +1,6 @@
 # vim:sw=4:et
 #############################################################################
-# File          : CheckErlang.py
+# File          : ErlangCheck.py
 # Package       : rpmlint
 # Author        : Matwey V. Kornilov
 # Purpose       : Check for erlang compiled files
