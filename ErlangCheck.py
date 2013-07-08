@@ -28,7 +28,7 @@ class ErlangCheck(AbstractCheck.AbstractFilesCheck):
 
     def check_file(self, pkg, filename):
         beam = BeamFile(pkg.files()[filename].path)
-        if not 'debug_info' in beam.compileinfo['options']:
+        if 'debug_info' not in beam.compileinfo['options']:
             printWarning(pkg, "beam-compiled-without-debug_info", filename)
         if not self.source_re.match(beam.compileinfo['source'].value):
             printWarning(pkg, "beam-was-not-recompiled", filename, beam.compileinfo['source'].value)
