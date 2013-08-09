@@ -70,14 +70,14 @@ check=KMPPolicyCheck()
 if Config.info:
     addDetails(
 'suse-policy-kmp-missing-requires',
-"""Make sure you have extended '%suse_kernel_module_package' by
- '-p %_sourcedir/preamble', a file named 'preamble' as source and there 
+"""Make sure you have extended '%kernel_module_package' by
+ '-p %_sourcedir/preamble', a file named 'preamble' as source and there
  specified 'Requires: kernel-%1'.
  """,
 'suse-policy-kmp-excessive-enhances',
 """ """,
 'suse-policy-kmp-missing-enhances',
-"""Make sure you have extended '%suse_kernel_module_package' by
+"""Make sure you have extended '%kernel_module_package' by
  '-p %_sourcedir/preamble', a file named 'preamble' as source and there
  specified 'Enhances: kernel-%1'.
  """,
