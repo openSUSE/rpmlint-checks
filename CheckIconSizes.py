@@ -6,15 +6,11 @@
 # Purpose       : Check for common scaling errors in icons
 #############################################################################
 
-from Filter import *
 import AbstractCheck
-import rpm
-import re
-import commands
-import stat
 import Config
-import os
-import string
+from Filter import printError, addDetails
+import re
+
 
 class IconSizesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -37,15 +33,17 @@ class IconSizesCheck(AbstractCheck.AbstractCheck):
 
                     if abs(int(sizes[0])-int(actualsizes[0])) > 2 or \
                             abs(int(sizes[1])-int(actualsizes[1])) > 2:
-                        printError(pkg,"wrong-icon-size", fname, "expected:", 
-                                "x".join(sizes), "actual:", "x".join(actualsizes))
+                        printError(pkg, "wrong-icon-size", fname, "expected:",
+                                   "x".join(sizes),
+                                   "actual:", "x".join(actualsizes))
 
 
-check=IconSizesCheck()
+check = IconSizesCheck()
 
 if Config.info:
     addDetails(
-'wrong-icon-size',
-"""Your icon file is installed in a fixed-size directory, but has a largely incorrect size.
-Some desktop environments (e.g. GNOME) display them incorrectly."""
-)
+        'wrong-icon-size',
+        """Your icon file is installed in a fixed-size directory, but has a
+        largely incorrect size. Some desktop environments (e.g. GNOME)
+        display them incorrectly."""
+    )
