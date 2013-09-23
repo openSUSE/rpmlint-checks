@@ -285,6 +285,24 @@ _checks = [
             '/etc/tmpfiles.d/*',
         ],
     },
+    {
+        'error': 'suse-filelist-forbidden-udev-userdirs',
+        'details': """This directory is for user files,
+                      use /usr/lib/udev/rules.d""",
+        'bad': [
+            '/etc/udev/rules.d/*',
+        ],
+    },
+    {
+        'error': 'suse-filelist-forbidden-move-to-usr',
+        'details': """This directory has been moved to /usr""",
+        'bad': [
+            '/lib/systemd/system/*',
+            '/lib/udev/rules.d/*',
+        ],
+    },
+
+
 ]
 
 
