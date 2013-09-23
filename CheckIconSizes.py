@@ -24,6 +24,10 @@ class IconSizesCheck(AbstractCheck.AbstractCheck):
             return
 
         for fname, pkgfile in pkg.files().items():
+
+            if '/animations/' in fname:
+                continue
+
             res = self.file_size_regex.search(fname)
             if res:
                 sizes = (res.group(1), res.group(2))
