@@ -301,7 +301,14 @@ _checks = [
             '/lib/udev/rules.d/*',
         ],
     },
-
+    {
+        'error': 'suse-wrong-suse-capitalisation',
+        'details': """This file should be renamed to README.SUSE""",
+        'bad': [
+            '*/README.SuSE',
+        ],
+        'ignorefileif': ghostfile,
+    },
 
 ]
 
