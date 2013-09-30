@@ -77,7 +77,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         permfiles = {}
         # first pass, find and parse permissions.d files
-        for f in files.keys():
+        for f in files:
             if f in pkg.ghostFiles():
                 continue
 
