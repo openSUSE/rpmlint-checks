@@ -27,7 +27,7 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
         if pkg.isSource():
             return
         files = pkg.files()
-        for f in files.keys():
+        for f in files:
             if f in pkg.ghostFiles():
                 continue
             md5 = files[f].md5
@@ -79,11 +79,11 @@ license. If you really have to ship it, consider symlinking it
 from the licenses package.""",
 'non-linux-readme',
 """Your package contains a file that contains instructions
-for non-linux platforms. They're most likely unneccessary bloat, 
+for non-linux platforms. They're most likely unneccessary bloat,
 consider removing them from your package.""",
 'makefile-junk',
 """Your package contains makefiles that only make sense in a
 source package. Did you package a complete directory from the
-tarball by using %doc? Consider removing Makefile* from this 
+tarball by using %doc? Consider removing Makefile* from this
 directory at the end of your %install section to reduce package bloat."""
 )
