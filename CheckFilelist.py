@@ -303,7 +303,7 @@ _checks = [
     },
     {
         'error': 'suse-wrong-suse-capitalisation',
-        'details': """This file should be renamed to README.SUSE""",
+        'details': """This file should be renamed to README.SUSE or README.openSUSE""",
         'bad': [
             '*/README.SuSE',
         ],
