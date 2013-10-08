@@ -8,40 +8,40 @@
 
 from Filter import *
 import AbstractCheck
-import re
 import os
-import string
+import re
 import rpm
 
 _permissions_d_whitelist = (
-"lprng",
-"lprng.paranoid",
-"mail-server",
-"mail-server.paranoid",
-"postfix",
-"postfix.paranoid",
-"sendmail",
-"sendmail.paranoid",
-"squid",
-"texlive",
-"texlive.texlive",
+    "lprng",
+    "lprng.paranoid",
+    "mail-server",
+    "mail-server.paranoid",
+    "postfix",
+    "postfix.paranoid",
+    "sendmail",
+    "sendmail.paranoid",
+    "squid",
+    "texlive",
+    "texlive.texlive",
 )
+
 
 class SUIDCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckSUIDPermissions")
         self.perms = {}
-        files = [ "/etc/permissions", "/etc/permissions.secure" ]
+        files = ["/etc/permissions", "/etc/permissions.secure"]
 
         for file in files:
             if os.path.exists(file):
                 self._parsefile(file)
 
-    def _parsefile(self,file):
+    def _parsefile(self, file):
         lnr = 0
         lastfn = None
         for line in open(file):
-            lnr+=1
+            lnr += 1
             line = line.split('#')[0].split('\n')[0]
             line = line.lstrip()
             if not len(line):
@@ -59,7 +59,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 owner = line[1].replace('.', ':')
                 mode = line[2]
 
-                self.perms[fn] = { "owner" : owner, "mode" : int(mode,8)&07777}
+                self.perms[fn] = {"owner": owner, "mode": int(mode, 8) & 0o7777}
                 # for permissions that don't change and therefore
                 # don't need special handling
                 if file == '/etc/permissions':
@@ -84,11 +84,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             if f.startswith("/etc/permissions.d/"):
 
                 bn = f[19:]
-                if not bn in _permissions_d_whitelist:
+                if bn not in _permissions_d_whitelist:
                     printError(pkg, "permissions-unauthorized-file", f)
 
                 bn = bn.split('.')[0]
-                if not bn in permfiles:
+                if bn not in permfiles:
                     permfiles[bn] = 1
 
         for f in permfiles:
@@ -105,7 +105,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
             if pkgfile.filecaps:
                 printError(pkg, 'permissions-fscaps', '%(file)s has fscaps "%(caps)s"' % \
-                        { 'file':f, 'caps':pkgfile.filecaps})
+                    {'file': f, 'caps': pkgfile.filecaps})
 
             mode = pkgfile.mode
             owner = pkgfile.user+':'+pkgfile.group
@@ -117,11 +117,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 #           S_IFDIR    004   directory
 #           S_IFCHR    002   character device
 #           S_IFIFO    001   FIFO
-            type = (mode>>12)&017;
-            mode &= 07777
+            type = (mode >> 12) & 017
+            mode &= 0o7777
             need_verifyscript = False
-            if f in self.perms or (type == 04 and f+"/" in self.perms):
-                if type == 012:
+            if f in self.perms or (type == 4 and f+"/" in self.perms):
+                if type == 0o12:
                     printWarning(pkg, "permissions-symlink", f)
                     continue
 
@@ -129,13 +129,13 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 m = 0
                 o = "invalid"
-                if type == 04:
+                if type == 4:
                     if f in self.perms:
                         printWarning(pkg, 'permissions-dir-without-slash', f)
                     else:
                         f += '/'
 
-                if type == 010 and mode&0111:
+                if type == 010 and mode & 0111:
                     # pie binaries have 'shared object' here
                     if 'ELF' in pkgfile.magic and not 'shared object' in pkgfile.magic:
                         printError(pkg, 'non-position-independent-executable', f)
@@ -144,21 +144,23 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 o = self.perms[f]['owner']
 
                 if mode != m:
-                    printError(pkg, 'permissions-incorrect', '%(file)s has mode 0%(mode)o but should be 0%(m)o' % \
-                            { 'file':f, 'mode':mode, 'm':m })
+                    printError(pkg, 'permissions-incorrect',
+                               '%(file)s has mode 0%(mode)o but should be 0%(m)o' %
+                               {'file': f, 'mode': mode, 'm': m})
 
                 if owner != o:
-                    printError(pkg, 'permissions-incorrect-owner', '%(file)s belongs to %(owner)s but should be %(o)s' % \
-                            { 'file':f, 'owner':owner, 'o':o })
+                    printError(pkg, 'permissions-incorrect-owner',
+                               '%(file)s belongs to %(owner)s but should be %(o)s' % \
+                               {'file': f, 'owner': owner, 'o': o})
 
             elif type != 012:
 
                 if f+'/' in self.perms:
                     printWarning(pkg, 'permissions-file-as-dir', f+' is a file but listed as directory')
 
-                if mode&06000:
+                if mode & 06000:
                     need_verifyscript = True
-                    msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % { 'file':f, 'mode':mode }
+                    msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % {'file': f, 'mode': mode}
                     if type != 04:
                         printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
@@ -168,11 +170,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         if not 'shared object' in pkgfile.magic:
                             printError(pkg, 'non-position-independent-executable', f)
 
-                if mode&02:
+                if mode & 02:
                     need_verifyscript = True
-                    printError(pkg, 'permissions-world-writable', \
-                            '%(file)s is packaged with world writable permissions (0%(mode)o)' % \
-                            { 'file':f, 'mode':mode })
+                    printError(pkg, 'permissions-world-writable',
+                               '%(file)s is packaged with world writable permissions (0%(mode)o)' %
+                               {'file': f, 'mode': mode})
 
             script = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(pkg[rpm.RPMTAG_POSTINPROG])
             found = False
@@ -192,8 +194,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     (not f in self.perms or not 'static' in self.perms[f]):
 
                 if not script or not found:
-                    printError(pkg, 'permissions-missing-postin', \
-                            "missing %%set_permissions %s in %%post" % f)
+                    printError(pkg, 'permissions-missing-postin',
+                               "missing %%set_permissions %s in %%post" % f)
 
                 need_set_permissions = True
                 script = pkg[rpm.RPMTAG_VERIFYSCRIPT] or pkg[rpm.RPMTAG_VERIFYSCRIPTPROG]
@@ -206,20 +208,19 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                             break
 
                 if not script or not found:
-                    printWarning(pkg, 'permissions-missing-verifyscript', \
-                            "missing %%verify_permissions -e %s" % f)
-
+                    printWarning(pkg, 'permissions-missing-verifyscript',
+                                 "missing %%verify_permissions -e %s" % f)
 
         if need_set_permissions:
             if not 'permissions' in map(lambda x: x[0], pkg.prereq()):
-                printError(pkg, 'permissions-missing-requires', \
-                        "missing 'permissions' in PreReq")
+                printError(pkg, 'permissions-missing-requires',
+                           "missing 'permissions' in PreReq")
 
         if found_suseconfig:
-            printInfo(pkg, 'permissions-suseconfig-obsolete', \
-                    "%run_permissions is obsolete")
+            printInfo(pkg, 'permissions-suseconfig-obsolete',
+                      "%run_permissions is obsolete")
 
-check=SUIDCheck()
+check = SUIDCheck()
 
 if Config.info:
     addDetails(
