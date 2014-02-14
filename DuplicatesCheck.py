@@ -6,15 +6,13 @@
 # Purpose       : Check for duplicate files being packaged separately
 #############################################################################
 
-from Filter import *
 import AbstractCheck
-import rpm
-import re
-import commands
-import stat
 import Config
+import Filter
 import os
+import stat
 import string
+
 
 def get_prefix(file):
     pathlist = string.split(file, '/')
@@ -22,6 +20,7 @@ def get_prefix(file):
         return "/".join(pathlist[0:2])
 
     return "/".join(pathlist[0:3])
+
 
 class DuplicatesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -48,26 +47,29 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
             md5s.setdefault(pkgfile.md5, set()).add(f)
             sizes[pkgfile.md5] = pkgfile.size
 
-        sum=0
+        sum = 0
         for f in md5s:
-            duplicates=md5s[f]
-            if len(duplicates) == 1: continue
+            duplicates = md5s[f]
+            if len(duplicates) == 1:
+                continue
 
-            one=duplicates.pop()
+            one = duplicates.pop()
             one_is_config = False
             if one in configFiles:
                 one_is_config = True
 
-            partition=get_prefix(one)
+            partition = get_prefix(one)
 
             st = os.stat(pkg.dirName() + '/' + one)
             diff = 1 + len(duplicates) - st[stat.ST_NLINK]
-            if diff <= 0: 
+            if diff <= 0:
                 for dupe in duplicates:
                     if partition != get_prefix(dupe):
-                        printError(pkg,"hardlink-across-partition",one,dupe)
+                        Filter.printError(pkg, "hardlink-across-partition",
+                                          one, dupe)
                     if one_is_config and dupe in configFiles:
-                        printError(pkg,"hardlink-across-config-files",one,dupe)
+                        Filter.printError(pkg, "hardlink-across-config-files",
+                                          one, dupe)
                 continue
 
             for dupe in duplicates:
@@ -75,15 +77,16 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
                     diff = diff - 1
             sum += sizes[f] * diff
             if sizes[f] and diff > 0:
-                printWarning(pkg, 'files-duplicate', one,":".join(duplicates))
+                Filter.printWarning(pkg, 'files-duplicate', one,
+                                    ":".join(duplicates))
 
         if sum > 100000:
-            printError(pkg, 'files-duplicated-waste', sum)
+            Filter.printError(pkg, 'files-duplicated-waste', sum)
 
-check=DuplicatesCheck()
+check = DuplicatesCheck()
 
 if Config.info:
-    addDetails(
+    Filter.addDetails(
 'files-duplicated-waste',
 """Your package contains duplicated files that are not hard- or symlinks.
 You should use the %fdupes macro to link the files to one.""",
@@ -97,4 +100,4 @@ the first two levels of a path, e.g. between /srv/ftp and /srv/www or
 """Your package contains two config files that are apparently hardlinked.
 Hardlinking a config file is probably not what you want. Please double
 check and report false positives."""
-)
+    )
