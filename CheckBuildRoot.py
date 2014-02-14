@@ -6,14 +6,13 @@
 # Purpose       : Check for files containing $RPM_BUILD_ROOT
 #############################################################################
 
-from Filter import *
 import AbstractCheck
-import rpm
-import re
-import os
-import commands
 import Config
+import Filter
+import re
+import rpm
 import stat
+
 
 class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
@@ -30,12 +29,12 @@ class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
             return
 
         if len(pkg.grep(self.build_root_re, filename)):
-            printError(pkg, "file-contains-buildroot", filename)
+            Filter.printError(pkg, "file-contains-buildroot", filename)
 
-check=BuildRootCheck()
+check = BuildRootCheck()
 
 if Config.info:
-    addDetails(
-'file-contains-buildroot',
-"Your file contains traces of $RPM_BUILD_ROOT."
-)
+    Filter.addDetails(
+        'file-contains-buildroot',
+        "Your file contains traces of $RPM_BUILD_ROOT."
+    )
