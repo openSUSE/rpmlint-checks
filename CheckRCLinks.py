@@ -5,17 +5,19 @@
 # Purpose       : Check for missing rc* links and shadowed init scripts
 #############################################################################
 
+import os
+import stat
+
 from Filter import *
 import AbstractCheck
-import os
 import Config
-import stat
+
 
 class RCLinksCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, 'CheckRCLinks')
 
-    def check(self, pkg ):
+    def check(self, pkg):
         if pkg.isSource():
             return
 
@@ -27,21 +29,21 @@ class RCLinksCheck(AbstractCheck.AbstractCheck):
             if fname in pkg.ghostFiles():
                 continue
 
-            if stat.S_ISLNK(pkgfile.mode) and (fname.startswith('/usr/sbin/rc') \
-                    or fname.startswith('/sbin/rc')):
+            if (stat.S_ISLNK(pkgfile.mode) and
+                    (fname.startswith('/usr/sbin/rc') or
+                     fname.startswith('/sbin/rc'))):
                 rclinks.add(fname.partition('/rc')[2])
             elif fname.startswith('/usr/lib/systemd/system/'):
+                basename = os.path.basename(fname)
                 if '@' in fname:
                     continue
-                if fname.endswith('.service'):
-                    rccandidates.add(os.path.basename(fname).split('.service')[0])
-                if fname.endswith('.target'):
-                    rccandidates.add(os.path.basename(fname).split('.target')[0])
+                if fname.endswith('.service') or fname.endswith('.target'):
+                    rccandidates.add(basename.rpartition('.')[0])
             elif fname.startswith('/etc/init.d/'):
                 basename = os.path.basename(fname)
-                if not basename.startswith('rc') \
-                    and not basename.startswith('boot.'):
-                        initscripts.add(basename)
+                if not (basename.startswith('rc') or
+                        basename.startswith('boot.')):
+                    initscripts.add(basename)
 
         for fname in sorted(initscripts):
             if fname in rccandidates:
@@ -53,8 +55,7 @@ class RCLinksCheck(AbstractCheck.AbstractCheck):
             if fname not in sorted(rclinks):
                 printWarning(pkg, "suse-missing-rclink", fname)
 
-check=RCLinksCheck()
-
+check = RCLinksCheck()
 if Config.info:
     addDetails(
 'suse-missing-rclink',

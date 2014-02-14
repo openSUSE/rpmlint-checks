@@ -5,20 +5,19 @@
 # Purpose       : Check for binaries containing build date
 #############################################################################
 
-from Filter import *
 import AbstractCheck
-import rpm
-import re
-import os
-import commands
 import Config
+import Filter
+import re
 import stat
 import time
+
 
 class BuildDateCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
         AbstractCheck.AbstractFilesCheck.__init__(self, "CheckBuildDate", ".*")
-        self.looksliketime = re.compile('(2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9])')
+        self.looksliketime = re.compile(
+            '(2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9])')
         self.istoday = re.compile(time.strftime("%b %e %Y"))
 
     def check_file(self, pkg, filename):
@@ -34,16 +33,19 @@ class BuildDateCheck(AbstractCheck.AbstractFilesCheck):
 
         if len(grep_date):
             if len(grep_time):
-                printError(pkg, "file-contains-date-and-time", filename)
+                Filter.printError(pkg, "file-contains-date-and-time", filename)
             else:
-                printWarning(pkg, "file-contains-current-date", filename)
+                Filter.printWarning(pkg, "file-contains-current-date",
+                                    filename)
 
-check=BuildDateCheck()
+check = BuildDateCheck()
 
 if Config.info:
-    addDetails(
+    Filter.addDetails(
 'file-contains-current-date',
-"""Your file contains the current date, this may cause the package to rebuild in excess.""",
+"""Your file contains the current date, this may cause the package
+to rebuild in excess.""",
 'file-contains-date-and-time',
-"""Your file uses  __DATE and __TIME__ this causes the package to rebuild when not needed"""
+"""Your file uses  __DATE and __TIME__ this causes the package to
+rebuild when not needed"""
 )

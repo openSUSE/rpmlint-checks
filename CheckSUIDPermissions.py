@@ -117,7 +117,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 #           S_IFDIR    004   directory
 #           S_IFCHR    002   character device
 #           S_IFIFO    001   FIFO
-            type = (mode >> 12) & 017
+            type = (mode >> 12) & 0o17
             mode &= 0o7777
             need_verifyscript = False
             if f in self.perms or (type == 4 and f+"/" in self.perms):
@@ -135,7 +135,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     else:
                         f += '/'
 
-                if type == 010 and mode & 0111:
+                if type == 0o10 and mode & 0o111:
                     # pie binaries have 'shared object' here
                     if 'ELF' in pkgfile.magic and not 'shared object' in pkgfile.magic:
                         printError(pkg, 'non-position-independent-executable', f)
@@ -153,24 +153,24 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                '%(file)s belongs to %(owner)s but should be %(o)s' % \
                                {'file': f, 'owner': owner, 'o': o})
 
-            elif type != 012:
+            elif type != 0o12:
 
                 if f+'/' in self.perms:
                     printWarning(pkg, 'permissions-file-as-dir', f+' is a file but listed as directory')
 
-                if mode & 06000:
+                if mode & 0o6000:
                     need_verifyscript = True
                     msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % {'file': f, 'mode': mode}
-                    if type != 04:
+                    if type != 0o4:
                         printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
-                    if type == 010:
+                    if type == 0o10:
                         if not 'shared object' in pkgfile.magic:
                             printError(pkg, 'non-position-independent-executable', f)
 
-                if mode & 02:
+                if mode & 0o2:
                     need_verifyscript = True
                     printError(pkg, 'permissions-world-writable',
                                '%(file)s is packaged with world writable permissions (0%(mode)o)' %

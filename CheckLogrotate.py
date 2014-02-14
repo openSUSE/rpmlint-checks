@@ -34,7 +34,7 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
                             printError(pkg, "logrotate-duplicate", n)
                         else:
                             dirs[n] = o
-                except Exception, x:
+                except Exception as x:
                     printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
 
         for d in sorted(dirs.keys()):
@@ -42,11 +42,11 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
                 if d != '/var/log':
                     printError(pkg, 'suse-logrotate-log-dir-not-packaged', d)
                 continue
-            mode = files[d].mode&0777
+            mode = files[d].mode&0o777
             if files[d].user != 'root' and (dirs[d] is None or dirs[d][0] != files[d].user):
                 printError(pkg, 'suse-logrotate-user-writable-log-dir', \
                         "%s %s:%s %04o"%(d, files[d].user, files[d].group, mode))
-            elif files[d].group != 'root' and mode&020 and (dirs[d] is None or dirs[d][1] != files[d].group):
+            elif files[d].group != 'root' and mode&0o20 and (dirs[d] is None or dirs[d][1] != files[d].group):
                     printError(pkg, 'suse-logrotate-user-writable-log-dir', \
                         "%s %s:%s %04o"%(d, files[d].user, files[d].group, mode))
 

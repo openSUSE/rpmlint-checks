@@ -10,7 +10,6 @@ from Filter import *
 import AbstractCheck
 import rpm
 import re
-import commands
 import stat
 import Config
 import os

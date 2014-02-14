@@ -27,7 +27,7 @@ class DBusPolicyCheck(AbstractCheck.AbstractCheck):
             if f in pkg.ghostFiles():
                 continue
 
-            # catch xml exceptions 
+            # catch xml exceptions
             try:
                 if f.startswith("/etc/dbus-1/system.d/"):
                     send_policy_seen = False
@@ -52,11 +52,11 @@ class DBusPolicyCheck(AbstractCheck.AbstractCheck):
                             if ( deny.hasAttribute('send_interface') \
                                 and not deny.hasAttribute('send_destination')):
                                     printError(pkg, 'dbus-policy-deny-without-destination', "%(file)s: %(xml)s" % { 'file':f, 'xml':deny.toxml() })
-        
+
                     if not send_policy_seen:
                         printError(pkg, 'dbus-policy-missing-allow', "%(file)s does not allow communication" % { 'file':f })
 
-            except Exception, x:
+            except Exception as x:
                 printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
                 continue
 

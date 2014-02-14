@@ -8,13 +8,9 @@
 
 from Filter import *
 import AbstractCheck
-import rpm
-import re
-import commands
-import stat
 import Config
-import os
-import string
+import re
+import stat
 
 insserv_regex=re.compile('^\s*sbin/insserv', re.MULTILINE)
 preun_regex=re.compile('^\s*/etc/init.d/\S+ stop', re.MULTILINE)
