@@ -8,7 +8,9 @@
 
 import AbstractCheck
 import Config
-from Filter import printWarning, printError, addDetails
+from Filter import addDetails
+from Filter import printError
+from Filter import printWarning
 import os
 import Pkg
 import rpm
@@ -334,10 +336,12 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                             dirs.add(lib_dir)
                         if bi.soname in pkg_requires:
                             # But not if the library is used by the pkg itself
-                            # This avoids program packages with their own private lib
-                            # FIXME: we'd need to check if somebody else links to this lib
+                            # This avoids program packages with their own
+                            # private lib
+                            # FIXME: we'd need to check if somebody else links
+                            # to this lib
                             reqlibs.add(bi.soname)
-                except:
+                except Exception:
                     pass
             pass
 
