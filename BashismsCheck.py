@@ -32,7 +32,7 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
                     status, output = Pkg.getstatusoutput(["checkbashisms", filename])
                     if status == 1:
                         printInfo(pkg, "potential-bashisms", filename)
-                except Exception, x:
+                except Exception as x:
                     printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':filename, 'x':x})
         finally:
             f.close()

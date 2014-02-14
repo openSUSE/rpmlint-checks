@@ -26,7 +26,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                 self._parsefile(filename)
 
     def _parsefile(self,filename):
-        for line in file(filename):
+        for line in open(filename):
             line = line.split('#')[0].split('\n')[0]
             if len(line):
                 line = re.split(r'\s+', line)
@@ -77,7 +77,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             if f in pkg.ghostFiles():
                 continue
 
-            # catch xml exceptions 
+            # catch xml exceptions
             try:
                 if f.startswith("/usr/share/PolicyKit/policy/")\
                 or f.startswith("/usr/share/polkit-1/actions/"):
@@ -123,7 +123,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                                         'polkit-cant-acquire-privilege', '%s (%s:%s:%s)' % (action, \
                                     settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
 
-            except Exception, x:
+            except Exception as x:
                 printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
                 continue
 

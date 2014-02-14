@@ -6,21 +6,18 @@
 # Purpose       : Check for common files being packaged
 #############################################################################
 
-from Filter import *
 import AbstractCheck
-import rpm
-import re
-import commands
-import stat
 import Config
-import os
-import string
+import Filter
+import re
+
 
 class CommonFilesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
         AbstractCheck.AbstractCheck.__init__(self, "CheckCommonFiles")
-        self.sources_am_re = re.compile('([\w\d_]+_SOURCES\s*=|\s*SUBDIRS\s*=)')
+        self.sources_am_re = re.compile(
+            '([\w\d_]+_SOURCES\s*=|\s*SUBDIRS\s*=)')
 
     def check(self, pkg):
 
@@ -37,7 +34,7 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                     'cf8c4d1a5ab88db006c47ae2b51a6b30',
                     '5d4638159851671944108691f23e4f28',
                     '0d6be33865b76025c20b48bcac87adb7'):
-                printError(pkg, "generic-build-instructions", f)
+                Filter.printError(pkg, "generic-build-instructions", f)
 
             # bnc 379919
             #if len(md5) and md5 in (
@@ -49,22 +46,24 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
             #    printError(pkg, "duplicated-file-gpl-v3", f)
 
             # bsd causes the false positive COPYING.BSD
-            if len(md5) and f.rsplit('/',1)[1][0].lower() == 'r' and f.rsplit('.',1)[-1].lower() in (
-              'aix', 'bsd', 'dos', 'hpux', 'irix', 'os2', 'mac', 'macos', 'tru64',
-              'sco', 'vms', 'win32', 'win', 'solaris'):
-                printWarning(pkg, "non-linux-readme", f)
+            if (len(md5) and f.rsplit('/', 1)[1][0].lower() == 'r' and
+                f.rsplit('.', 1)[-1].lower() in (
+                    'aix', 'bsd', 'dos', 'hpux', 'irix', 'os2', 'mac', 'macos',
+                    'tru64', 'sco', 'vms', 'win32', 'win', 'solaris')):
+                Filter.printWarning(pkg, "non-linux-readme", f)
 
-            if f.endswith("/Makefile.am") and f[:-3] + ".in" in files and  f in pkg.docFiles():
+            if (f.endswith("/Makefile.am") and f[:-3] + ".in" in files and
+                    f in pkg.docFiles()):
                 if not len(pkg.grep(self.sources_am_re, f)):
-                    printError(pkg, "makefile-junk", f)
-                    printError(pkg, "makefile-junk", f[:-3] + ".in")
+                    Filter.printError(pkg, "makefile-junk", f)
+                    Filter.printError(pkg, "makefile-junk", f[:-3] + ".in")
                     if f[:-3] in files:
-                        printError(pkg, "makefile-junk", f[:-3])
+                        Filter.printError(pkg, "makefile-junk", f[:-3])
 
-check=CommonFilesCheck()
+check = CommonFilesCheck()
 
 if Config.info:
-    addDetails(
+    Filter.addDetails(
 'generic-build-instructions',
 """Your package contains a file that contains the FSF generic
 configure/make/make install instructions. Those are useless
@@ -85,5 +84,5 @@ consider removing them from your package.""",
 """Your package contains makefiles that only make sense in a
 source package. Did you package a complete directory from the
 tarball by using %doc? Consider removing Makefile* from this
-directory at the end of your %install section to reduce package bloat."""
-)
+directory at the end of your %install section to reduce bloat."""
+    )

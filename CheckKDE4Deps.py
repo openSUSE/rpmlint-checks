@@ -12,7 +12,6 @@ import rpm
 import re
 import os
 import string
-import commands
 import Config
 import Pkg
 import stat
@@ -113,7 +112,7 @@ if Config.info:
 """Please add %kde4_runtime_requires to the (sub-)package to have the right versioned
 dependency on the KDE version it was built against.""",
 'suse-kde4-missing-dependency',
-"""The package builds against a KDE4 related library, but it is missing the runtime 
+"""The package builds against a KDE4 related library, but it is missing the runtime
 depencency macro. please add the suggested macro to the (sub-)package listing in
 the spec file."""
 )
