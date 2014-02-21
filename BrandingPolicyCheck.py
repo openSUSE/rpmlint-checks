@@ -108,7 +108,7 @@ check = BrandingPolicyCheck()
 if Config.info:
     addDetails(
 'suse-branding-specific-branding-req',
-"""bla""",
+"""packages must not require a specific branding or theme package to allow for differnt themes""",
 'suse-branding-no-branding-provides',
 """Please add a provides entry similar to 'Provides: %name-branding = %version'.""",
 'suse-branding-unversioned-provides',
