@@ -17,6 +17,10 @@ import Pkg
 import stat
 
 _kde4_pimlibs=(
+        "libakonadi-kde.so.4",
+        "libakonadi-kabc.so.4",
+        "libakonadi-kcal.so.4",
+        "libakonadi-kmime.so.4",
         "libgpgme++-pth.so.1.1.0",
         "libgpgme++-pthread.so.1.1.0",
         "libgpgme++.so.1.1.0",
@@ -45,11 +49,7 @@ _kde4_libkdepim4 = (
 )
 
 _kde4_libakonadi4 = (
-        "libakonadi-kde.so.4",
-        "libakonadi-kabc.so.4",
-        "libakonadi-kcal.so.4",
-        "libakonadi-kmime.so.4",
-        "libakonadiprotocolinternals.so.1",
+        "libakonadiprotocolinternals.so.1"
 )
 
 class KDE4Check(AbstractCheck.AbstractCheck):
