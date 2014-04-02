@@ -83,7 +83,7 @@ if Config.info:
 'suse-policy-kmp-excessive-supplements',
 """ """,
 'suse-policy-kmp-missing-supplements',
-"""Make sure your 'BuildRequires:' include 'kernel-syms' and 'module-init-tools'
+"""Make sure your 'BuildRequires:' include 'kernel-syms' and 'modutils'
 for proper dependencies to be built.
 """,
 )
