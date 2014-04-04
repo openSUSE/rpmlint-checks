@@ -80,6 +80,7 @@ _goodprefixes = (
     '/var/adm/',
     '/var/nis/',
     '/emul/',
+    '/run/',
 )
 
 # computed from goodprefixes.
