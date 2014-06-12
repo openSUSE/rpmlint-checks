@@ -15,10 +15,9 @@ from Filter import addDetails, printWarning
 
 # check only for files copied to this directory
 SYSTEMD_SERVICE_DIRECTORY = "/usr/lib/systemd/system"
-
 # we could extend this later on
-CHECKED_UNITS = [ 'service', 'socket' ]
-CHECKED_UNITS_REGEXP = re.compile( "(" + '|'.join(CHECKED_UNITS) + ")$"  )
+CHECKED_UNITS = [ 'service', 'socket', 'target' ]
+CHECKED_UNITS_REGEXP = re.compile( SYSTEMD_SERVICE_DIRECTORY + ".+\.(" + '|'.join(CHECKED_UNITS) + ")$"  )
 
 class CheckSystemdInstall(AbstractCheck.AbstractCheck):
 
@@ -38,7 +37,7 @@ class CheckSystemdInstall(AbstractCheck.AbstractCheck):
 
         for fname, pkgfile in pkg.files().items():
 
-            if fname.startswith( SYSTEMD_SERVICE_DIRECTORY ) and CHECKED_UNITS_REGEXP.search( fname ):
+            if CHECKED_UNITS_REGEXP.search( fname ):
                 processed = { 'pre': False, 'post': False, 'preun': False, 'postun': False }
 
                 escaped_basename = re.escape( os.path.basename( fname ) )
