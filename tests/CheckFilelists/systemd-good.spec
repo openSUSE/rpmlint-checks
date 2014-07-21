@@ -1,4 +1,4 @@
-Name:		systemd-bad
+Name:		systemd-good
 Version:	0
 Release:	0
 Group:          Development/Tools/Building
