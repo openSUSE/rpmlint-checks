@@ -1,0 +1,4 @@
+openSUSE specific rpmlint checks
+
+when adding or modifying a test make sure to update
+https://github.com/openSUSE/rpmlint-tests as well!
