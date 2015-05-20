@@ -273,7 +273,7 @@ _checks = [
     },
     {
         'error': 'suse-filelist-forbidden-opt',
-        'details': """/opt may not be used by a SUSE.
+        'details': """/opt may not be used by distribution packages.
                       It is reserved for 3rd party packagers""",
     },
     {
