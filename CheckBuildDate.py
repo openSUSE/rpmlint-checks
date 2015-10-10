@@ -29,9 +29,9 @@ class BuildDateCheck(AbstractCheck.AbstractFilesCheck):
 
         grep_date = pkg.grep(self.istoday, filename)
 
-        grep_time = pkg.grep(self.looksliketime, filename)
-
         if len(grep_date):
+            grep_time = pkg.grep(self.looksliketime, filename)
+
             if len(grep_time):
                 Filter.printError(pkg, "file-contains-date-and-time", filename)
             else:
