@@ -31,7 +31,7 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
     @classmethod
     def read_ghost_files(cls, script):
 
-        if not script or not 'update-alternatives' in script:
+        if not script or not b'update-alternatives' in script:
             return set()
 
         ghost_files = set()

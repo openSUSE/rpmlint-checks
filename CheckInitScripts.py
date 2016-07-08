@@ -25,8 +25,8 @@ class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
             return
 
         files = pkg.files()
-        bins_list = filter(lambda f: (f.startswith("/usr/bin") \
-                or f.startswith("/usr/sbin")) and stat.S_ISREG(files[f].mode), files.keys())
+        bins_list = (f for f in files.keys() if (f.startswith("/usr/bin") \
+                or f.startswith("/usr/sbin")) and stat.S_ISREG(files[f].mode))
 
         for f, pkgfile in files.items():
 
@@ -35,7 +35,7 @@ class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
 
             boot_script = f.startswith('/etc/init.d/boot.')
 
-            input_f = file(pkg.dirName() + '/' + f, "r")
+            input_f = open(pkg.dirName() + '/' + f, "r")
             found_remote_fs = False
             for l in input_f:
                 if l.startswith('# Required-Start') or l.startswith('# Should-Start'):
@@ -65,7 +65,7 @@ class CheckInitScripts(AbstractCheck.AbstractFilesCheck):
                         if dep == '4':
                             printError(pkg, "init-script-runlevel-4", f)
 
-            if not found_remote_fs and bins_list:
+            if not found_remote_fs and any(bins_list):
                 printWarning(pkg, "non-remote_fs-dependency", f)
 
 

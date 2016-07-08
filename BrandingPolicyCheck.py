@@ -22,7 +22,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         if pkg.isSource():
             return
 
-        pkg_requires = set(map(lambda x: string.split(x[0], '(')[0], pkg.requires()))
+        pkg_requires = set(map(lambda x: str.split(x[0], '(')[0], pkg.requires()))
         pkg_conflicts = set(map(lambda x: x[0], pkg.conflicts()))
 
         # verify that only generic branding is required by non-branding packages
@@ -52,7 +52,7 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
         branding_style = pkg.name.partition('-branding-')[2]
         generic_branding = ("%s-branding" % (branding_basename))
 
-        pkg_provides = set(map(lambda x: string.split(x[0], '(')[0], pkg.provides()))
+        pkg_provides = set(map(lambda x: str.split(x[0], '(')[0], pkg.provides()))
         pkg_supplements = set(map(lambda x: x[0], pkg.supplements()))
 
         # verify that it only supplements with packageand

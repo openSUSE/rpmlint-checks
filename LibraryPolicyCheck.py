@@ -284,7 +284,7 @@ from BinariesCheck import BinaryInfo
 
 
 def libname_from_soname(soname):
-    libname = string.split(soname, '.so.')
+    libname = str.split(soname, '.so.')
     if len(libname) == 2:
         if libname[0][-1:].isdigit():
             libname = string.join(libname, '-')
@@ -319,7 +319,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         libs_to_dir = dict()
         dirs = set()
         reqlibs = set()
-        pkg_requires = set(map(lambda x: string.split(x[0], '(')[0],
+        pkg_requires = set(map(lambda x: str.split(x[0], '(')[0],
                                pkg.requires()))
 
         for f, pkgfile in files.items():
@@ -432,7 +432,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             done = set()
             for dir in dirs:
                 if dir.startswith(sysdir + '/'):
-                    ssdir = string.split(dir[len(sysdir)+1:], '/')[0]
+                    ssdir = str.split(dir[len(sysdir)+1:], '/')[0]
                     if not ssdir[-1].isdigit():
                         cdirs.add(sysdir+'/'+ssdir)
                     done.add(dir)

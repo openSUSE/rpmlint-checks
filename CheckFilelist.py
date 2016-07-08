@@ -397,7 +397,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
         invalidopt = set()
 
         isSUSE = (pkg.header[RPMTAG_VENDOR] and
-                  'SUSE' in pkg.header[RPMTAG_VENDOR])
+                  b'SUSE' in pkg.header[RPMTAG_VENDOR])
 
         # the checks here only warn about a directory once rather
         # than reporting potentially hundreds of files individually

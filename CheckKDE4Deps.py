@@ -61,7 +61,7 @@ class KDE4Check(AbstractCheck.AbstractCheck):
         if pkg.isSource():
             return
 
-        pkg_requires = set(map(lambda x: string.split(x[0],'(')[0], pkg.requires()))
+        pkg_requires = set(map(lambda x: str.split(x[0],'(')[0], pkg.requires()))
 
         if not "libkdecore.so.5" in pkg_requires:
             return
