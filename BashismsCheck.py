@@ -34,6 +34,8 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
                         printInfo(pkg, "potential-bashisms", filename)
                 except Exception as x:
                     printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':filename, 'x':x})
+        except UnicodeDecodeError:
+            pass
         finally:
             f.close()
 

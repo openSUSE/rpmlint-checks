@@ -15,7 +15,7 @@ import string
 
 
 def get_prefix(file):
-    pathlist = string.split(file, '/')
+    pathlist = str.split(file, '/')
     if len(pathlist) == 3:
         return "/".join(pathlist[0:2])
 
