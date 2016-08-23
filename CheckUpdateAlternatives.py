@@ -38,6 +38,7 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
 
         for command in (
                 c.replace('\\\n', '').strip()
+                c.replace('\\\n', '').replace('"','').strip()
                 for c in script.split('update-alternatives')
                 if cls.INSTALL in c):
 
