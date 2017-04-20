@@ -423,7 +423,8 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
 
         # Check for non-versioned directories beyond sysdirs in package
         sysdirs = ('/lib', '/lib64', '/usr/lib', '/usr/lib64',
-                   '/usr/share/doc/packages', '/usr/share')
+                   '/usr/share', '/usr/share/licenses',
+                   '/usr/share/doc/packages')
         cdirs = set()
         for sysdir in sysdirs:
             done = set()
