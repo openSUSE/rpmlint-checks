@@ -13,6 +13,7 @@ from Filter import printError
 from Filter import printWarning
 import os
 import Pkg
+import re
 import rpm
 import stat
 import string
@@ -280,6 +281,10 @@ _essential_dependencies = (
     "libz.so.1",
 )
 
+_policy_name_misdetects_re = re.compile(
+    '^libreoffice(-.*)?|^librecad|^libressl'
+)
+
 from BinariesCheck import BinaryInfo
 
 
@@ -351,7 +356,9 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
 
         # If this is a program package (all libs it provides are
         # required by itself), bail out
-        if not pkg.name.startswith("lib") and len(libs.difference(reqlibs)) == 0:
+        program_package = (not pkg.name.startswith("lib") or
+            _policy_name_misdetects_re.match(pkg.name));
+        if program_package and len(libs.difference(reqlibs)) == 0:
             return
 
         std_lib_package = False
