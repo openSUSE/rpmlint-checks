@@ -55,6 +55,7 @@ class RCLinksCheck(AbstractCheck.AbstractCheck):
             if fname not in sorted(rclinks):
                 printWarning(pkg, "suse-missing-rclink", fname)
 
+
 check = RCLinksCheck()
 if Config.info:
     addDetails(

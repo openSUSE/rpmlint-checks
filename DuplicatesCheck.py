@@ -11,7 +11,6 @@ import Config
 import Filter
 import os
 import stat
-import string
 
 
 def get_prefix(file):
@@ -82,6 +81,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
 
         if sum > 100000:
             Filter.printError(pkg, 'files-duplicated-waste', sum)
+
 
 check = DuplicatesCheck()
 

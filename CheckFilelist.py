@@ -40,6 +40,7 @@ def ghostfile(pkg, f):
     ghosts = pkg.ghostFiles()
     return f in ghosts
 
+
 _goodprefixes = (
     '/bin/',
     '/boot/',
@@ -434,7 +435,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
                 if isSUSE and (provider == 'suse' or provider == 'novell'):
                     continue
 
-                d = '/opt/'+provider
+                d = '/opt/' + provider
                 invalidopt.add(d)
 
         for f in invalidfhs:
@@ -446,6 +447,7 @@ class FilelistCheck(AbstractCheck.AbstractCheck):
             printError(pkg, 'suse-filelist-forbidden-opt',
                        '%(file)s is not allowed for official SUSE packages' %
                        {'file': f})
+
 
 check = FilelistCheck()
 

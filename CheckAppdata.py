@@ -10,11 +10,9 @@
 
 from Filter import *
 import AbstractCheck
-import re
-import os
-import string
 from xml.dom.minidom import parse
 from xml.parsers.expat import ExpatError
+
 
 class AppdataCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
@@ -26,7 +24,8 @@ class AppdataCheck(AbstractCheck.AbstractFilesCheck):
         except ExpatError:
             printError(pkg, 'invalid-xml-in-appdata', filename)
 
-check=AppdataCheck()
+
+check = AppdataCheck()
 
 if Config.info:
     addDetails(

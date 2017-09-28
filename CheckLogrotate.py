@@ -8,9 +8,8 @@
 
 from Filter import *
 import AbstractCheck
-import re
 import os
-import string
+
 
 class LogrotateCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -35,20 +34,22 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
                         else:
                             dirs[n] = o
                 except Exception as x:
-                    printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
+                    printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file': f, 'x': x})
 
         for d in sorted(dirs.keys()):
-            if not d in files:
+            if d not in files:
                 if d != '/var/log':
                     printError(pkg, 'suse-logrotate-log-dir-not-packaged', d)
                 continue
-            mode = files[d].mode&0o777
+            mode = files[d].mode & 0o777
             if files[d].user != 'root' and (dirs[d] is None or dirs[d][0] != files[d].user):
-                printError(pkg, 'suse-logrotate-user-writable-log-dir', \
-                        "%s %s:%s %04o"%(d, files[d].user, files[d].group, mode))
-            elif files[d].group != 'root' and mode&0o20 and (dirs[d] is None or dirs[d][1] != files[d].group):
-                    printError(pkg, 'suse-logrotate-user-writable-log-dir', \
-                        "%s %s:%s %04o"%(d, files[d].user, files[d].group, mode))
+                printError(
+                    pkg, 'suse-logrotate-user-writable-log-dir',
+                    "%s %s:%s %04o" % (d, files[d].user, files[d].group, mode))
+            elif files[d].group != 'root' and mode & 0o20 and (dirs[d] is None or dirs[d][1] != files[d].group):
+                    printError(
+                        pkg, 'suse-logrotate-user-writable-log-dir',
+                        "%s %s:%s %04o" % (d, files[d].user, files[d].group, mode))
 
     # extremely primitive logrotate parser
     def parselogrotateconf(self, root, f):
@@ -61,13 +62,12 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
                 continue
             if not currentdirs:
                 if line.endswith('{'):
-                    insection = True
                     for logfile in line.split(' '):
                         logfile = logfile.strip()
                         if len(logfile) == 0 or logfile == '{':
                             continue
                         dn = os.path.dirname(logfile)
-                        if not dn in dirs:
+                        if dn not in dirs:
                             currentdirs.append(dn)
                             dirs[dn] = None
             else:
@@ -80,7 +80,7 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
         return dirs
 
 
-check=LogrotateCheck()
+check = LogrotateCheck()
 
 if Config.info:
     addDetails(

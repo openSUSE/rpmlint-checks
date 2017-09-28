@@ -1,10 +1,8 @@
 # vim:sw=4:et
-#############################################################################
 # File          : CheckCommonFiles.py
 # Package       : rpmlint
 # Author        : Dirk Mueller
 # Purpose       : Check for common files being packaged
-#############################################################################
 
 import AbstractCheck
 import Config
@@ -37,11 +35,11 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                 Filter.printError(pkg, "generic-build-instructions", f)
 
             # bnc 379919
-            #if len(md5) and md5 in (
+            # if len(md5) and md5 in (
             #        '94d55d512a9ba36caa9b7df079bae19f'):
             #    printError(pkg, "duplicated-file-gpl-v2", f)
 
-            #if len(md5) and md5 in (
+            # if len(md5) and md5 in (
             #        'd32239bcb673463ab874e80d47fae504'):
             #    printError(pkg, "duplicated-file-gpl-v3", f)
 
@@ -59,6 +57,7 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
                     Filter.printError(pkg, "makefile-junk", f[:-3] + ".in")
                     if f[:-3] in files:
                         Filter.printError(pkg, "makefile-junk", f[:-3])
+
 
 check = CommonFilesCheck()
 
