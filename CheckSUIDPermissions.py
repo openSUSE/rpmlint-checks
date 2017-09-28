@@ -6,11 +6,14 @@
 # Purpose       : Check for /etc/permissions violations
 #############################################################################
 
-from Filter import *
+from __future__ import print_function
+
+from Filter import printWarning, printError, printInfo, addDetails, Config
 import AbstractCheck
 import os
 import re
 import rpm
+import sys
 
 _permissions_d_whitelist = (
     "lprng",
@@ -31,19 +34,18 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckSUIDPermissions")
         self.perms = {}
-        files = ["/etc/permissions", "/etc/permissions.secure"]
 
-        for file in files:
-            if os.path.exists(file):
-                self._parsefile(file)
+        for fname in ('/etc/permissions', '/etc/permissions.secure'):
+            if os.path.exists(fname):
+                self._parsefile(fname)
 
-    def _parsefile(self, file):
+    def _parsefile(self, fname):
         lnr = 0
         lastfn = None
-        for line in open(file):
+        for line in open(fname):
             lnr += 1
             line = line.split('#')[0].split('\n')[0]
-            line = line.lstrip()
+            line = line.strip()
             if not len(line):
                 continue
 
@@ -53,19 +55,21 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     self.perms[lastfn]['fscaps'] = line
                 continue
 
-            line = re.split(r'\s+', line)
+            line = re.split(r'\s+', line.strip())
             if len(line) == 3:
                 fn = line[0]
                 owner = line[1].replace('.', ':')
                 mode = line[2]
 
-                self.perms[fn] = {"owner": owner, "mode": int(mode, 8) & 0o7777}
+                self.perms[fn] = {"owner": owner,
+                                  "mode": int(mode, 8) & 0o7777}
                 # for permissions that don't change and therefore
                 # don't need special handling
-                if file == '/etc/permissions':
+                if fname == '/etc/permissions':
                     self.perms[fn]['static'] = True
             else:
-                print >>sys.stderr, "invalid line %d " % lnr
+                print('%s: Malformatted line %d: %s...' %
+                      (fname, lnr, ' '.join(line)), file=sys.stderr)
 
     def check(self, pkg):
         global _permissions_d_whitelist
@@ -104,8 +108,9 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         for f, pkgfile in files.items():
 
             if pkgfile.filecaps:
-                printError(pkg, 'permissions-fscaps', '%(file)s has fscaps "%(caps)s"' % \
-                    {'file': f, 'caps': pkgfile.filecaps})
+                printError(pkg, 'permissions-fscaps',
+                                '%(fname)s has fscaps "%(caps)s"' %
+                                {'fname': f, 'caps': pkgfile.filecaps})
 
             mode = pkgfile.mode
             owner = pkgfile.user+':'+pkgfile.group
@@ -137,26 +142,32 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 if type == 0o10 and mode & 0o111:
                     # pie binaries have 'shared object' here
-                    if 'ELF' in pkgfile.magic and not 'shared object' in pkgfile.magic:
-                        printError(pkg, 'non-position-independent-executable', f)
+                    if ('ELF' in pkgfile.magic and
+                            'shared object' not in pkgfile.magic):
+                        printError(pkg, 'non-position-independent-executable',
+                                   f)
 
                 m = self.perms[f]['mode']
                 o = self.perms[f]['owner']
 
                 if mode != m:
-                    printError(pkg, 'permissions-incorrect',
-                               '%(file)s has mode 0%(mode)o but should be 0%(m)o' %
-                               {'file': f, 'mode': mode, 'm': m})
+                    printError(
+                        pkg, 'permissions-incorrect',
+                        '%(file)s has mode 0%(mode)o but should be 0%(m)o' %
+                        {'file': f, 'mode': mode, 'm': m})
 
                 if owner != o:
-                    printError(pkg, 'permissions-incorrect-owner',
-                               '%(file)s belongs to %(owner)s but should be %(o)s' % \
-                               {'file': f, 'owner': owner, 'o': o})
+                    printError(
+                        pkg, 'permissions-incorrect-owner',
+                        '%(file)s belongs to %(owner)s but should be %(o)s' %
+                        {'file': f, 'owner': owner, 'o': o})
 
             elif type != 0o12:
 
                 if f+'/' in self.perms:
-                    printWarning(pkg, 'permissions-file-as-dir', f+' is a file but listed as directory')
+                    printWarning(
+                        pkg, 'permissions-file-as-dir',
+                        f+' is a file but listed as directory')
 
                 if mode & 0o6000:
                     need_verifyscript = True
@@ -167,7 +178,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
                     if type == 0o10:
-                        if not 'shared object' in pkgfile.magic:
+                        if 'shared object' not in pkgfile.magic:
                             printError(pkg, 'non-position-independent-executable', f)
 
                 if mode & 0o2:
@@ -191,7 +202,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         break
 
             if need_verifyscript and \
-                    (not f in self.perms or not 'static' in self.perms[f]):
+                    (f not in self.perms or 'static' not in self.perms[f]):
 
                 if not script or not found:
                     printError(pkg, 'permissions-missing-postin',
@@ -212,13 +223,14 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                  "missing %%verify_permissions -e %s" % f)
 
         if need_set_permissions:
-            if not 'permissions' in map(lambda x: x[0], pkg.prereq()):
+            if 'permissions' not in map(lambda x: x[0], pkg.prereq()):
                 printError(pkg, 'permissions-missing-requires',
                            "missing 'permissions' in PreReq")
 
         if found_suseconfig:
             printInfo(pkg, 'permissions-suseconfig-obsolete',
                       "%run_permissions is obsolete")
+
 
 check = SUIDCheck()
 
