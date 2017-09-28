@@ -1,10 +1,10 @@
 # vim:sw=4:et
-#---------------------------------------------------------------
+# ---------------------------------------------------------------
 # Module          : rpmlint
 # File            : CheckPkgConfig
 # Author          : Stephan Kulow, Dirk Mueller
 # Purpose         : Check for errors in Pkgconfig files
-#---------------------------------------------------------------
+# ---------------------------------------------------------------
 
 import AbstractCheck
 import Config

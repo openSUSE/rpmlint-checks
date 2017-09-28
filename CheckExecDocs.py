@@ -1,10 +1,10 @@
 # vim:sw=4:et
-#---------------------------------------------------------------
+# ---------------------------------------------------------------
 # Module          : rpmlint
 # File            : CheckExecDocs.py
 # Author          : Stephan Kulow, Dirk Mueller
 # Purpose         : Check for executable files in %doc
-#---------------------------------------------------------------
+# ---------------------------------------------------------------
 
 import AbstractCheck
 import Config
@@ -59,14 +59,14 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
                 doc_size += files[f].size
 
         if doc_size * 2 >= complete_size and \
-           doc_size > 100*1024 and \
+           doc_size > 100 * 1024 and \
            (complete_size - doc_size) * 20 > complete_size and \
            not ignore_pkg(pkg.name):
             Filter.printWarning(pkg, "package-with-huge-docs",
                                 ("%3d%%" % (doc_size * 100 / complete_size)))
 
         if lang_size * 2 >= complete_size \
-           and lang_size > 100*1024 and \
+           and lang_size > 100 * 1024 and \
            (complete_size - lang_size) * 20 > complete_size and \
            not lang_ignore_pkg(pkg.name):
             Filter.printWarning(pkg, "package-with-huge-translation",
@@ -84,6 +84,7 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
             for name in ['README', 'NEWS', 'COPYING', 'AUTHORS']:
                 if f.endswith("/" + name):
                     Filter.printError(pkg, 'executable-docs', f)
+
 
 check = ExecDocsCheck()
 

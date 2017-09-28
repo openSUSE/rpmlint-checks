@@ -11,6 +11,7 @@ import Config
 import Pkg
 from Filter import *
 
+
 class BashismsCheck(AbstractCheck.AbstractFilesCheck):
     RE_BIN_SH = re.compile('#!\s*(/usr)?/bin/sh(\s+|$)')
 
@@ -33,17 +34,18 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
                     if status == 1:
                         printInfo(pkg, "potential-bashisms", filename)
                 except Exception as x:
-                    printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':filename, 'x':x})
+                    printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file': filename, 'x': x})
         except UnicodeDecodeError:
             pass
         finally:
             f.close()
 
+
 check = BashismsCheck()
 
 if Config.info:
     addDetails('bin-sh-syntax-error',
-                '''A /bin/sh shell script contains a syntax error.''',
-                'potential-bashisms',
-                '''checkbashisms reported potential bashisms in a /bin/sh shell
+               '''A /bin/sh shell script contains a syntax error.''',
+               'potential-bashisms',
+               '''checkbashisms reported potential bashisms in a /bin/sh shell
 script, you might want to manually check this script for bashisms.''')

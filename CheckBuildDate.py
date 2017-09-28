@@ -38,6 +38,7 @@ class BuildDateCheck(AbstractCheck.AbstractFilesCheck):
                 Filter.printWarning(pkg, "file-contains-current-date",
                                     filename)
 
+
 check = BuildDateCheck()
 
 if Config.info:

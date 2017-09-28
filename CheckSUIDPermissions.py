@@ -97,7 +97,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         for f in permfiles:
             f = pkg.dirName() + "/etc/permissions.d/" + f
-            if os.path.exists(f+".secure"):
+            if os.path.exists(f + ".secure"):
                 self._parsefile(f + ".secure")
             else:
                 self._parsefile(f)
@@ -113,7 +113,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                 {'fname': f, 'caps': pkgfile.filecaps})
 
             mode = pkgfile.mode
-            owner = pkgfile.user+':'+pkgfile.group
+            owner = pkgfile.user + ':' + pkgfile.group
 
 #           S_IFSOCK   014   socket
 #           S_IFLNK    012   symbolic link
@@ -125,7 +125,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             type = (mode >> 12) & 0o17
             mode &= 0o7777
             need_verifyscript = False
-            if f in self.perms or (type == 4 and f+"/" in self.perms):
+            if f in self.perms or (type == 4 and f + "/" in self.perms):
                 if type == 0o12:
                     printWarning(pkg, "permissions-symlink", f)
                     continue
@@ -164,10 +164,10 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
             elif type != 0o12:
 
-                if f+'/' in self.perms:
+                if f + '/' in self.perms:
                     printWarning(
                         pkg, 'permissions-file-as-dir',
-                        f+' is a file but listed as directory')
+                        f + ' is a file but listed as directory')
 
                 if mode & 0o6000:
                     need_verifyscript = True

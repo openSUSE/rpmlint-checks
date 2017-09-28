@@ -9,12 +9,11 @@
 from Filter import *
 import AbstractCheck
 import re
-import os
-import string
 
-PAM_WHITELIST = Config.getOption('PAMModules.WhiteList', ()) # set of file names
+PAM_WHITELIST = Config.getOption('PAMModules.WhiteList', ())  # set of file names
 
 pam_module_re = re.compile('^(?:/usr)?/lib(?:64)?/security/([^/]+\.so)$')
+
 
 class PAMModulesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -35,10 +34,11 @@ class PAMModulesCheck(AbstractCheck.AbstractCheck):
             m = pam_module_re.match(f)
             if m:
                 bn = m.groups()[0]
-                if not bn in PAM_WHITELIST:
+                if bn not in PAM_WHITELIST:
                     printError(pkg, "suse-pam-unauthorized-module", bn)
 
-check=PAMModulesCheck()
+
+check = PAMModulesCheck()
 
 if Config.info:
     addDetails(

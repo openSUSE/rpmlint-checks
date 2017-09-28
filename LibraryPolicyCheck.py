@@ -17,6 +17,8 @@ import rpm
 import stat
 import string
 
+from BinariesCheck import BinaryInfo
+
 _policy_legacy_exceptions = (
     "libacl1",
     "libaio1",
@@ -280,8 +282,6 @@ _essential_dependencies = (
     "libz.so.1",
 )
 
-from BinariesCheck import BinaryInfo
-
 
 def libname_from_soname(soname):
     libname = str.split(soname, '.so.')
@@ -407,7 +407,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Verify no non-lib stuff is in the package
         dirs = set()
         for f in files:
-            if os.path.isdir(pkg.dirName()+f):
+            if os.path.isdir(pkg.dirName() + f):
                 dirs.add(f)
 
         # Verify shared lib policy package doesn't have hard dependency on non-lib packages
@@ -421,7 +421,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Verify non-lib stuff does not add dependencies
         if libs:
             for dep in pkg_requires.difference(_essential_dependencies):
-                if dep.find('.so.') != -1 and not dep in libs and not dep in libs_needed:
+                if dep.find('.so.') != -1 and dep not in libs and dep not in libs_needed:
                     printError(pkg, 'shlib-policy-excessive-dependency', dep)
 
         # Check for non-versioned directories beyond sysdirs in package
@@ -432,12 +432,13 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
             done = set()
             for dir in dirs:
                 if dir.startswith(sysdir + '/'):
-                    ssdir = str.split(dir[len(sysdir)+1:], '/')[0]
+                    ssdir = str.split(dir[len(sysdir) + 1:], '/')[0]
                     if not ssdir[-1].isdigit():
-                        cdirs.add(sysdir+'/'+ssdir)
+                        cdirs.add(sysdir + '/' + ssdir)
                     done.add(dir)
             dirs = dirs.difference(done)
         map(lambda dir: printError(pkg, 'shlib-policy-nonversioned-dir', dir), cdirs)
+
 
 check = LibraryPolicyCheck()
 

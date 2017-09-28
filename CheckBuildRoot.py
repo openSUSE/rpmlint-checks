@@ -31,6 +31,7 @@ class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
         if len(pkg.grep(self.build_root_re, filename)):
             Filter.printError(pkg, "file-contains-buildroot", filename)
 
+
 check = BuildRootCheck()
 
 if Config.info:

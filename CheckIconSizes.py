@@ -35,8 +35,8 @@ class IconSizesCheck(AbstractCheck.AbstractCheck):
                 if res:
                     actualsizes = (res.group(1), res.group(2))
 
-                    if abs(int(sizes[0])-int(actualsizes[0])) > 2 or \
-                            abs(int(sizes[1])-int(actualsizes[1])) > 2:
+                    if abs(int(sizes[0]) - int(actualsizes[0])) > 2 or \
+                            abs(int(sizes[1]) - int(actualsizes[1])) > 2:
                         printError(pkg, "wrong-icon-size", fname, "expected:",
                                    "x".join(sizes),
                                    "actual:", "x".join(actualsizes))

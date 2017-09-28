@@ -6,17 +6,15 @@
 # Purpose       : Check on systemd systems for required insserv package
 #############################################################################
 
-from Filter import addDetails, printError, printWarning
+from Filter import addDetails, printError
 import AbstractCheck
 import Config
-import string
 import os
-import stat
-import Pkg
 
 insserv_tag = 'suse-obsolete-insserv-requirement'
 etcinit_tag = 'suse-deprecated-init-script'
 bootscr_tag = 'suse-deprecated-boot-script'
+
 
 class CheckSysVinitOnSystemd(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
@@ -38,6 +36,7 @@ class CheckSysVinitOnSystemd(AbstractCheck.AbstractFilesCheck):
                 printError(pkg, bootscr_tag, fn)
             else:
                 printError(pkg, etcinit_tag, fn)
+
 
 check = CheckSysVinitOnSystemd()
 
