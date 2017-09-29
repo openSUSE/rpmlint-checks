@@ -16,7 +16,7 @@ from Filter import addDetails, printWarning
 SYSTEMD_SERVICE_DIRECTORY = "/usr/lib/systemd/system"
 # we could extend this later on
 CHECKED_UNITS = ['service', 'socket', 'target']
-CHECKED_UNITS_REGEXP = re.compile(SYSTEMD_SERVICE_DIRECTORY + ".+\.(" + '|'.join(CHECKED_UNITS) + ")$")
+CHECKED_UNITS_REGEXP = re.compile("^" + SYSTEMD_SERVICE_DIRECTORY + ".+\.(" + '|'.join(CHECKED_UNITS) + ")$")
 
 
 class CheckSystemdInstall(AbstractCheck.AbstractCheck):
