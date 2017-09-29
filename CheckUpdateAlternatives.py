@@ -10,6 +10,7 @@ import AbstractCheck
 import os
 import rpm
 import stat
+import Pkg
 
 
 class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
@@ -29,7 +30,7 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
     @classmethod
     def read_ghost_files(cls, script):
 
-        if not script or b'update-alternatives' not in script:
+        if not script or 'update-alternatives' not in script:
             return set()
 
         ghost_files = set()
@@ -70,7 +71,7 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
                        for tag in (rpm.RPMTAG_POSTIN,
                                    rpm.RPMTAG_PREIN,
                                    rpm.RPMTAG_POSTTRANS)):
-            alt_files.update(self.read_ghost_files(script))
+            alt_files.update(self.read_ghost_files(Pkg.b2s(script)))
 
         files = pkg.files()
         ghost_files = pkg.ghostFiles()

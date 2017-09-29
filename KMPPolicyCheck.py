@@ -9,7 +9,6 @@
 from Filter import *
 import AbstractCheck
 import Config
-import string
 
 
 class KMPPolicyCheck(AbstractCheck.AbstractCheck):
@@ -21,7 +20,7 @@ class KMPPolicyCheck(AbstractCheck.AbstractCheck):
         if pkg.isSource() or pkg.name.find('-kmp-') < 0:
             return
 
-        pkg_requires = set(map(lambda x: string.split(x[0], '(')[0], pkg.requires()))
+        pkg_requires = set(map(lambda x: x[0].split('(')[0], pkg.requires()))
 
         kernel_flavour = "kernel-" + pkg.name.partition('-kmp-')[2]
 
