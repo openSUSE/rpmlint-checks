@@ -15,7 +15,7 @@ class CommonFilesCheck(AbstractCheck.AbstractCheck):
         self.map = []
         AbstractCheck.AbstractCheck.__init__(self, "CheckCommonFiles")
         self.sources_am_re = re.compile(
-            '([\w\d_]+_SOURCES\s*=|\s*SUBDIRS\s*=)')
+            r'([\w\d_]+_SOURCES\s*=|\s*SUBDIRS\s*=)')
 
     def check(self, pkg):
 

@@ -16,7 +16,7 @@ import stat
 class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
         AbstractCheck.AbstractFilesCheck.__init__(
-            self, "CheckPkgConfig", ".*/pkgconfig/.*\.pc$")
+            self, "CheckPkgConfig", r'.*/pkgconfig/.*\.pc$')
         # currently causes too many failures (2008-03-05)
         self.suspicious_dir = re.compile(
             r'[=:](?:/usr/src/\w+/BUILD|/var/tmp|/tmp|/home)')
