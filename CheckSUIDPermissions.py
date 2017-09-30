@@ -8,7 +8,7 @@
 
 from __future__ import print_function
 
-from Filter import printWarning, printError, printInfo, addDetails, Config
+from Filter import printWarning, printError, printInfo, addDetails
 import AbstractCheck
 import os
 import re
@@ -42,34 +42,35 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
     def _parsefile(self, fname):
         lnr = 0
         lastfn = None
-        for line in open(fname):
-            lnr += 1
-            line = line.split('#')[0].split('\n')[0]
-            line = line.strip()
-            if not len(line):
-                continue
+        with open(fname) as inputfile:
+            for line in inputfile:
+                lnr += 1
+                line = line.split('#')[0].split('\n')[0]
+                line = line.strip()
+                if not len(line):
+                    continue
 
-            if line.startswith("+capabilities "):
-                line = line[len("+capabilities "):]
-                if lastfn:
-                    self.perms[lastfn]['fscaps'] = line
-                continue
+                if line.startswith("+capabilities "):
+                    line = line[len("+capabilities "):]
+                    if lastfn:
+                        self.perms[lastfn]['fscaps'] = line
+                    continue
 
-            line = re.split(r'\s+', line.strip())
-            if len(line) == 3:
-                fn = line[0]
-                owner = line[1].replace('.', ':')
-                mode = line[2]
+                line = re.split(r'\s+', line.strip())
+                if len(line) == 3:
+                    fn = line[0]
+                    owner = line[1].replace('.', ':')
+                    mode = line[2]
 
-                self.perms[fn] = {"owner": owner,
-                                  "mode": int(mode, 8) & 0o7777}
-                # for permissions that don't change and therefore
-                # don't need special handling
-                if fname == '/etc/permissions':
-                    self.perms[fn]['static'] = True
-            else:
-                print('%s: Malformatted line %d: %s...' %
-                      (fname, lnr, ' '.join(line)), file=sys.stderr)
+                    self.perms[fn] = {"owner": owner,
+                                      "mode": int(mode, 8) & 0o7777}
+                    # for permissions that don't change and therefore
+                    # don't need special handling
+                    if fname == '/etc/permissions':
+                        self.perms[fn]['static'] = True
+                else:
+                    print('%s: Malformatted line %d: %s...' %
+                          (fname, lnr, ' '.join(line)), file=sys.stderr)
 
     def check(self, pkg):
         global _permissions_d_whitelist
@@ -171,7 +172,9 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 if mode & 0o6000:
                     need_verifyscript = True
-                    msg = '%(file)s is packaged with setuid/setgid bits (0%(mode)o)' % {'file': f, 'mode': mode}
+                    msg = '%(file)s is packaged with ' \
+                          'setuid/setgid bits (0%(mode)o)' % \
+                          {'file': f, 'mode': mode}
                     if type != 0o4:
                         printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
@@ -234,8 +237,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
 check = SUIDCheck()
 
-if Config.info:
-    addDetails(
+addDetails(
 'permissions-unauthorized-file',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
