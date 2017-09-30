@@ -12,7 +12,7 @@ import re
 
 PAM_WHITELIST = Config.getOption('PAMModules.WhiteList', ())  # set of file names
 
-pam_module_re = re.compile('^(?:/usr)?/lib(?:64)?/security/([^/]+\.so)$')
+pam_module_re = re.compile(r'^(?:/usr)?/lib(?:64)?/security/([^/]+\.so)$')
 
 
 class PAMModulesCheck(AbstractCheck.AbstractCheck):
