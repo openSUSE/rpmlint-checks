@@ -7,13 +7,12 @@
 
 import re
 import AbstractCheck
-import Config
 import Pkg
-from Filter import *
+from Filter import printWarning, printInfo, printError, addDetails
 
 
 class BashismsCheck(AbstractCheck.AbstractFilesCheck):
-    RE_BIN_SH = re.compile('#!\s*(/usr)?/bin/sh(\s+|$)')
+    RE_BIN_SH = re.compile(r'#!\s*(/usr)?/bin/sh(\s+|$)')
 
     def __init__(self):
         AbstractCheck.AbstractFilesCheck.__init__(self, "BashismsCheck", ".*")
@@ -30,11 +29,15 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
                 if status == 2:
                     printWarning(pkg, "bin-sh-syntax-error", filename)
                 try:
-                    status, output = Pkg.getstatusoutput(["checkbashisms", filename])
+                    status, output = Pkg.getstatusoutput(
+                        ["checkbashisms", filename])
                     if status == 1:
                         printInfo(pkg, "potential-bashisms", filename)
                 except Exception as x:
-                    printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file': filename, 'x': x})
+                    printError(
+                        pkg, 'rpmlint-exception',
+                        '%(fname)s raised an exception: %(x)s' %
+                        {'fname': filename, 'x': x})
         except UnicodeDecodeError:
             pass
         finally:
@@ -43,9 +46,10 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
 
 check = BashismsCheck()
 
-if Config.info:
-    addDetails('bin-sh-syntax-error',
-               '''A /bin/sh shell script contains a syntax error.''',
-               'potential-bashisms',
-               '''checkbashisms reported potential bashisms in a /bin/sh shell
+addDetails(
+'bin-sh-syntax-error',
+'A /bin/sh shell script contains a syntax error.',
+
+'potential-bashisms',
+'''checkbashisms reported potential bashisms in a /bin/sh shell
 script, you might want to manually check this script for bashisms.''')

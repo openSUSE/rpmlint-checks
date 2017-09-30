@@ -7,7 +7,6 @@
 # ---------------------------------------------------------------
 
 import AbstractCheck
-import Config
 import Filter
 import stat
 
@@ -88,14 +87,13 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
 
 check = ExecDocsCheck()
 
-if Config.info:
-    Filter.addDetails(
-        'executable-docs',
-        "Documentation should not be executable.",
-        'package-with-huge-docs',
-        """More than half the size of your package is documentation.
-        Consider splitting it into a -doc subpackage.""",
-        'package-with-huge-translation',
-        """More than half the size of your package is language-specific.
-        Consider splitting it into a -lang subpackage."""
-    )
+Filter.addDetails(
+'executable-docs',
+"Documentation should not be executable.",
+'package-with-huge-docs',
+"""More than half the size of your package is documentation.
+Consider splitting it into a -doc subpackage.""",
+'package-with-huge-translation',
+"""More than half the size of your package is language-specific.
+Consider splitting it into a -lang subpackage."""
+)

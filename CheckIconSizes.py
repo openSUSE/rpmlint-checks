@@ -7,7 +7,6 @@
 #############################################################################
 
 import AbstractCheck
-import Config
 from Filter import printError, addDetails
 import re
 
@@ -15,8 +14,8 @@ import re
 class IconSizesCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckIconSizes")
-        self.file_size_regex = re.compile('/icons/[^/]+/(\d+)x(\d+)/')
-        self.info_size_regex = re.compile('(\d+) x (\d+)')
+        self.file_size_regex = re.compile(r'/icons/[^/]+/(\d+)x(\d+)/')
+        self.info_size_regex = re.compile(r'(\d+) x (\d+)')
 
     def check(self, pkg):
 
@@ -44,10 +43,9 @@ class IconSizesCheck(AbstractCheck.AbstractCheck):
 
 check = IconSizesCheck()
 
-if Config.info:
-    addDetails(
-        'wrong-icon-size',
-        """Your icon file is installed in a fixed-size directory, but has a
-        largely incorrect size. Some desktop environments (e.g. GNOME)
-        display them incorrectly."""
-    )
+addDetails(
+'wrong-icon-size',
+"""Your icon file is installed in a fixed-size directory, but has a
+largely incorrect size. Some desktop environments (e.g. GNOME)
+display them incorrectly."""
+)
