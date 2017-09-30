@@ -19,7 +19,7 @@ class BuildRootCheck(AbstractCheck.AbstractFilesCheck):
         AbstractCheck.AbstractFilesCheck.__init__(self, "CheckBuildRoot", ".*")
         t = rpm.expandMacro('%buildroot')
         for m in ('name', 'version', 'release'):
-            t = t.replace("%%{%s}" % (m), "[\w\!-\.]{1,20}")
+            t = t.replace("%%{%s}" % (m), r'[\w\!-\.]{1,20}')
         self.build_root_re = re.compile(t)
 
     def check_file(self, pkg, filename):

@@ -16,7 +16,7 @@ from xml.parsers.expat import ExpatError
 
 class AppdataCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
-        AbstractCheck.AbstractFilesCheck.__init__(self, "CheckAppdata", '/usr/share/appdata/.*appdata\.xml$')
+        AbstractCheck.AbstractFilesCheck.__init__(self, "CheckAppdata", r'/usr/share/appdata/.*appdata\.xml$')
 
     def check_file(self, pkg, filename):
         try:
