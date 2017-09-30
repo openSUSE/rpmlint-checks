@@ -41,9 +41,9 @@ class CheckSystemdInstall(AbstractCheck.AbstractCheck):
                 processed = {'pre': False, 'post': False, 'preun': False, 'postun': False}
 
                 escaped_basename = re.escape(os.path.basename(fname))
-                PRE_POST_PATTERN = re.compile('for service in .*' + escaped_basename)
-                PREUN_PATTERN = re.compile('systemctl stop .*' + escaped_basename)
-                POSTUN_PATTERN = re.compile('systemctl try-restart .*' + escaped_basename)
+                PRE_POST_PATTERN = re.compile(r'for service in .*' + escaped_basename)
+                PREUN_PATTERN = re.compile(r'systemctl stop .*' + escaped_basename)
+                POSTUN_PATTERN = re.compile(r'systemctl try-restart .*' + escaped_basename)
 
                 for line in pre.split("\n"):
                     if PRE_POST_PATTERN.search(line):

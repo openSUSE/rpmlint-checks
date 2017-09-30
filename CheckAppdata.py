@@ -27,8 +27,7 @@ class AppdataCheck(AbstractCheck.AbstractFilesCheck):
 
 check = AppdataCheck()
 
-if Config.info:
-    addDetails(
+addDetails(
 'invalid-xml-in-appdata',
 """The appdata file provided by the package is not valid XML and will
 cause problems. Use e.g. xmllint to verify the problem and fix."""
