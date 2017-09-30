@@ -15,7 +15,6 @@ import os
 import Pkg
 import rpm
 import stat
-import string
 
 from BinariesCheck import BinaryInfo
 
@@ -287,9 +286,9 @@ def libname_from_soname(soname):
     libname = str.split(soname, '.so.')
     if len(libname) == 2:
         if libname[0][-1:].isdigit():
-            libname = string.join(libname, '-')
+            libname = '-'.join(libname)
         else:
-            libname = string.join(libname, '')
+            libname = ''.join(libname)
     else:
         libname = soname[:-3]
     libname = libname.replace('.', '_')
@@ -325,25 +324,21 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         for f, pkgfile in files.items():
             if f.find('.so.') != -1 or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
-                try:
-                    if stat.S_ISREG(files[f].mode) and 'ELF' in pkgfile.magic:
-                        bi = BinaryInfo(pkg, filename, f, False, True)
-                        libs_needed = libs_needed.union(bi.needed)
-                        if bi.soname != 0:
-                            lib_dir = string.join(f.split('/')[:-1], '/')
-                            libs.add(bi.soname)
-                            libs_to_dir[bi.soname] = lib_dir
-                            dirs.add(lib_dir)
-                        if bi.soname in pkg_requires:
-                            # But not if the library is used by the pkg itself
-                            # This avoids program packages with their own
-                            # private lib
-                            # FIXME: we'd need to check if somebody else links
-                            # to this lib
-                            reqlibs.add(bi.soname)
-                except Exception:
-                    pass
-            pass
+                if stat.S_ISREG(files[f].mode) and 'ELF' in pkgfile.magic:
+                    bi = BinaryInfo(pkg, filename, f, False, True)
+                    libs_needed = libs_needed.union(bi.needed)
+                    if bi.soname != 0:
+                        lib_dir = '/'.join(f.split('/')[:-1])
+                        libs.add(bi.soname)
+                        libs_to_dir[bi.soname] = lib_dir
+                        dirs.add(lib_dir)
+                    if bi.soname in pkg_requires:
+                        # But not if the library is used by the pkg itself
+                        # This avoids program packages with their own
+                        # private lib
+                        # FIXME: we'd need to check if somebody else links
+                        # to this lib
+                        reqlibs.add(bi.soname)
 
         std_dirs = dirs.intersection((
             '/lib', '/lib64', '/usr/lib', '/usr/lib64',
