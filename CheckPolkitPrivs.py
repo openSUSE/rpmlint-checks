@@ -28,14 +28,15 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                 self._parsefile(filename)
 
     def _parsefile(self, filename):
-        for line in open(filename):
-            line = line.split('#')[0].split('\n')[0]
-            if len(line):
-                line = re.split(r'\s+', line)
-                priv = line[0]
-                value = line[1]
+        with open(filename) as inputfile:
+            for line in inputfile:
+                line = line.split('#')[0].split('\n')[0]
+                if len(line):
+                    line = re.split(r'\s+', line)
+                    priv = line[0]
+                    value = line[1]
 
-                self.privs[priv] = value
+                    self.privs[priv] = value
 
     def check(self, pkg):
 
@@ -145,23 +146,25 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
 check = PolkitCheck()
 
-if Config.info:
-    addDetails(
+addDetails(
 'polkit-unauthorized-file',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
 security team""",
+
 'polkit-unauthorized-privilege',
 """The package allows unprivileged users to carry out privileged
 operations without authentication. This could cause security
 problems if not done carefully. If the package is intended for
 inclusion in any SUSE product please open a bug report to request
 review of the package by the security team""",
+
 'polkit-untracked-privilege',
 """The privilege is not listed in /etc/polkit-default-privs.*
 which makes it harder for admins to find. If the package is intended
 for inclusion in any SUSE product please open a bug report to
 request review of the package by the security team""",
+
 'polkit-cant-acquire-privilege',
 """Usability can be improved by allowing users to acquire privileges
 via authentication. Use e.g. 'auth_admin' instead of 'no' and make
