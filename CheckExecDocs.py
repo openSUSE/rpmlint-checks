@@ -12,22 +12,13 @@ import stat
 
 
 def ignore_pkg(name):
-    if name.startswith('bundle-'):
+    if name.startswith('bundle-') or '-devel' in name or '-doc' in name:
         return True
-    if name.find('-devel') != -1:
-        return True
-    if name.find('-doc') != -1:
-        return True
-
     return False
 
 
 def lang_ignore_pkg(name):
-    if ignore_pkg(name):
-        return True
-    if name.endswith('-lang'):
-        return True
-    if name.find('-trans-') != -1:
+    if ignore_pkg(name) or '-lang' in name or '-trans' in name:
         return True
 
     return False

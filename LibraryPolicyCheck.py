@@ -322,7 +322,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                                pkg.requires()))
 
         for f, pkgfile in files.items():
-            if f.find('.so.') != -1 or f.endswith('.so'):
+            if '.so.' in f or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
                 if stat.S_ISREG(files[f].mode) and 'ELF' in pkgfile.magic:
                     bi = BinaryInfo(pkg, filename, f, False, True)
@@ -416,7 +416,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Verify non-lib stuff does not add dependencies
         if libs:
             for dep in pkg_requires.difference(_essential_dependencies):
-                if dep.find('.so.') != -1 and dep not in libs and dep not in libs_needed:
+                if '.so.' in dep and dep not in libs and dep not in libs_needed:
                     printError(pkg, 'shlib-policy-excessive-dependency', dep)
 
         # Check for non-versioned directories beyond sysdirs in package
