@@ -7,7 +7,6 @@
 #############################################################################
 
 import AbstractCheck
-import Config
 import Filter
 import os
 import stat
@@ -85,19 +84,19 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
 
 check = DuplicatesCheck()
 
-if Config.info:
-    Filter.addDetails(
+Filter.addDetails(
 'files-duplicated-waste',
 """Your package contains duplicated files that are not hard- or symlinks.
 You should use the %fdupes macro to link the files to one.""",
+
 'hardlink-across-partition',
 """Your package contains two files that are apparently hardlinked and
 that are likely on different partitions. Installation of such an RPM will fail
 due to RPM being unable to unpack the hardlink. do not hardlink across
 the first two levels of a path, e.g. between /srv/ftp and /srv/www or
 /etc and /usr. """,
+
 'hardlink-across-config-files',
 """Your package contains two config files that are apparently hardlinked.
 Hardlinking a config file is probably not what you want. Please double
-check and report false positives."""
-    )
+check and report false positives.""")
