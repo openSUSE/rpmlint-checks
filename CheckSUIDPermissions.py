@@ -143,7 +143,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 if type == 0o10 and mode & 0o111:
                     # pie binaries have 'shared object' here
-                    if ('ELF' in pkgfile.magic and
+                    if (pkgfile.magic.startswith('ELF ') and
                             'shared object' not in pkgfile.magic):
                         printError(pkg, 'non-position-independent-executable',
                                    f)

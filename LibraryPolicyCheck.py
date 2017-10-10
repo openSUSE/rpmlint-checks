@@ -324,7 +324,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         for f, pkgfile in files.items():
             if '.so.' in f or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
-                if stat.S_ISREG(files[f].mode) and 'ELF' in pkgfile.magic:
+                if stat.S_ISREG(files[f].mode) and pkgfile.magic.startswith('ELF '):
                     bi = BinaryInfo(pkg, filename, f, False, True)
                     libs_needed = libs_needed.union(bi.needed)
                     if bi.soname != 0:
