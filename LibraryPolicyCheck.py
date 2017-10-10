@@ -13,6 +13,7 @@ from Filter import printError
 from Filter import printWarning
 import os
 import Pkg
+import re
 import rpm
 import stat
 
@@ -297,8 +298,9 @@ def libname_from_soname(soname):
 
 class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
-        self.map = []
         AbstractCheck.AbstractCheck.__init__(self, "LibraryPolicyCheck")
+        self.map = []
+        self.strongly_versioned_re = re.compile('-[\d\.]+\.so$')
 
     def check(self, pkg):
         global _policy_legacy_exceptions
@@ -369,9 +371,9 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Check for non-versioned libs in a std lib package
         if std_lib_package:
             for lib in libs.copy():
-                if not lib[-1].isdigit():
+                if (not (lib[-1].isdigit() or
+                         self.strongly_versioned_re.search(lib))):
                     printWarning(pkg, "shlib-unversioned-lib", lib)
-                    libs.remove(lib)
 
         # If this package should be or should be splitted into shlib
         # package(s)
