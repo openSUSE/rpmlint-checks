@@ -1,10 +1,8 @@
 # vim:sw=4:et
-#############################################################################
 # File          : CheckUpdateAlternatives
 # Package       : rpmlint
 # Author        : SUSE Linux Products GmbH
 # Purpose       : Check if update-alternatives is used properly
-#############################################################################
 
 from Filter import printWarning, addDetails, Config
 
@@ -12,6 +10,7 @@ import AbstractCheck
 import os
 import rpm
 import stat
+import Pkg
 
 
 class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
@@ -31,17 +30,17 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
     @classmethod
     def read_ghost_files(cls, script):
 
-        if not script or not b'update-alternatives' in script:
+        if not script or 'update-alternatives' not in script:
             return set()
 
         ghost_files = set()
 
         for command in (
-                c.replace('\\\n', '').replace('"','').strip()
+                c.replace('\\\n', '').replace('"', '').strip()
                 for c in script.split('update-alternatives')
                 if cls.INSTALL in c):
 
-            #parse install
+            # parse install
             command_args = []
             for arg in command.split(None):
                 if not arg.startswith("--"):
@@ -72,7 +71,7 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
                        for tag in (rpm.RPMTAG_POSTIN,
                                    rpm.RPMTAG_PREIN,
                                    rpm.RPMTAG_POSTTRANS)):
-            alt_files.update(self.read_ghost_files(script))
+            alt_files.update(self.read_ghost_files(Pkg.b2s(script)))
 
         files = pkg.files()
         ghost_files = pkg.ghostFiles()
@@ -96,8 +95,8 @@ class CheckUpdateAlternatives(AbstractCheck.AbstractCheck):
                 printWarning(pkg,
                              'suse-alternative-generic-name-not-symlink', af)
 
-            ### check that %post contains --install call
-            ### check that %preun contains --remove call
+            # TODO check that %post contains --install call
+            # TODO check that %preun contains --remove call
 
 
 check = CheckUpdateAlternatives()

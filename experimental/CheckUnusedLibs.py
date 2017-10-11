@@ -37,7 +37,7 @@ class UnusedLibsCheck(AbstractCheck.AbstractCheck):
 
             if fname.startswith('/usr/lib/debug') or \
                     not stat.S_ISREG(pkgfile.mode) or \
-                    string.find(pkgfile.magic, 'ELF') == -1:
+                    not pkgfile.magic.startswith('ELF '):
                 continue
 
             ret, output = Pkg.getstatusoutput(['ldd', '-r', '-u',  pkgfile.path])

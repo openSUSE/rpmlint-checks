@@ -1,10 +1,10 @@
 # vim:sw=4:et
-#---------------------------------------------------------------
+# ---------------------------------------------------------------
 # Module          : rpmlint
 # File            : CheckPkgConfig
 # Author          : Stephan Kulow, Dirk Mueller
 # Purpose         : Check for errors in Pkgconfig files
-#---------------------------------------------------------------
+# ---------------------------------------------------------------
 
 import AbstractCheck
 import Config
@@ -16,17 +16,17 @@ import stat
 class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
         AbstractCheck.AbstractFilesCheck.__init__(
-            self, "CheckPkgConfig", ".*/pkgconfig/.*\.pc$")
+            self, "CheckPkgConfig", r'.*/pkgconfig/.*\.pc$')
         # currently causes too many failures (2008-03-05)
         self.suspicious_dir = re.compile(
-            '[=:](?:/usr/src/\w+/BUILD|/var/tmp|/tmp|/home)')
+            r'[=:](?:/usr/src/\w+/BUILD|/var/tmp|/tmp|/home)')
 
     def check(self, pkg):
         # check for references to /lib when in lib64 mode
         if pkg.arch in ('x86_64', 'ppc64', 's390x'):
-            self.wronglib_dir = re.compile('-L/usr/lib\\b')
+            self.wronglib_dir = re.compile(r'-L/usr/lib\\b')
         else:
-            self.wronglib_dir = re.compile('-L/usr/lib64\\b')
+            self.wronglib_dir = re.compile(r'-L/usr/lib64\\b')
 
         AbstractCheck.AbstractFilesCheck.check(self, pkg)
 

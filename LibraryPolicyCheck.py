@@ -13,9 +13,11 @@ from Filter import printError
 from Filter import printWarning
 import os
 import Pkg
+import re
 import rpm
 import stat
-import string
+
+from BinariesCheck import BinaryInfo
 
 _policy_legacy_exceptions = (
     "libacl1",
@@ -280,16 +282,14 @@ _essential_dependencies = (
     "libz.so.1",
 )
 
-from BinariesCheck import BinaryInfo
-
 
 def libname_from_soname(soname):
     libname = str.split(soname, '.so.')
     if len(libname) == 2:
         if libname[0][-1:].isdigit():
-            libname = string.join(libname, '-')
+            libname = '-'.join(libname)
         else:
-            libname = string.join(libname, '')
+            libname = ''.join(libname)
     else:
         libname = soname[:-3]
     libname = libname.replace('.', '_')
@@ -298,8 +298,9 @@ def libname_from_soname(soname):
 
 class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
-        self.map = []
         AbstractCheck.AbstractCheck.__init__(self, "LibraryPolicyCheck")
+        self.map = []
+        self.strongly_versioned_re = re.compile('-[\d\.]+\.so$')
 
     def check(self, pkg):
         global _policy_legacy_exceptions
@@ -323,27 +324,23 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
                                pkg.requires()))
 
         for f, pkgfile in files.items():
-            if f.find('.so.') != -1 or f.endswith('.so'):
+            if '.so.' in f or f.endswith('.so'):
                 filename = pkg.dirName() + '/' + f
-                try:
-                    if stat.S_ISREG(files[f].mode) and 'ELF' in pkgfile.magic:
-                        bi = BinaryInfo(pkg, filename, f, False, True)
-                        libs_needed = libs_needed.union(bi.needed)
-                        if bi.soname != 0:
-                            lib_dir = string.join(f.split('/')[:-1], '/')
-                            libs.add(bi.soname)
-                            libs_to_dir[bi.soname] = lib_dir
-                            dirs.add(lib_dir)
-                        if bi.soname in pkg_requires:
-                            # But not if the library is used by the pkg itself
-                            # This avoids program packages with their own
-                            # private lib
-                            # FIXME: we'd need to check if somebody else links
-                            # to this lib
-                            reqlibs.add(bi.soname)
-                except Exception:
-                    pass
-            pass
+                if stat.S_ISREG(files[f].mode) and pkgfile.magic.startswith('ELF '):
+                    bi = BinaryInfo(pkg, filename, f, False, True)
+                    libs_needed = libs_needed.union(bi.needed)
+                    if bi.soname != 0:
+                        lib_dir = '/'.join(f.split('/')[:-1])
+                        libs.add(bi.soname)
+                        libs_to_dir[bi.soname] = lib_dir
+                        dirs.add(lib_dir)
+                    if bi.soname in pkg_requires:
+                        # But not if the library is used by the pkg itself
+                        # This avoids program packages with their own
+                        # private lib
+                        # FIXME: we'd need to check if somebody else links
+                        # to this lib
+                        reqlibs.add(bi.soname)
 
         std_dirs = dirs.intersection((
             '/lib', '/lib64', '/usr/lib', '/usr/lib64',
@@ -374,9 +371,9 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Check for non-versioned libs in a std lib package
         if std_lib_package:
             for lib in libs.copy():
-                if not lib[-1].isdigit():
+                if (not (lib[-1].isdigit() or
+                         self.strongly_versioned_re.search(lib))):
                     printWarning(pkg, "shlib-unversioned-lib", lib)
-                    libs.remove(lib)
 
         # If this package should be or should be splitted into shlib
         # package(s)
@@ -407,7 +404,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Verify no non-lib stuff is in the package
         dirs = set()
         for f in files:
-            if os.path.isdir(pkg.dirName()+f):
+            if os.path.isdir(pkg.dirName() + f):
                 dirs.add(f)
 
         # Verify shared lib policy package doesn't have hard dependency on non-lib packages
@@ -421,23 +418,24 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
         # Verify non-lib stuff does not add dependencies
         if libs:
             for dep in pkg_requires.difference(_essential_dependencies):
-                if dep.find('.so.') != -1 and not dep in libs and not dep in libs_needed:
+                if '.so.' in dep and dep not in libs and dep not in libs_needed:
                     printError(pkg, 'shlib-policy-excessive-dependency', dep)
 
         # Check for non-versioned directories beyond sysdirs in package
-        sysdirs = ['/lib', '/lib64', '/usr/lib', '/usr/lib64',
-                   '/usr/share/doc/packages', '/usr/share/licenses', '/usr/share']
+        sysdirs = ('/lib', '/lib64', '/usr/lib', '/usr/lib64',
+                   '/usr/share/doc/packages', '/usr/share/licenses', '/usr/share')
         cdirs = set()
         for sysdir in sysdirs:
             done = set()
             for dir in dirs:
                 if dir.startswith(sysdir + '/'):
-                    ssdir = str.split(dir[len(sysdir)+1:], '/')[0]
+                    ssdir = str.split(dir[len(sysdir) + 1:], '/')[0]
                     if not ssdir[-1].isdigit():
-                        cdirs.add(sysdir+'/'+ssdir)
+                        cdirs.add(sysdir + '/' + ssdir)
                     done.add(dir)
             dirs = dirs.difference(done)
         map(lambda dir: printError(pkg, 'shlib-policy-nonversioned-dir', dir), cdirs)
+
 
 check = LibraryPolicyCheck()
 

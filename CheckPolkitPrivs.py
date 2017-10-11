@@ -13,8 +13,10 @@ import re
 import os
 from xml.dom.minidom import parse
 
-POLKIT_PRIVS_WHITELIST = Config.getOption('PolkitPrivsWhiteList', ()) # set of file names
-POLKIT_PRIVS_FILES = Config.getOption('PolkitPrivsFiles', [ "/etc/polkit-default-privs.standard" ])
+
+POLKIT_PRIVS_WHITELIST = Config.getOption('PolkitPrivsWhiteList', ())   # set of file names
+POLKIT_PRIVS_FILES = Config.getOption('PolkitPrivsFiles', ["/etc/polkit-default-privs.standard"])
+
 
 class PolkitCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -25,15 +27,16 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             if os.path.exists(filename):
                 self._parsefile(filename)
 
-    def _parsefile(self,filename):
-        for line in open(filename):
-            line = line.split('#')[0].split('\n')[0]
-            if len(line):
-                line = re.split(r'\s+', line)
-                priv = line[0]
-                value = line[1]
+    def _parsefile(self, filename):
+        with open(filename) as inputfile:
+            for line in inputfile:
+                line = line.split('#')[0].split('\n')[0]
+                if len(line):
+                    line = re.split(r'\s+', line)
+                    priv = line[0]
+                    value = line[1]
 
-                self.privs[priv] = value
+                    self.privs[priv] = value
 
     def check(self, pkg):
 
@@ -51,27 +54,26 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             if f.startswith("/etc/polkit-default-privs.d/"):
 
                 bn = f[28:]
-                if not bn in POLKIT_PRIVS_WHITELIST:
+                if bn not in POLKIT_PRIVS_WHITELIST:
                     printError(pkg, "polkit-unauthorized-file", f)
 
                 if bn.endswith(".restrictive") or bn.endswith(".standard") or bn.endswith(".relaxed"):
                     bn = bn.split('.')[0]
 
-                if not bn in permfiles:
+                if bn not in permfiles:
                     permfiles[bn] = 1
 
         for f in permfiles:
             f = pkg.dirName() + "/etc/polkit-default-privs.d/" + f
 
-            if os.path.exists(f+".restrictive"):
+            if os.path.exists(f + ".restrictive"):
                 self._parsefile(f + ".restrictive")
-            elif os.path.exists(f+".standard"):
+            elif os.path.exists(f + ".standard"):
                 self._parsefile(f + ".standard")
-            elif os.path.exists(f+".relaxed"):
+            elif os.path.exists(f + ".relaxed"):
                 self._parsefile(f + ".relaxed")
             else:
                 self._parsefile(f)
-
 
         for f in files:
             if f in pkg.ghostFiles():
@@ -84,7 +86,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                     xml = parse(pkg.dirName() + f)
                     for a in xml.getElementsByTagName("action"):
                         action = a.getAttribute('id')
-                        if not action in self.privs:
+                        if action not in self.privs:
                             iserr = 0
                             foundno = 0
                             foundundef = 0
@@ -102,7 +104,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                                 iserr = 1
 
                             for i in ('allow_any', 'allow_inactive', 'allow_active'):
-                                if not i in settings:
+                                if i not in settings:
                                     foundundef = 1
                                     settings[i] = '??'
                                 elif settings[i].find("auth_admin") != 0:
@@ -112,40 +114,57 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                                         iserr = 1
 
                             if iserr:
-                                printError(pkg, 'polkit-unauthorized-privilege', '%s (%s:%s:%s)' % (action, \
-                                    settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
+                                printError(
+                                    pkg, 'polkit-unauthorized-privilege',
+                                    '%s (%s:%s:%s)' % (
+                                        action,
+                                        settings['allow_any'],
+                                        settings['allow_inactive'],
+                                        settings['allow_active']))
                             else:
-                                printInfo(pkg, 'polkit-untracked-privilege', '%s (%s:%s:%s)' % (action, \
-                                    settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
+                                printInfo(
+                                    pkg, 'polkit-untracked-privilege',
+                                    '%s (%s:%s:%s)' % (
+                                        action,
+                                        settings['allow_any'],
+                                        settings['allow_inactive'],
+                                        settings['allow_active']))
 
                             if foundno or foundundef:
-                                printInfo(pkg,
-                                        'polkit-cant-acquire-privilege', '%s (%s:%s:%s)' % (action, \
-                                    settings['allow_any'], settings['allow_inactive'], settings['allow_active']))
+                                printInfo(
+                                    pkg, 'polkit-cant-acquire-privilege',
+                                    '%s (%s:%s:%s)' % (
+                                        action,
+                                        settings['allow_any'],
+                                        settings['allow_inactive'],
+                                        settings['allow_active']))
 
             except Exception as x:
-                printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
+                printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file': f, 'x': x})
                 continue
 
-check=PolkitCheck()
 
-if Config.info:
-    addDetails(
+check = PolkitCheck()
+
+addDetails(
 'polkit-unauthorized-file',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
 security team""",
+
 'polkit-unauthorized-privilege',
 """The package allows unprivileged users to carry out privileged
 operations without authentication. This could cause security
 problems if not done carefully. If the package is intended for
 inclusion in any SUSE product please open a bug report to request
 review of the package by the security team""",
+
 'polkit-untracked-privilege',
 """The privilege is not listed in /etc/polkit-default-privs.*
 which makes it harder for admins to find. If the package is intended
 for inclusion in any SUSE product please open a bug report to
 request review of the package by the security team""",
+
 'polkit-cant-acquire-privilege',
 """Usability can be improved by allowing users to acquire privileges
 via authentication. Use e.g. 'auth_admin' instead of 'no' and make

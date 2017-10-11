@@ -12,12 +12,12 @@ from Filter import *
 import AbstractCheck
 from xml.dom.minidom import parse
 
+
 class DBusPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "CheckDBusPolicy")
 
     def check(self, pkg):
-
         if pkg.isSource():
             return
 
@@ -35,32 +35,33 @@ class DBusPolicyCheck(AbstractCheck.AbstractCheck):
                     xml = parse(lf)
                     for p in xml.getElementsByTagName("policy"):
                         for allow in p.getElementsByTagName("allow"):
-                            if ( allow.hasAttribute('send_interface') \
-                                    or allow.hasAttribute('send_member') \
-                                    or allow.hasAttribute('send_path')) \
-                                and not allow.hasAttribute('send_destination'):
-                                    send_policy_seen = True
-                                    printError(pkg, 'dbus-policy-allow-without-destination', "%(file)s: %(xml)s" % { 'file':f, 'xml':allow.toxml() })
+                            if ((allow.hasAttribute('send_interface') or
+                                 allow.hasAttribute('send_member') or
+                                 allow.hasAttribute('send_path')) and not
+                                    allow.hasAttribute('send_destination')):
+                                send_policy_seen = True
+                                printError(pkg, 'dbus-policy-allow-without-destination', "%(file)s: %(xml)s" % {'file': f, 'xml': allow.toxml()})
                             elif allow.hasAttribute('send_destination'):
                                     send_policy_seen = True
 
-                            if allow.hasAttribute('receive_sender') \
-                                or allow.hasAttribute('receive_interface'):
-                                    printInfo(pkg, 'dbus-policy-allow-receive', "%(file)s: %(xml)s" % { 'file':f, 'xml':allow.toxml() })
+                            if (allow.hasAttribute('receive_sender') or
+                                    allow.hasAttribute('receive_interface')):
+                                printInfo(pkg, 'dbus-policy-allow-receive', "%(file)s: %(xml)s" % {'file': f, 'xml': allow.toxml()})
 
                         for deny in p.getElementsByTagName("deny"):
-                            if ( deny.hasAttribute('send_interface') \
-                                and not deny.hasAttribute('send_destination')):
-                                    printError(pkg, 'dbus-policy-deny-without-destination', "%(file)s: %(xml)s" % { 'file':f, 'xml':deny.toxml() })
+                            if (deny.hasAttribute('send_interface') and not
+                                    deny.hasAttribute('send_destination')):
+                                printError(pkg, 'dbus-policy-deny-without-destination', "%(file)s: %(xml)s" % {'file': f, 'xml': deny.toxml()})
 
                     if not send_policy_seen:
-                        printError(pkg, 'dbus-policy-missing-allow', "%(file)s does not allow communication" % { 'file':f })
+                        printError(pkg, 'dbus-policy-missing-allow', "%(file)s does not allow communication" % {'file': f})
 
             except Exception as x:
-                printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file':f, 'x':x})
+                printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file': f, 'x': x})
                 continue
 
-check=DBusPolicyCheck()
+
+check = DBusPolicyCheck()
 
 if Config.info:
     addDetails(

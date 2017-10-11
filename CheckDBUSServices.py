@@ -10,17 +10,15 @@
 
 from Filter import *
 import AbstractCheck
-import re
-import os
-import string
 
-SERVICES_WHITELIST = Config.getOption('DBUSServices.WhiteList', ()) # set of file names
+SERVICES_WHITELIST = Config.getOption('DBUSServices.WhiteList', ())  # set of file names
 
 # need to end with / so we don't catch directories
 _dbus_system_paths = [
-        "/usr/share/dbus-1/system-services/",
-        "/etc/dbus-1/system.d/"
+    "/usr/share/dbus-1/system-services/",
+    "/etc/dbus-1/system.d/"
 ]
+
 
 class DBUSServiceCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -43,10 +41,11 @@ class DBUSServiceCheck(AbstractCheck.AbstractCheck):
                 if f.startswith(p):
 
                     bn = f[len(p):]
-                    if not bn in SERVICES_WHITELIST:
+                    if bn not in SERVICES_WHITELIST:
                         printError(pkg, "suse-dbus-unauthorized-service", f)
 
-check=DBUSServiceCheck()
+
+check = DBUSServiceCheck()
 
 if Config.info:
     addDetails(

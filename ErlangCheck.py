@@ -32,6 +32,7 @@ class ErlangCheck(AbstractCheck.AbstractFilesCheck):
                 pkg, "beam-was-not-recompiled", filename,
                 beam.compileinfo['source'].value)
 
+
 check = ErlangCheck()
 
 if Config.info:

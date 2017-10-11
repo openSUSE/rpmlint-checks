@@ -8,13 +8,8 @@
 
 from Filter import *
 import AbstractCheck
-import rpm
-import re
-import stat
 import Config
-import os
-import string
-import Pkg
+
 
 class KMPPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
@@ -25,13 +20,12 @@ class KMPPolicyCheck(AbstractCheck.AbstractCheck):
         if pkg.isSource() or pkg.name.find('-kmp-') < 0:
             return
 
-        pkg_requires = set(map(lambda x: string.split(x[0],'(')[0], pkg.requires()))
-        pkg_conflicts = set(map(lambda x: string.split(x[0],'(')[0], pkg.conflicts()))
+        pkg_requires = set(map(lambda x: x[0].split('(')[0], pkg.requires()))
 
-        kernel_flavour="kernel-" + pkg.name.partition('-kmp-')[2]
+        kernel_flavour = "kernel-" + pkg.name.partition('-kmp-')[2]
 
         # verify that Requires: kernel_flavour is present
-        have_requires=False
+        have_requires = False
         for r in pkg_requires:
             if r == kernel_flavour:
                 have_requires = True
@@ -47,9 +41,8 @@ class KMPPolicyCheck(AbstractCheck.AbstractCheck):
             printError(pkg, 'suse-policy-kmp-missing-enhances', kernel_flavour)
 
         # check that only modalias supplements are present
-        have_only_modalias=True
-        have_modalias=False
-        have_proper_suppl=False
+        have_modalias = False
+        have_proper_suppl = False
         for s in pkg.supplements():
             if s[0].startswith('modalias('):
                 have_modalias = True
@@ -59,12 +52,12 @@ class KMPPolicyCheck(AbstractCheck.AbstractCheck):
                 continue
 
             printWarning(pkg, 'suse-policy-kmp-excessive-supplements', s[0])
-            have_only_modalias = False
 
         if not have_modalias and not have_proper_suppl:
             printError(pkg, 'suse-policy-kmp-missing-supplements')
 
-check=KMPPolicyCheck()
+
+check = KMPPolicyCheck()
 
 if Config.info:
     addDetails(
