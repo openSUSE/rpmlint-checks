@@ -190,7 +190,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                '%(file)s is packaged with world writable permissions (0%(mode)o)' %
                                {'file': f, 'mode': mode})
 
-            script = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(pkg[rpm.RPMTAG_POSTINPROG])
+            script = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(rpm.RPMTAG_POSTINPROG)
             found = False
             if script:
                 for line in script.split("\n"):
