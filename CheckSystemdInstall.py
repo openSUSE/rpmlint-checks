@@ -29,11 +29,11 @@ class CheckSystemdInstall(AbstractCheck.AbstractCheck):
         if pkg.isSource():
             return
 
-        pre = pkg[rpm.RPMTAG_PREIN] or pkg.scriptprog(pkg[rpm.RPMTAG_PREINPROG])
-        post = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(pkg[rpm.RPMTAG_POSTINPROG])
+        pre = pkg[rpm.RPMTAG_PREIN] or pkg.scriptprog(rpm.RPMTAG_PREINPROG)
+        post = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(rpm.RPMTAG_POSTINPROG)
 
-        preun = pkg[rpm.RPMTAG_PREUN] or pkg.scriptprog(pkg[rpm.RPMTAG_PREUNPROG])
-        postun = pkg[rpm.RPMTAG_POSTUN] or pkg.scriptprog(pkg[rpm.RPMTAG_POSTUNPROG])
+        preun = pkg[rpm.RPMTAG_PREUN] or pkg.scriptprog(rpm.RPMTAG_PREUNPROG)
+        postun = pkg[rpm.RPMTAG_POSTUN] or pkg.scriptprog(rpm.RPMTAG_POSTUNPROG)
 
         for fname, pkgfile in pkg.files().items():
 
