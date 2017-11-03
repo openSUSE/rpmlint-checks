@@ -76,7 +76,7 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
             sum += sizes[f] * diff
             if sizes[f] and diff > 0:
                 Filter.printWarning(pkg, 'files-duplicate', one,
-                                    ":".join(duplicates))
+                                    ":".join(sorted(duplicates)))
 
         if sum > 100000:
             Filter.printError(pkg, 'files-duplicated-waste', sum)
