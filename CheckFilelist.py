@@ -104,7 +104,7 @@ _checks = [
     },
     {
         'error': 'suse-filelist-forbidden-sysconfig',
-        'details': '''Please use /var/adm/fillup-templates/sysconfig.<pkgname>
+        'details': '''Please use %{_fillupdir}/sysconfig.<pkgname>
                    and call %fillup_and_insserv for new sysconfig files.
                    ''',
         'good': [
@@ -123,7 +123,7 @@ _checks = [
             '/etc/sysconfig/uml',
         ],
         'bad': [
-            '/var/adm/fillup-templates/rc.config.*',
+            '/var/adm/fillup-templates/*',
             '/etc/sysconfig/*',
             '/etc/rc.config.d/*',
         ],
