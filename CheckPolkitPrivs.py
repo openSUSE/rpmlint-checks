@@ -100,7 +100,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                                     if i.nodeName in ('allow_any', 'allow_inactive', 'allow_active'):
                                         settings[i.nodeName] = i.firstChild.data
 
-                            except:
+                            except KeyError:
                                 iserr = 1
 
                             for i in ('allow_any', 'allow_inactive', 'allow_active'):

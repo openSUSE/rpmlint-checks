@@ -18,12 +18,12 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
         AbstractCheck.AbstractFilesCheck.__init__(self, "BashismsCheck", ".*")
 
     def check_file(self, pkg, filename):
-        try:
-            f = open(filename)
-        except:
-            return
-        try:
+        first_line = ''
+
+        with open(filename) as f:
             first_line = f.read(256).split("\n")[0]
+
+        try:
             if self.RE_BIN_SH.match(first_line):
                 status, output = Pkg.getstatusoutput(["dash", "-n", filename])
                 if status == 2:
@@ -40,8 +40,6 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
                         {'fname': filename, 'x': x})
         except UnicodeDecodeError:
             pass
-        finally:
-            f.close()
 
 
 check = BashismsCheck()
