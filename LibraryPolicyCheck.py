@@ -300,7 +300,7 @@ class LibraryPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         AbstractCheck.AbstractCheck.__init__(self, "LibraryPolicyCheck")
         self.map = []
-        self.strongly_versioned_re = re.compile('-[\d\.]+\.so$')
+        elf.strongly_versioned_re = re.compile(r'-[\d\.]+\.so$')
 
     def check(self, pkg):
         global _policy_legacy_exceptions
