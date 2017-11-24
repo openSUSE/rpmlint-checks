@@ -6,6 +6,8 @@
 #############################################################################
 
 import re
+import stat
+
 import AbstractCheck
 import Pkg
 from Filter import printWarning, printInfo, printError, addDetails
@@ -20,8 +22,11 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
     def check_file(self, pkg, filename):
         first_line = ''
 
-        with open(pkg.dirName() + "/" + filename, "r") as f:
-            first_line = f.read(256).split("\n")[0]
+        if not stat.S_ISREG(pkg.files()[filename].mode):
+            return
+
+        with open(pkg.dirName() + "/" + filename, "rb") as f:
+            first_line = Pkg.b2s(f.read(256)).split("\n")[0]
 
         try:
             if self.RE_BIN_SH.match(first_line):
