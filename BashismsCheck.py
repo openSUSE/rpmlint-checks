@@ -20,7 +20,7 @@ class BashismsCheck(AbstractCheck.AbstractFilesCheck):
     def check_file(self, pkg, filename):
         first_line = ''
 
-        with open(filename) as f:
+        with open(pkg.dirName() + "/" + filename, "r") as f:
             first_line = f.read(256).split("\n")[0]
 
         try:
