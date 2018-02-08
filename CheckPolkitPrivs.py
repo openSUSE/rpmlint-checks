@@ -122,7 +122,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                                         settings['allow_inactive'],
                                         settings['allow_active']))
                             else:
-                                printInfo(
+                                printError(
                                     pkg, 'polkit-untracked-privilege',
                                     '%s (%s:%s:%s)' % (
                                         action,
