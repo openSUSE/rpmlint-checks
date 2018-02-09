@@ -6,15 +6,12 @@
 # Purpose       : Check on systemd systems for obsolate xinetd configurations
 #############################################################################
 
-from Filter import addDetails, printError, printWarning
+from Filter import addDetails, printError
 import AbstractCheck
 import Config
-import string
-import os
-import stat
-import Pkg
 
 xinetd_tag = 'suse-obsolete-xinetd-requirement'
+
 
 class Check4Xinetd(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
@@ -28,6 +25,7 @@ class Check4Xinetd(AbstractCheck.AbstractFilesCheck):
         for req in pkg.requires() + pkg.prereq():
             if req[0] == 'xinetd':
                 printError(pkg, xinetd_tag)
+
 
 check = Check4Xinetd()
 
