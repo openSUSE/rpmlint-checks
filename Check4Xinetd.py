@@ -15,7 +15,6 @@ import stat
 import Pkg
 
 xinetd_tag = 'suse-obsolete-xinetd-requirement'
-config_tag = 'suse-deprecated-xinetd-configuration'
 
 class Check4Xinetd(AbstractCheck.AbstractFilesCheck):
     def __init__(self):
@@ -30,11 +29,6 @@ class Check4Xinetd(AbstractCheck.AbstractFilesCheck):
             if req[0] == 'xinetd':
                 printError(pkg, xinetd_tag)
 
-        for fn, pkgfile in pkg.files().items():
-            if not fn.startswith('/etc/xinetd.d'):
-                continue
-            printError(pkg, config_tag, fn)
-
 check = Check4Xinetd()
 
 if Config.info:
@@ -42,9 +36,6 @@ if Config.info:
 xinetd_tag,
 '''In systemd based distributions xinetd has become obsolete.
 Please remove dependencies on xinetd.''',
-config_tag,
-'''Xinetd configuation files are deprecated. Please migrate to
-systemd unit files.''',
 )
 
 # Local variables:

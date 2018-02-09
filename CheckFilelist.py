@@ -312,6 +312,14 @@ _checks = [
         ],
     },
     {
+        'error': 'suse-filelist-forbidden-xinetd-configuration',
+        'details': """Xinetd configuation files are deprecated.
+                      Please migrate to systemd unit files.""",
+        'bad': [
+            '/etc/xinet.d/*',
+        ],
+    },
+    {
         'error': 'suse-filelist-forbidden-move-to-usr',
         'details': """This directory has been moved to /usr""",
         'bad': [
