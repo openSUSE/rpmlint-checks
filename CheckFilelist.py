@@ -137,6 +137,14 @@ _checks = [
         ],
     },
     {
+        'error': 'suse-filelist-forbidden-python-test-dir',
+        'details': '''python package installs testsuite to the sitelib,
+                        which can cause file list conflict and is not allowed in SUSE.''',
+        'bad': [
+            '/usr/lib*/python*/site-packages/test',
+        ],
+    },
+    {
         'error': 'suse-filelist-forbidden-backup-file',
         'details': 'backup files (~, .swp or .bak) are not allowed',
         'bad': [
