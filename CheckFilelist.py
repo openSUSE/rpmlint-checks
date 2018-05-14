@@ -296,6 +296,14 @@ _checks = [
         ],
     },
     {
+        'error': 'suse-filelist-forbidden-bashcomp-userdirs',
+        'details': """This directory is for user files,
+                      use /usr/share/bash-completion/completions/""",
+        'bad': [
+            '/etc/bash_completion.d/*',
+        ],
+    },
+    {
         'error': 'suse-filelist-forbidden-move-to-usr',
         'details': """This directory has been moved to /usr""",
         'bad': [
