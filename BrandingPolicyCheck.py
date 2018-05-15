@@ -35,13 +35,6 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
                 if (r[1] != rpm.RPMSENSE_EQUAL or not r[2][1].startswith('1')):
                     printError(pkg, 'suse-branding-unversioned-requires', r[0])
 
-        # verify that it uses branding conflicts
-        for r in pkg_conflicts:
-            if r.startswith("otherproviders("):
-                continue
-            if '-branding-' in r:
-                printError(pkg, 'suse-branding-branding-conflict', r)
-
         if '-branding-' not in pkg.name:
             return
 
@@ -80,8 +73,8 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
                 branding_provide = p
                 break
 
-        # check for Conflicts: otherproviders(kde4-kdm-branding)
-        conflict_prop = "otherproviders(%s)" % (generic_branding)
+        # check for Conflicts: kde4-kdm-branding
+        conflict_prop = "%s" % (generic_branding)
         have_conflict_prop = False
         for c in pkg_conflicts:
             if c == conflict_prop:
@@ -103,7 +96,7 @@ check = BrandingPolicyCheck()
 addDetails(
 'suse-branding-branding-conflict',
 '''Branding packages should conflict with other flavors of the branding package by using
-Conflicts: otherproviders(pkg-branding) = brandingversion
+Conflicts: pkg-branding = brandingversion
 and not directly by numerating a name with -branding- in it.''',
 
 'suse-branding-specific-branding-req',
@@ -132,6 +125,6 @@ Requires: %name-branding = <versionnumber>'.""",
 
 'suse-branding-missing-conflicts',
 """Any branding flavor package that provides the generic branding
-must also conflict with all other branding packages via a special
-otherproviders()""",
+must also conflict with all other branding packages via conflict
+on the generic branding name""",
 )
