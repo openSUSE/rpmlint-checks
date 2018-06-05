@@ -142,6 +142,7 @@ _checks = [
                         which can cause file list conflict and is not allowed in SUSE.''',
         'bad': [
             '/usr/lib*/python*/site-packages/test',
+            '/usr/lib*/python*/site-packages/tests',
         ],
     },
     {
