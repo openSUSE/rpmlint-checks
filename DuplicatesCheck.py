@@ -58,7 +58,12 @@ class DuplicatesCheck(AbstractCheck.AbstractCheck):
 
             partition = get_prefix(one)
 
-            st = os.stat(pkg.dirName() + '/' + one)
+            try:
+                st = os.stat(pkg.dirName() + '/' + one)
+            except UnicodeError as e:  # e.g. non-ASCII, C locale, python 3
+                Filter.printError(pkg, 'inaccessible-filename', one, e)
+                continue
+
             diff = 1 + len(duplicates) - st[stat.ST_NLINK]
             if diff <= 0:
                 for dupe in duplicates:
