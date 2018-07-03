@@ -144,7 +144,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 if type == 0o10 and mode & 0o111:
                     # pie binaries have 'shared object' here
                     if (pkgfile.magic.startswith('ELF ') and
-                            'shared object' not in pkgfile.magic):
+                            ('shared object' not in pkgfile.magic) and
+                            ('pie executable' not in pkgfile.magic)):
                         printError(pkg, 'non-position-independent-executable',
                                    f)
 
@@ -181,7 +182,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
                     if type == 0o10:
-                        if 'shared object' not in pkgfile.magic:
+                        if ('shared object' not in pkgfile.magic and
+                                'pie executable' not in pkgfile.magic):
                             printError(pkg, 'non-position-independent-executable', f)
 
                 if mode & 0o2:
