@@ -146,24 +146,29 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
 check = PolkitCheck()
 
+AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
+
 addDetails(
 'polkit-unauthorized-file',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
-security team""",
+security team. Please refer to {} for more information""".format(AUDIT_BUG_URL),
 
 'polkit-unauthorized-privilege',
 """The package allows unprivileged users to carry out privileged
 operations without authentication. This could cause security
 problems if not done carefully. If the package is intended for
 inclusion in any SUSE product please open a bug report to request
-review of the package by the security team""",
+review of the package by the security team. Please refer to {}
+for more information.""".format(AUDIT_BUG_URL),
 
 'polkit-untracked-privilege',
 """The privilege is not listed in /etc/polkit-default-privs.*
-which makes it harder for admins to find. If the package is intended
-for inclusion in any SUSE product please open a bug report to
-request review of the package by the security team""",
+which makes it harder for admins to find. Furthermore polkit
+authorization checks can easily introduce security issues. If the
+package is intended for inclusion in any SUSE product please open
+a bug report to request review of the package by the security team.
+Please refer to {} for more information.""".format(AUDIT_BUG_URL),
 
 'polkit-cant-acquire-privilege',
 """Usability can be improved by allowing users to acquire privileges
