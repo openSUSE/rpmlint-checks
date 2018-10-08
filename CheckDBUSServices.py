@@ -52,5 +52,7 @@ if Config.info:
 'suse-dbus-unauthorized-service',
 """The package installs a DBUS system service file. If the package
 is intended for inclusion in any SUSE product please open a bug
-report to request review of the service by the security team.""",
+report to request review of the service by the security team. Please
+refer to https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs
+for more information.""",
 )

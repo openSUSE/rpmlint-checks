@@ -239,22 +239,26 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
 check = SUIDCheck()
 
+AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
+
 addDetails(
 'permissions-unauthorized-file',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
-security team""",
+security team. Please refer to {} for more
+information.""".format(AUDIT_BUG_URL),
 'permissions-symlink',
 """permissions handling for symlinks is useless. Please contact
-security@suse.de to remove the entry.""",
+security@suse.de to remove the entry. Please refer to {} for more
+information.""".format(AUDIT_BUG_URL),
 'permissions-dir-without-slash',
 """the entry in the permissions file refers to a directory. Please
 contact security@suse.de to append a slash to the entry in order to
-avoid security problems.""",
+avoid security problems. Please refer to {} for more information.""".format(AUDIT_BUG_URL),
 'permissions-file-as-dir',
 """the entry in the permissions file refers to a directory but the
 package actually contains a file. Please contact security@suse.de to
-remove the slash.""",
+remove the slash. Please refer to {} for more information.""".format(AUDIT_BUG_URL),
 'permissions-incorrect',
 """please use the %attr macro to set the correct permissions.""",
 'permissions-incorrect-owner',
@@ -262,15 +266,17 @@ remove the slash.""",
 'permissions-file-setuid-bit',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the program by the
-security team""",
+security team. Please refer to {} for more information.""".format(AUDIT_BUG_URL),
 'permissions-directory-setuid-bit',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
-security team""",
+security team. Please refer to {} for more
+information.""".format(AUDIT_BUG_URL),
 'permissions-world-writable',
 """If the package is intended for inclusion in any SUSE product
 please open a bug report to request review of the package by the
-security team""",
+security team. Please refer to {} for more
+information.""".format(AUDIT_BUG_URL),
 'permissions-fscaps',
 """Packaging file capabilities is currently not supported. Please
 use normal permissions instead. You may contact the security team to

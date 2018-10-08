@@ -45,5 +45,6 @@ if Config.info:
 'suse-pam-unauthorized-module',
 """The package installs a PAM module. If the package
 is intended for inclusion in any SUSE product please open a bug
-report to request review of the service by the security team.""",
+report to request review of the service by the security team.
+Please refer to https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs""",
 )
