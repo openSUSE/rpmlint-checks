@@ -5,6 +5,7 @@
 # Purpose       : Check systemd created tmpfiles are included in filelist
 
 import re
+import os.path
 
 from Filter import addDetails, printWarning
 import AbstractCheck
@@ -37,11 +38,16 @@ class TmpFilesCheck(AbstractCheck.AbstractCheck):
             if not stat.S_ISREG(pkgfile.mode):
                 printWarning(pkg, "tmpfile-not-regular-file", fn)
                 continue
+            basename = os.path.basename(fn)
 
             pattern = re.compile(
                 r'systemd-tmpfiles --create .*%s' % re.escape(fn))
-            if (not postin or not pattern.search(postin)) and \
-                    (not prein or not pattern.search(prein)):
+            pattern_basename = re.compile(
+                r'systemd-tmpfiles --create .*%s' % re.escape(basename))
+            if (not postin or (not pattern.search(postin) and
+                               not pattern_basename.search(postin)) and
+                    (not prein or (not pattern.search(prein) and
+                                   not pattern_basename.search(prein)))):
                 printWarning(pkg,
                              'postin-without-tmpfile-creation', fn)
 
