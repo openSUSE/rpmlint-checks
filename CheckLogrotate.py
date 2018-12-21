@@ -22,7 +22,7 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
         dirs = {}
 
-        for f, pkgfile in files.items():
+        for f in files:
             if f in pkg.ghostFiles():
                 continue
 

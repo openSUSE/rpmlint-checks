@@ -35,7 +35,7 @@ class CheckSystemdInstall(AbstractCheck.AbstractCheck):
         preun = pkg[rpm.RPMTAG_PREUN] or pkg.scriptprog(rpm.RPMTAG_PREUNPROG)
         postun = pkg[rpm.RPMTAG_POSTUN] or pkg.scriptprog(rpm.RPMTAG_POSTUNPROG)
 
-        for fname, pkgfile in pkg.files().items():
+        for fname in pkg.files():
 
             if CHECKED_UNITS_REGEXP.search(fname):
                 processed = {'pre': False, 'post': False, 'preun': False, 'postun': False}

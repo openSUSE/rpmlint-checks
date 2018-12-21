@@ -6,10 +6,11 @@
 # Purpose       : Check on systemd systems for required insserv package
 #############################################################################
 
+import os
+
 from Filter import addDetails, printError
 import AbstractCheck
 import Config
-import os
 
 insserv_tag = 'suse-obsolete-insserv-requirement'
 etcinit_tag = 'suse-deprecated-init-script'
@@ -29,7 +30,7 @@ class CheckSysVinitOnSystemd(AbstractCheck.AbstractFilesCheck):
             if req[0] == 'insserv':
                 printError(pkg, insserv_tag)
 
-        for fn, pkgfile in pkg.files().items():
+        for fn in pkg.files():
             if not fn.startswith('/etc/init.d'):
                 continue
             if os.path.basename(fn).startswith('boot.'):

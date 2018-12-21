@@ -6,7 +6,7 @@
 # Purpose       : Verify that branding related things comply
 #############################################################################
 
-from Filter import printError, addDetails
+from Filter import addDetails, printError
 import AbstractCheck
 import rpm
 

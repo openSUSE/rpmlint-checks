@@ -6,18 +6,19 @@
 # Purpose       : Verify shared library packaging policy rules
 #############################################################################
 
-import AbstractCheck
-import Config
-from Filter import addDetails
-from Filter import printError
-from Filter import printWarning
 import os
-import Pkg
 import re
 import rpm
 import stat
 
+import AbstractCheck
 from BinariesCheck import BinaryInfo
+import Config
+from Filter import addDetails
+from Filter import printError
+from Filter import printWarning
+import Pkg
+
 
 _policy_legacy_exceptions = (
     "libacl1",

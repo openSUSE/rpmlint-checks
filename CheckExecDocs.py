@@ -37,7 +37,7 @@ class ExecDocsCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
         complete_size = 0
         lang_size = 0
-        for f, pkgfile in files.items():
+        for _, pkgfile in files.items():
             if stat.S_ISREG(pkgfile.mode):
                 complete_size += pkgfile.size
                 if pkgfile.lang != '':
