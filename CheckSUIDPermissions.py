@@ -27,7 +27,7 @@ _permissions_d_whitelist = (
     "squid",
     "texlive",
     "texlive.texlive",
-    "otrs", # bsc#1118049
+    "otrs",  # bsc#1118049
 )
 
 
