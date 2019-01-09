@@ -37,7 +37,7 @@ class PkgConfigCheck(AbstractCheck.AbstractFilesCheck):
         if pkg.grep(self.suspicious_dir, filename):
             Filter.printError(pkg, "invalid-pkgconfig-file", filename)
 
-        pc_file = open(pkg.dirName() + "/" + filename, "r")
+        pc_file = open(pkg.dirName() + "/" + filename, "r", encoding='utf-8')
         for l in pc_file:
             if l.startswith('Libs:') and self.wronglib_dir.search(l):
                 Filter.printError(pkg, 'pkgconfig-invalid-libs-dir',
