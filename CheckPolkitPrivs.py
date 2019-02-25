@@ -38,42 +38,52 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
                     self.privs[priv] = value
 
-    def check(self, pkg):
-
-        if pkg.isSource():
-            return
+    def check_perm_files(self, pkg):
+        """Checks files in polkit-default-privs.d."""
 
         files = pkg.files()
+        prefix = "/etc/polkit-default-privs.d/"
+        profiles = ("restrictive", "standard", "relaxed")
 
-        permfiles = {}
+        permfiles = []
         # first pass, find additional files
         for f in files:
             if f in pkg.ghostFiles():
                 continue
 
-            if f.startswith("/etc/polkit-default-privs.d/"):
+            if f.startswith(prefix):
 
-                bn = f[28:]
+                bn = f[len(prefix):]
                 if bn not in POLKIT_PRIVS_WHITELIST:
                     printError(pkg, "polkit-unauthorized-file", f)
 
-                if bn.endswith(".restrictive") or bn.endswith(".standard") or bn.endswith(".relaxed"):
-                    bn = bn.split('.')[0]
+                parts = bn.rsplit('.', 1)
+
+                if len(parts) == 2 and parts[-1] in profiles:
+                    bn = parts[0]
 
                 if bn not in permfiles:
-                    permfiles[bn] = 1
+                    permfiles.append(bn)
 
-        for f in permfiles:
-            f = pkg.dirName() + "/etc/polkit-default-privs.d/" + f
+        for f in sorted(permfiles):
+            f = pkg.dirName() + prefix + f
 
-            if os.path.exists(f + ".restrictive"):
-                self._parsefile(f + ".restrictive")
-            elif os.path.exists(f + ".standard"):
-                self._parsefile(f + ".standard")
-            elif os.path.exists(f + ".relaxed"):
-                self._parsefile(f + ".relaxed")
+            for profile in profiles:
+                path = '.'.join(f, profile)
+                if os.path.exists(path):
+                    self._parsefile(path)
+                    break
             else:
                 self._parsefile(f)
+
+    def check(self, pkg):
+
+        if pkg.isSource():
+            return
+
+        self.check_perm_files(pkg)
+
+        files = pkg.files()
 
         for f in files:
             if f in pkg.ghostFiles():
