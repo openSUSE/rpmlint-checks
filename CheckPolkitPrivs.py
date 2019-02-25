@@ -150,9 +150,10 @@ AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#au
 
 addDetails(
 'polkit-unauthorized-file',
-"""If the package is intended for inclusion in any SUSE product
-please open a bug report to request review of the package by the
-security team. Please refer to {} for more information""".format(AUDIT_BUG_URL),
+"""A custom polkit rule file is installed by this package. If the package is
+intended for inclusion in any SUSE product please open a bug report to request
+review of the package by the security team. Please refer to {} for more
+information""".format(AUDIT_BUG_URL),
 
 'polkit-unauthorized-privilege',
 """The package allows unprivileged users to carry out privileged
