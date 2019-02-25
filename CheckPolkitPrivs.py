@@ -76,14 +76,11 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             else:
                 self._parsefile(f)
 
-    def check(self, pkg):
-
-        if pkg.isSource():
-            return
-
-        self.check_perm_files(pkg)
+    def check_actions(self, pkg):
+        """Checks files in the actions directory."""
 
         files = pkg.files()
+        prefix = "/usr/share/polkit-1/actions/"
 
         for f in files:
             if f in pkg.ghostFiles():
@@ -91,66 +88,71 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
             # catch xml exceptions
             try:
-                if f.startswith("/usr/share/polkit-1/actions/"):
+                if f.startswith(prefix):
                     xml = parse(pkg.dirName() + f)
                     for a in xml.getElementsByTagName("action"):
-                        action = a.getAttribute('id')
-                        if action not in self.privs:
-                            iserr = 0
-                            foundno = 0
-                            foundundef = 0
-                            settings = {}
-                            try:
-                                defaults = a.getElementsByTagName("defaults")[0]
-                                for i in defaults.childNodes:
-                                    if not i.nodeType == i.ELEMENT_NODE:
-                                        continue
-
-                                    if i.nodeName in ('allow_any', 'allow_inactive', 'allow_active'):
-                                        settings[i.nodeName] = i.firstChild.data
-
-                            except KeyError:
-                                iserr = 1
-
-                            for i in ('allow_any', 'allow_inactive', 'allow_active'):
-                                if i not in settings:
-                                    foundundef = 1
-                                    settings[i] = '??'
-                                elif settings[i].find("auth_admin") != 0:
-                                    if settings[i] == 'no':
-                                        foundno = 1
-                                    else:
-                                        iserr = 1
-
-                            if iserr:
-                                printError(
-                                    pkg, 'polkit-unauthorized-privilege',
-                                    '%s (%s:%s:%s)' % (
-                                        action,
-                                        settings['allow_any'],
-                                        settings['allow_inactive'],
-                                        settings['allow_active']))
-                            else:
-                                printError(
-                                    pkg, 'polkit-untracked-privilege',
-                                    '%s (%s:%s:%s)' % (
-                                        action,
-                                        settings['allow_any'],
-                                        settings['allow_inactive'],
-                                        settings['allow_active']))
-
-                            if foundno or foundundef:
-                                printInfo(
-                                    pkg, 'polkit-cant-acquire-privilege',
-                                    '%s (%s:%s:%s)' % (
-                                        action,
-                                        settings['allow_any'],
-                                        settings['allow_inactive'],
-                                        settings['allow_active']))
-
+                        self.check_action(pkg, a)
             except Exception as x:
                 printError(pkg, 'rpmlint-exception', "%(file)s raised an exception: %(x)s" % {'file': f, 'x': x})
                 continue
+
+    def check_action(self, pkg, action):
+        """Inspect a single polkit action used by an application."""
+        action_id = action.getAttribute('id')
+
+        if action_id in self.privs:
+            # the action is explicitly whitelisted, nothing else to do
+            return
+
+        allow_types = ('allow_any', 'allow_inactive', 'allow_active')
+        foundunauthorized = False
+        foundno = False
+        foundundef = False
+        settings = {}
+        try:
+            defaults = action.getElementsByTagName("defaults")[0]
+            for i in defaults.childNodes:
+                if not i.nodeType == i.ELEMENT_NODE:
+                    continue
+
+                if i.nodeName in allow_types:
+                    settings[i.nodeName] = i.firstChild.data
+        except KeyError:
+            foundunauthorized = True
+
+        for i in allow_types:
+            if i not in settings:
+                foundundef = True
+                settings[i] = '??'
+            elif settings[i].find("auth_admin") != 0:
+                if settings[i] == 'no':
+                    foundno = True
+                else:
+                    foundunauthorized = True
+
+        action_settings = "{} ({}:{}:{})".format(
+            action_id,
+            *(settings[type] for type in allow_types)
+        )
+
+        if foundunauthorized:
+            printError(
+                pkg, 'polkit-unauthorized-privilege', action_settings)
+        else:
+            printError(
+                pkg, 'polkit-untracked-privilege', action_settings)
+
+        if foundno or foundundef:
+            printInfo(
+                pkg, 'polkit-cant-acquire-privilege', action_settings)
+
+    def check(self, pkg):
+
+        if pkg.isSource():
+            return
+
+        self.check_perm_files(pkg)
+        self.check_actions(pkg)
 
 
 check = PolkitCheck()
