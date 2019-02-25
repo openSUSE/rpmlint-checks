@@ -81,8 +81,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
             # catch xml exceptions
             try:
-                if f.startswith("/usr/share/PolicyKit/policy/")\
-                or f.startswith("/usr/share/polkit-1/actions/"):
+                if f.startswith("/usr/share/polkit-1/actions/"):
                     xml = parse(pkg.dirName() + f)
                     for a in xml.getElementsByTagName("action"):
                         action = a.getAttribute('id')
