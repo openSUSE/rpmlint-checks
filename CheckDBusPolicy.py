@@ -42,7 +42,7 @@ class DBusPolicyCheck(AbstractCheck.AbstractCheck):
                                 send_policy_seen = True
                                 printError(pkg, 'dbus-policy-allow-without-destination', "%(file)s: %(xml)s" % {'file': f, 'xml': allow.toxml()})
                             elif allow.hasAttribute('send_destination'):
-                                    send_policy_seen = True
+                                send_policy_seen = True
 
                             if (allow.hasAttribute('receive_sender') or
                                     allow.hasAttribute('receive_interface')):
