@@ -47,9 +47,9 @@ class LogrotateCheck(AbstractCheck.AbstractCheck):
                     pkg, 'suse-logrotate-user-writable-log-dir',
                     "%s %s:%s %04o" % (d, files[d].user, files[d].group, mode))
             elif files[d].group != 'root' and mode & 0o20 and (dirs[d] is None or dirs[d][1] != files[d].group):
-                    printError(
-                        pkg, 'suse-logrotate-user-writable-log-dir',
-                        "%s %s:%s %04o" % (d, files[d].user, files[d].group, mode))
+                printError(
+                    pkg, 'suse-logrotate-user-writable-log-dir',
+                    "%s %s:%s %04o" % (d, files[d].user, files[d].group, mode))
 
     # extremely primitive logrotate parser
     def parselogrotateconf(self, root, f):
