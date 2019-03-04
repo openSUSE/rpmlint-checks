@@ -317,7 +317,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             )
             return False
 
-        with open(path, 'rb') as fd:
+        with open(pkg.dirName() + path, 'rb') as fd:
             while True:
                 data = fd.read(4096)
                 if not data:
