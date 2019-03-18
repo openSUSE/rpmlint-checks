@@ -313,6 +313,15 @@ _checks = [
         ],
     },
     {
+        'error': 'suse-filelist-forbidden-xinetd-configuration',
+        'details': """Xinetd configuation files are deprecated.
+                      Please migrate to systemd socket activated unit files.
+                      http://0pointer.de/blog/projects/socket-activation.html""",
+        'bad': [
+            '/etc/xinet.d/*',
+        ],
+    },
+    {
         'error': 'suse-filelist-forbidden-move-to-usr',
         'details': """This directory has been moved to /usr""",
         'bad': [
