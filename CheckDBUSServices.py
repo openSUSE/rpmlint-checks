@@ -16,6 +16,7 @@ SERVICES_WHITELIST = Config.getOption('DBUSServices.WhiteList', ())  # set of fi
 # need to end with / so we don't catch directories
 _dbus_system_paths = [
     "/usr/share/dbus-1/system-services/",
+    "/usr/share/dbus-1/system.d/",
     "/etc/dbus-1/system.d/"
 ]
 
