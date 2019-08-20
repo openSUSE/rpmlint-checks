@@ -55,6 +55,7 @@ _goodprefixes = (
     # SUSE policy handled in separate check
     '/usr/X11R6/',
     '/usr/bin/',
+    '/usr/etc/',
     '/usr/games/',
     '/usr/include/',
     '/usr/lib/',
