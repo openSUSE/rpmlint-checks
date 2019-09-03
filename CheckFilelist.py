@@ -59,6 +59,7 @@ _goodprefixes = (
     '/usr/games/',
     '/usr/include/',
     '/usr/lib/',
+    '/usr/libexec/',
     '/usr/lib64/',
     '/usr/sbin/',
     '/usr/share/',
