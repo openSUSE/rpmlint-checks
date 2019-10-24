@@ -139,6 +139,14 @@ _checks = [
         ],
     },
     {
+        'error': 'suse-filelist-forbidden-python-src-dir',
+        'details': '''python package installs src to the sitelib,
+                      which can cause file list conflict and is not allowed in SUSE.''',
+        'bad': [
+            '/usr/lib*/python*/site-packages/src',
+        ],
+    },
+    {
         'error': 'suse-filelist-forbidden-python-test-dir',
         'details': '''python package installs testsuite to the sitelib,
                         which can cause file list conflict and is not allowed in SUSE.''',
