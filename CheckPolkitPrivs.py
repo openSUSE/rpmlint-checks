@@ -267,14 +267,9 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             pkgs = self.rules.get(f, None)
             wl_entry = pkgs.get(pkg.name, None) if pkgs else None
 
-            # TODO: at the moment these are only warnings while we're newly
-            # implementing this feature.
-            # We should turn these into errors with badness - or change our
-            # enforcement procedure in OBS to not require this any more.
-
             if not pkgs or not wl_entry:
                 # no whitelist entry exists for this file
-                printWarning(pkg, 'polkit-unauthorized-rules', f)
+                printError(pkg, 'polkit-unauthorized-rules', f)
                 continue
 
             if wl_entry["skip-digest-check"]:
@@ -291,7 +286,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
                     break
             else:
                 # none of the digest entries matched
-                printWarning(pkg, 'polkit-changed-rules', f)
+                printError(pkg, 'polkit-changed-rules', f)
                 continue
 
     def _checkDigest(self, pkg, path, digest_spec):
