@@ -1,4 +1,4 @@
-# vim:sw=4:et
+# vim: sw=4 et sts=4 ts=4 :
 #############################################################################
 # File          : CheckPolkitPrivs.py
 # Package       : rpmlint
