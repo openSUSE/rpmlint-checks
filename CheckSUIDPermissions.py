@@ -85,10 +85,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         permfiles = {}
         # first pass, find and parse permissions.d files
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             if f.startswith("/etc/permissions.d/"):
+
+                if f in pkg.ghostFiles():
+                    printError(pkg, 'polkit-ghost-file', f)
+                    continue
 
                 bn = f[19:]
                 if bn not in _permissions_d_whitelist:
@@ -319,6 +320,12 @@ for _id, desc in (
             """The %run_permissions macro calls SuSEconfig which sets permissions for all
             files in the system. Please use %set_permissions <filename> instead
             to only set permissions for files contained in this package""",
+        ),
+        (
+            'permissions-ghostfile',
+            """This package installs a permissions file as a %ghost file. This
+            is not allowed as it is impossible to review. Please refer to
+            {url} for more information."""
         )
 ):
     addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))

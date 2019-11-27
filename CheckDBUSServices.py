@@ -36,11 +36,12 @@ class DBUSServiceCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
 
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             for p in _dbus_system_paths:
                 if f.startswith(p):
+
+                    if f in pkg.ghostFiles():
+                        printError(pkig, "suse-dbus-ghost-service", f)
+                        continue
 
                     bn = f[len(p):]
                     if bn not in SERVICES_WHITELIST:
@@ -58,5 +59,11 @@ if Config.info:
             report to request review of the service by the security team. Please
             refer to {url} for more information."""
         ),
+        (
+            'suse-dbus-ghost-service',
+            """This package installs a DBUS system service marked as %ghost.
+            This is not allowed, since it is impossible to review. Please
+            refer to {url} for more information."""
+        )
     ):
         addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))

@@ -83,14 +83,15 @@ class CronCheck(AbstractCheck.AbstractCheck):
         )
 
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             for cron_dir in cron_dirs:
                 if f.startswith(cron_dir):
                     break
             else:
                 # no match
+                continue
+
+            if f in pkg.ghostFiles():
+                printError(pkg, 'cronjob-ghost-file', f)
                 continue
 
             entries = self.m_whitelist_entries.get(f, [])
@@ -142,6 +143,13 @@ for _id, desc in (
             """A cron job or cron job related file installed by this package changed
             in content. Please open a bug report to request follow-up review of the
             introduced changes by the security team. Please refer to {url} for more
-            information.""")
+            information."""
+        ),
+        (
+            'cronjob-ghost-file',
+            """A cron job path has been marked as %ghost file by this package.
+            This is not allowed as it is impossible to review. Please refer to
+            {url} for more information."""
+        )
 ):
     addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))

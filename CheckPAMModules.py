@@ -29,11 +29,12 @@ class PAMModulesCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
 
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             m = pam_module_re.match(f)
             if m:
+                if f in pkg.ghostFiles():
+                    printError(pkg, 'suse-pam-ghost-module', f)
+                    continue
+
                 bn = m.groups()[0]
                 if bn not in PAM_WHITELIST:
                     printError(pkg, "suse-pam-unauthorized-module", bn)
@@ -51,5 +52,11 @@ if Config.info:
             report to request review of the service by the security team.
             Please refer to {url}"""
         ),
+        (
+            'suse-pam-ghost-module',
+            """The package installs a PAM module as %ghost file. This is not
+            allowed as it is impossible to review. For more information please
+            refer to {url} for more information."""
+        )
     ):
         addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))

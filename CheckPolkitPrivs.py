@@ -150,10 +150,12 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
         permfiles = []
         # first pass, find additional files
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
 
             if f.startswith(prefix):
+
+                if f in pkg.ghostFiles():
+                    printError(pkg, 'polkit-ghost-file', f)
+                    continue
 
                 bn = f[len(prefix):]
                 if bn not in POLKIT_PRIVS_WHITELIST:
@@ -185,12 +187,13 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
         prefix = "/usr/share/polkit-1/actions/"
 
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             # catch xml exceptions
             try:
                 if f.startswith(prefix):
+                    if f in pkg.ghostFiles():
+                        printError(pkg, 'polkit-ghost-file', f)
+                        continue
+
                     xml = parse(pkg.dirName() + f)
                     for a in xml.getElementsByTagName("action"):
                         self.check_action(pkg, a)
@@ -255,14 +258,15 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
         rule_dirs = ("/etc/polkit-1/rules.d/", "/usr/share/polkit-1/rules.d/")
 
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             for rule_dir in rule_dirs:
                 if f.startswith(rule_dir):
                     break
             else:
                 # no match
+                continue
+
+            if f in pkg.ghostFiles():
+                printError(pkg, 'polkit-ghost-file', f)
                 continue
 
             pkgs = self.rules.get(f, None)
@@ -380,6 +384,12 @@ for _id, desc in (
             """A polkit rules file installed by this package changed in content. Please
             open a bug report to request follow-up review of the introduced changes by
             the security team. Please refer to {url} for more information."""
+        ),
+        (
+            'polkit-ghost-file',
+            """This package installs a polkit rule or policy as %ghost file.
+            This is not allowed as it is impossible to review. For more
+            information please refer to {url} for more information."""
         )
 ):
     addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
