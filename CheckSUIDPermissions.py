@@ -309,7 +309,7 @@ for _id, desc in (
         ),
         (
             'permissions-missing-requires',
-            """Please add \"PreReq: permissions\""""
+            """Please add 'PreReq: permissions'"""
         ),
         (
             'permissions-missing-verifyscript',
