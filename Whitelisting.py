@@ -115,6 +115,10 @@ class AuditEntry(object):
             try:
                 h = hashlib.new(alg)
 
+                # NOTE: this path is dynamic and rpmlint unpacks the RPM
+                # contents into a temporary directory even when outside the
+                # build environment i.e. the file content should always be
+                # available to us.
                 with open(pkg.dirName() + path, 'rb') as fd:
                     while True:
                         chunk = fd.read(4096)
