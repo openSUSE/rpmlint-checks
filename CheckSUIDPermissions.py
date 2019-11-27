@@ -1,4 +1,4 @@
-# vim:sw=4:et
+# vim: sw=4 et sts=4 ts=4 :
 #############################################################################
 # File          : CheckSUIDPermissions.py
 # Package       : rpmlint
@@ -10,6 +10,7 @@ from __future__ import print_function
 
 from Filter import printWarning, printError, printInfo, addDetails
 import AbstractCheck
+import Whitelisting
 import os
 import re
 import rpm
@@ -240,57 +241,84 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
 check = SUIDCheck()
 
-AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
-
-addDetails(
-'permissions-unauthorized-file',
-"""If the package is intended for inclusion in any SUSE product
-please open a bug report to request review of the package by the
-security team. Please refer to {} for more
-information.""".format(AUDIT_BUG_URL),
-'permissions-symlink',
-"""permissions handling for symlinks is useless. Please contact
-security@suse.de to remove the entry. Please refer to {} for more
-information.""".format(AUDIT_BUG_URL),
-'permissions-dir-without-slash',
-"""the entry in the permissions file refers to a directory. Please
-contact security@suse.de to append a slash to the entry in order to
-avoid security problems. Please refer to {} for more information.""".format(AUDIT_BUG_URL),
-'permissions-file-as-dir',
-"""the entry in the permissions file refers to a directory but the
-package actually contains a file. Please contact security@suse.de to
-remove the slash. Please refer to {} for more information.""".format(AUDIT_BUG_URL),
-'permissions-incorrect',
-"""please use the %attr macro to set the correct permissions.""",
-'permissions-incorrect-owner',
-"""please use the %attr macro to set the correct ownership.""",
-'permissions-file-setuid-bit',
-"""If the package is intended for inclusion in any SUSE product
-please open a bug report to request review of the program by the
-security team. Please refer to {} for more information.""".format(AUDIT_BUG_URL),
-'permissions-directory-setuid-bit',
-"""If the package is intended for inclusion in any SUSE product
-please open a bug report to request review of the package by the
-security team. Please refer to {} for more
-information.""".format(AUDIT_BUG_URL),
-'permissions-world-writable',
-"""If the package is intended for inclusion in any SUSE product
-please open a bug report to request review of the package by the
-security team. Please refer to {} for more
-information.""".format(AUDIT_BUG_URL),
-'permissions-fscaps',
-"""Packaging file capabilities is currently not supported. Please
-use normal permissions instead. You may contact the security team to
-request an entry that sets capabilities in /etc/permissions
-instead.""",
-'permissions-missing-postin',
-"""Please add an appropriate %post section""",
-'permissions-missing-requires',
-"""Please add \"PreReq: permissions\"""",
-'permissions-missing-verifyscript',
-"""Please add a %verifyscript section""",
-'permissions-suseconfig-obsolete',
-"""The %run_permissions macro calls SuSEconfig which sets permissions for all
-files in the system. Please use %set_permissions <filename> instead
-to only set permissions for files contained in this package""",
-)
+for _id, desc in (
+        (
+            'permissions-unauthorized-file',
+            """If the package is intended for inclusion in any SUSE product
+            please open a bug report to request review of the package by the
+            security team. Please refer to {url} for more
+            information."""
+        ),
+        (
+            'permissions-symlink',
+            """permissions handling for symlinks is useless. Please contact
+            security@suse.de to remove the entry. Please refer to {url} for more
+            information."""
+        ),
+        (
+            'permissions-dir-without-slash',
+            """the entry in the permissions file refers to a directory. Please
+            contact security@suse.de to append a slash to the entry in order to
+            avoid security problems. Please refer to {url} for more information."""
+        ),
+        (
+            'permissions-file-as-dir',
+            """the entry in the permissions file refers to a directory but the
+            package actually contains a file. Please contact security@suse.de to
+            remove the slash. Please refer to {url} for more information."""
+        ),
+        (
+            'permissions-incorrect',
+            """please use the %attr macro to set the correct permissions."""
+        ),
+        (
+            'permissions-incorrect-owner',
+            """please use the %attr macro to set the correct ownership."""
+        ),
+        (
+            'permissions-file-setuid-bit',
+            """If the package is intended for inclusion in any SUSE product
+            please open a bug report to request review of the program by the
+            security team. Please refer to {url} for more information."""
+        ),
+        (
+            'permissions-directory-setuid-bit',
+            """If the package is intended for inclusion in any SUSE product
+            please open a bug report to request review of the package by the
+            security team. Please refer to {url} for more
+            information."""
+        ),
+        (
+            'permissions-world-writable',
+            """If the package is intended for inclusion in any SUSE product
+            please open a bug report to request review of the package by the
+            security team. Please refer to {url} for more
+            information."""
+        ),
+        (
+            'permissions-fscaps',
+            """Packaging file capabilities is currently not supported. Please
+            use normal permissions instead. You may contact the security team to
+            request an entry that sets capabilities in /etc/permissions
+            instead.""",
+        ),
+        (
+            'permissions-missing-postin',
+            """Please add an appropriate %post section"""
+        ),
+        (
+            'permissions-missing-requires',
+            """Please add \"PreReq: permissions\""""
+        ),
+        (
+            'permissions-missing-verifyscript',
+            """Please add a %verifyscript section"""
+        ),
+        (
+            'permissions-suseconfig-obsolete',
+            """The %run_permissions macro calls SuSEconfig which sets permissions for all
+            files in the system. Please use %set_permissions <filename> instead
+            to only set permissions for files contained in this package""",
+        )
+):
+    addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))

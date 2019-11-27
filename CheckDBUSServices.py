@@ -1,4 +1,4 @@
-# vim:sw=4:et
+# vim: sw=4 et sts=4 ts=4 :
 #############################################################################
 # File          : CheckDBUSServices.py
 # Package       : rpmlint
@@ -10,6 +10,7 @@
 
 from Filter import *
 import AbstractCheck
+import Whitelisting
 
 SERVICES_WHITELIST = Config.getOption('DBUSServices.WhiteList', ())  # set of file names
 
@@ -49,11 +50,13 @@ class DBUSServiceCheck(AbstractCheck.AbstractCheck):
 check = DBUSServiceCheck()
 
 if Config.info:
-    addDetails(
-'suse-dbus-unauthorized-service',
-"""The package installs a DBUS system service file. If the package
-is intended for inclusion in any SUSE product please open a bug
-report to request review of the service by the security team. Please
-refer to https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs
-for more information.""",
-)
+    for _id, desc in (
+        (
+            'suse-dbus-unauthorized-service',
+            """The package installs a DBUS system service file. If the package
+            is intended for inclusion in any SUSE product please open a bug
+            report to request review of the service by the security team. Please
+            refer to {url} for more information."""
+        ),
+    ):
+        addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))

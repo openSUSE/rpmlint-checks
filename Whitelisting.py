@@ -8,6 +8,8 @@ import os
 import json
 import hashlib
 
+AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
+
 
 class DigestVerificationResult(object):
     """This type represents the result of a digest verification as returned

@@ -129,19 +129,19 @@ class CronCheck(AbstractCheck.AbstractCheck):
 # needs to be instantiated for the check to be registered with rpmlint
 check = CronCheck()
 
-AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
-
-for detail, desc in (
-        ('cronjob-unauthorized-file',
-        """A cron job rule file is installed by this package. If the package is
-        intended for inclusion in any SUSE product please open a bug report to request
-        review of the package by the security team. Please refer to {url} for more
-        information"""),
-        ('cronjob-changed-file',
-        """A cron job or cron job related file installed by this package changed
-        in content. Please open a bug report to request follow-up review of the
-        introduced changes by the security team. Please refer to {url} for more
-        information.""")
-    ):
-    addDetails(detail, desc.format(url = AUDIT_BUG_URL))
-
+for _id, desc in (
+        (
+            'cronjob-unauthorized-file',
+            """A cron job rule file is installed by this package. If the package is
+            intended for inclusion in any SUSE product please open a bug report to request
+            review of the package by the security team. Please refer to {url} for more
+            information"""
+        ),
+        (
+            'cronjob-changed-file',
+            """A cron job or cron job related file installed by this package changed
+            in content. Please open a bug report to request follow-up review of the
+            introduced changes by the security team. Please refer to {url} for more
+            information.""")
+):
+    addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
