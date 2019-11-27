@@ -84,14 +84,15 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         permfiles = {}
         # first pass, find and parse permissions.d files
+        prefix = "/etc/permissions.d/"
         for f in files:
-            if f.startswith("/etc/permissions.d/"):
+            if f.startswith(prefix):
 
                 if f in pkg.ghostFiles():
                     printError(pkg, 'polkit-ghost-file', f)
                     continue
 
-                bn = f[19:]
+                bn = f[len(prefix):]
                 if bn not in _permissions_d_whitelist:
                     printError(pkg, "permissions-unauthorized-file", f)
 
