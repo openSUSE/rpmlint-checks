@@ -1,4 +1,4 @@
-# vim:sw=4:et
+# vim: sw=4 ts=4 sts=4 et :
 #############################################################################
 # File          : CheckPAMModules.py
 # Package       : rpmlint
@@ -9,6 +9,7 @@
 from Filter import *
 import AbstractCheck
 import re
+import Whitelisting
 
 PAM_WHITELIST = Config.getOption('PAMModules.WhiteList', ())  # set of file names
 
@@ -28,11 +29,12 @@ class PAMModulesCheck(AbstractCheck.AbstractCheck):
         files = pkg.files()
 
         for f in files:
-            if f in pkg.ghostFiles():
-                continue
-
             m = pam_module_re.match(f)
             if m:
+                if f in pkg.ghostFiles():
+                    printError(pkg, 'suse-pam-ghost-module', f)
+                    continue
+
                 bn = m.groups()[0]
                 if bn not in PAM_WHITELIST:
                     printError(pkg, "suse-pam-unauthorized-module", bn)
@@ -41,10 +43,20 @@ class PAMModulesCheck(AbstractCheck.AbstractCheck):
 check = PAMModulesCheck()
 
 if Config.info:
-    addDetails(
-'suse-pam-unauthorized-module',
-"""The package installs a PAM module. If the package
-is intended for inclusion in any SUSE product please open a bug
-report to request review of the service by the security team.
-Please refer to https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs""",
-)
+
+    for _id, desc in (
+        (
+            'suse-pam-unauthorized-module',
+            """The package installs a PAM module. If the package
+            is intended for inclusion in any SUSE product please open a bug
+            report to request review of the service by the security team.
+            Please refer to {url}"""
+        ),
+        (
+            'suse-pam-ghost-module',
+            """The package installs a PAM module as %ghost file. This is not
+            allowed as it is impossible to review. For more information please
+            refer to {url} for more information."""
+        )
+    ):
+        addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
