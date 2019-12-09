@@ -5,8 +5,12 @@
 #############################################################################
 
 import os
+import sys
 import json
 import hashlib
+import traceback
+
+from Filter import printError
 
 AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
 
@@ -193,7 +197,11 @@ class WhitelistEntry(object):
 
 
 class WhitelistParser(object):
-    """This type knows how to parse the JSON whitelisting format."""
+    """This type knows how to parse the JSON whitelisting format. The format
+    is documented in [1].
+
+    [1]: https://github.com/openSUSE/rpmlint-security-whitelistings/blob/master/README.md
+    """
 
     def __init__(self, wl_path):
         """Creates a new instance of WhitelistParser that operates on
@@ -230,12 +238,16 @@ class WhitelistParser(object):
                             entries = ret.setdefault(path, [])
                             entries.append(entry)
         except Exception as e:
-            raise Exception(self._getErrorPrefix() + ": Failed to parse JSON file: " + str(e))
+            _, _, tb = sys.exc_info()
+            fn, ln, _, _ = traceback.extract_tb(tb)[-1]
+            raise Exception(self._getErrorPrefix() + "Failed to parse JSON file: {}:{}: {}".format(
+                fn, ln, str(e)
+            ))
 
         return ret
 
     def _parseWhitelistEntry(self, package, config):
-        """Parses a single JSON whitelist entry returns a WhitelistEntry()
+        """Parses a single JSON whitelist entry and returns a WhitelistEntry()
         object for it. On non-critical error conditions None is returned,
         otherwise an exception is raised."""
 
@@ -284,3 +296,105 @@ class WhitelistParser(object):
 
     def _getWarnPrefix(self):
         return self.m_path + ": WARN: "
+
+
+class WhitelistChecker(object):
+    """This type actually compares files found in an RPM against whitelist
+    entries."""
+
+    def __init__(self, whitelist_entries, restricted_paths, error_map):
+        """Instantiate a properly configured checker
+
+        :param whitelist_entries: is a dictionary data structure as returned
+                                  from WhitelistParser.parse().
+        :param restricted_paths: a sequence of path prefixes that will trigger
+                                 the whitelisting check. All other paths will
+                                 be ignored.
+        :param error_map: is a specification of rpmlint error labels for ghost
+                          files, unauthorized files and changed files like:
+                          {
+                            "unauthorized": "polkit-unauthorized-rules",
+                            "changed": "polkit-changed-rules",
+                            "ghost": "polkit-ghost-file"
+                          }
+        """
+
+        self.m_restricted_paths = restricted_paths
+        self.m_whitelist_entries = whitelist_entries
+        self.m_error_map = error_map
+
+        req_error_keys = ("unauthorized", "changed", "ghost")
+
+        for req_key in req_error_keys:
+            if req_key not in self.m_error_map:
+                raise Exception("Missing {} error mapping".format(req_key))
+
+    def check(self, pkg):
+        """Checks the given RPM pkg instance against the configured whitelist
+        restriction.
+
+        Each whitelist violation will be printed with the according error tag.
+        Nothing is returned from this function.
+        """
+
+        if pkg.isSource():
+            return
+
+        files = pkg.files()
+
+        for f in files:
+            for restricted in self.m_restricted_paths:
+                if f.startswith(restricted):
+                    break
+            else:
+                # no match
+                continue
+
+            if f in pkg.ghostFiles():
+                printError(pkg, self.m_error_map['ghost'], f)
+                continue
+
+            entries = self.m_whitelist_entries.get(f, [])
+            wl_match = None
+            for entry in entries:
+                if entry.package() == pkg.name:
+                    wl_match = entry
+                    break
+            else:
+                # no whitelist entry exists for this file
+                printError(pkg, self.m_error_map['unauthorized'], f)
+                continue
+
+            # for the case that there's no match of digests, remember the most
+            # recent digest verification result for diagnosis output towards
+            # the user
+            diag_results = None
+
+            # check the newest (bottom) entry first it is more likely to match
+            # what we have
+            for audit in reversed(wl_match.audits()):
+                digest_matches, results = audit.compareDigests(pkg)
+
+                if digest_matches:
+                    break
+
+                if not diag_results:
+                    diag_results = results
+            else:
+                # none of the digest entries matched
+                self._printVerificationResults(diag_results)
+                printError(pkg, self.m_error_map['changed'], f)
+                continue
+
+    def _printVerificationResults(self, verification_results):
+        """For the case of changed file digests this function prints the
+        encountered and expected digests and paths for diagnostic purposes."""
+
+        for result in verification_results:
+            if result.matches():
+                continue
+
+            print("{path}: expected {alg} digest {expected} but encountered {encountered}".format(
+                path=result.path(), alg=result.algorithm(),
+                expected=result.expected(), encountered=result.encountered()
+            ), file=sys.stderr)
