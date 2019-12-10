@@ -173,7 +173,7 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
             f = pkg.dirName() + prefix + f
 
             for profile in profiles:
-                path = '.'.join(f, profile)
+                path = '.'.join((f, profile))
                 if os.path.exists(path):
                     self._parse_privs_file(path)
                     break
