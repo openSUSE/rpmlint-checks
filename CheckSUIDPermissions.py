@@ -3,7 +3,7 @@
 # File          : CheckSUIDPermissions.py
 # Package       : rpmlint
 # Author        : Ludwig Nussel
-# Purpose       : Check for /etc/permissions violations
+# Purpose       : Check for /usr/share/permissions violations
 #############################################################################
 
 from __future__ import print_function
@@ -37,9 +37,21 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         AbstractCheck.AbstractCheck.__init__(self, "CheckSUIDPermissions")
         self.perms = {}
 
-        for fname in ('/etc/permissions', '/etc/permissions.secure'):
+        for fname in self._paths_to('permissions', 'permissions.secure'):
             if os.path.exists(fname):
                 self._parsefile(fname)
+
+    @staticmethod
+    def _paths_to(*file_names):
+        # we used to store the permissions data in /etc even though they aren't configuration files
+        # the whitelisting should check both paths (old /etc and new /usr/share) until all
+        # distributions using the old one (SLE15) are retired
+        for name in file_names:
+            # return the new path first.
+            # chkstat prefers the new paths over the old ones, so callers that only care about the
+            # first matching file must mimic that.
+            yield '/usr/share/permissions/' + name
+            yield '/etc/' + name
 
     def _parsefile(self, fname):
         lnr = 0
@@ -68,7 +80,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                       "mode": int(mode, 8) & 0o7777}
                     # for permissions that don't change and therefore
                     # don't need special handling
-                    if fname == '/etc/permissions':
+                    if fname in self._paths_to('permissions'):
                         self.perms[fn]['static'] = True
                 else:
                     print('%s: Malformatted line %d: %s...' %
@@ -82,30 +94,30 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         files = pkg.files()
 
-        permfiles = {}
+        permfiles = set()
         # first pass, find and parse permissions.d files
-        prefix = "/etc/permissions.d/"
         for f in files:
-            if f.startswith(prefix):
+            for prefix in self._paths_to("permissions.d/"):
+                if f.startswith(prefix):
 
-                if f in pkg.ghostFiles():
-                    printError(pkg, 'polkit-ghost-file', f)
-                    continue
+                    if f in pkg.ghostFiles():
+                        printError(pkg, 'polkit-ghost-file', f)
+                        continue
 
-                bn = f[len(prefix):]
-                if bn not in _permissions_d_whitelist:
-                    printError(pkg, "permissions-unauthorized-file", f)
+                    bn = f[len(prefix):]
+                    if bn not in _permissions_d_whitelist:
+                        printError(pkg, "permissions-unauthorized-file", f)
 
-                bn = bn.split('.')[0]
-                if bn not in permfiles:
-                    permfiles[bn] = 1
+                    bn = 'permissions.d/' + bn.split('.')[0]
+                    if bn not in permfiles:
+                        permfiles.add(bn)
 
         for f in permfiles:
-            f = pkg.dirName() + "/etc/permissions.d/" + f
-            if os.path.exists(f + ".secure"):
-                self._parsefile(f + ".secure")
-            else:
-                self._parsefile(f)
+            # check for a .secure file first, falling back to the plain file
+            for path in self._paths_to(f + '.secure', f):
+                if os.path.exists(path):
+                    self._parsefile(path)
+                    break
 
         need_set_permissions = False
         found_suseconfig = False
@@ -301,8 +313,8 @@ for _id, desc in (
             'permissions-fscaps',
             """Packaging file capabilities is currently not supported. Please
             use normal permissions instead. You may contact the security team to
-            request an entry that sets capabilities in /etc/permissions
-            instead.""",
+            request an entry that sets capabilities in
+            /usr/share/permissions/permissions instead.""",
         ),
         (
             'permissions-missing-postin',
