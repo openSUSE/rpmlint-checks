@@ -15,6 +15,7 @@ import os
 import re
 import rpm
 import sys
+import stat
 
 _permissions_d_whitelist = (
     "lprng",
@@ -132,18 +133,9 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             mode = pkgfile.mode
             owner = pkgfile.user + ':' + pkgfile.group
 
-#           S_IFSOCK   014   socket
-#           S_IFLNK    012   symbolic link
-#           S_IFREG    010   regular file
-#           S_IFBLK    006   block device
-#           S_IFDIR    004   directory
-#           S_IFCHR    002   character device
-#           S_IFIFO    001   FIFO
-            type = (mode >> 12) & 0o17
-            mode &= 0o7777
             need_verifyscript = False
-            if f in self.perms or (type == 4 and f + "/" in self.perms):
-                if type == 0o12:
+            if f in self.perms or (stat.S_ISDIR(mode) and f + "/" in self.perms):
+                if stat.S_ISLNK(mode):
                     printWarning(pkg, "permissions-symlink", f)
                     continue
 
@@ -151,13 +143,13 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 m = 0
                 o = "invalid"
-                if type == 4:
+                if stat.S_ISDIR(mode):
                     if f in self.perms:
                         printWarning(pkg, 'permissions-dir-without-slash', f)
                     else:
                         f += '/'
 
-                if type == 0o10 and mode & 0o111:
+                if stat.S_ISREG(mode) and mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
                     # pie binaries have 'shared object' here
                     if (pkgfile.magic.startswith('ELF ') and
                             ('shared object' not in pkgfile.magic) and
@@ -168,11 +160,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 m = self.perms[f]['mode']
                 o = self.perms[f]['owner']
 
-                if mode != m:
+                if stat.S_IMODE(mode) != m:
                     printError(
                         pkg, 'permissions-incorrect',
                         '%(file)s has mode 0%(mode)o but should be 0%(m)o' %
-                        {'file': f, 'mode': mode, 'm': m})
+                        {'file': f, 'mode': stat.S_IMODE(mode), 'm': m})
 
                 if owner != o:
                     printError(
@@ -180,29 +172,29 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         '%(file)s belongs to %(owner)s but should be %(o)s' %
                         {'file': f, 'owner': owner, 'o': o})
 
-            elif type != 0o12:
+            elif not stat.S_ISLNK(mode):
 
                 if f + '/' in self.perms:
                     printWarning(
                         pkg, 'permissions-file-as-dir',
                         f + ' is a file but listed as directory')
 
-                if mode & 0o6000:
+                if mode & (stat.S_ISUID | stat.S_ISGID):
                     need_verifyscript = True
                     msg = '%(file)s is packaged with ' \
                           'setuid/setgid bits (0%(mode)o)' % \
-                          {'file': f, 'mode': mode}
-                    if type != 0o4:
+                          {'file': f, 'mode': stat.S_IMODE(mode)}
+                    if not stat.S_ISDIR(mode):
                         printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
-                    if type == 0o10:
+                    if stat.S_ISREG(mode):
                         if ('shared object' not in pkgfile.magic and
                                 'pie executable' not in pkgfile.magic):
                             printError(pkg, 'non-position-independent-executable', f)
 
-                if mode & 0o2:
+                if mode & stat.S_IWOTH:
                     need_verifyscript = True
                     printError(pkg, 'permissions-world-writable',
                                '%(file)s is packaged with world writable permissions (0%(mode)o)' %
