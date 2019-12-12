@@ -3,7 +3,7 @@
 # File          : CheckSUIDPermissions.py
 # Package       : rpmlint
 # Author        : Ludwig Nussel
-# Purpose       : Check for /etc/permissions violations
+# Purpose       : Check for /usr/share/permissions violations
 #############################################################################
 
 from __future__ import print_function
@@ -15,6 +15,7 @@ import os
 import re
 import rpm
 import sys
+import stat
 
 _permissions_d_whitelist = (
     "lprng",
@@ -37,9 +38,21 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         AbstractCheck.AbstractCheck.__init__(self, "CheckSUIDPermissions")
         self.perms = {}
 
-        for fname in ('/etc/permissions', '/etc/permissions.secure'):
+        for fname in self._paths_to('permissions', 'permissions.secure'):
             if os.path.exists(fname):
                 self._parsefile(fname)
+
+    @staticmethod
+    def _paths_to(*file_names):
+        # we used to store the permissions data in /etc even though they aren't configuration files
+        # the whitelisting should check both paths (old /etc and new /usr/share) until all
+        # distributions using the old one (SLE15) are retired
+        for name in file_names:
+            # return the new path first.
+            # chkstat prefers the new paths over the old ones, so callers that only care about the
+            # first matching file must mimic that.
+            yield '/usr/share/permissions/' + name
+            yield '/etc/' + name
 
     def _parsefile(self, fname):
         lnr = 0
@@ -68,7 +81,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                       "mode": int(mode, 8) & 0o7777}
                     # for permissions that don't change and therefore
                     # don't need special handling
-                    if fname == '/etc/permissions':
+                    if fname in self._paths_to('permissions'):
                         self.perms[fn]['static'] = True
                 else:
                     print('%s: Malformatted line %d: %s...' %
@@ -82,30 +95,30 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
         files = pkg.files()
 
-        permfiles = {}
+        permfiles = set()
         # first pass, find and parse permissions.d files
-        prefix = "/etc/permissions.d/"
         for f in files:
-            if f.startswith(prefix):
+            for prefix in self._paths_to("permissions.d/"):
+                if f.startswith(prefix):
 
-                if f in pkg.ghostFiles():
-                    printError(pkg, 'polkit-ghost-file', f)
-                    continue
+                    if f in pkg.ghostFiles():
+                        printError(pkg, 'polkit-ghost-file', f)
+                        continue
 
-                bn = f[len(prefix):]
-                if bn not in _permissions_d_whitelist:
-                    printError(pkg, "permissions-unauthorized-file", f)
+                    bn = f[len(prefix):]
+                    if bn not in _permissions_d_whitelist:
+                        printError(pkg, "permissions-unauthorized-file", f)
 
-                bn = bn.split('.')[0]
-                if bn not in permfiles:
-                    permfiles[bn] = 1
+                    bn = 'permissions.d/' + bn.split('.')[0]
+                    if bn not in permfiles:
+                        permfiles.add(bn)
 
         for f in permfiles:
-            f = pkg.dirName() + "/etc/permissions.d/" + f
-            if os.path.exists(f + ".secure"):
-                self._parsefile(f + ".secure")
-            else:
-                self._parsefile(f)
+            # check for a .secure file first, falling back to the plain file
+            for path in self._paths_to(f + '.secure', f):
+                if os.path.exists(path):
+                    self._parsefile(path)
+                    break
 
         need_set_permissions = False
         found_suseconfig = False
@@ -120,18 +133,9 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             mode = pkgfile.mode
             owner = pkgfile.user + ':' + pkgfile.group
 
-#           S_IFSOCK   014   socket
-#           S_IFLNK    012   symbolic link
-#           S_IFREG    010   regular file
-#           S_IFBLK    006   block device
-#           S_IFDIR    004   directory
-#           S_IFCHR    002   character device
-#           S_IFIFO    001   FIFO
-            type = (mode >> 12) & 0o17
-            mode &= 0o7777
             need_verifyscript = False
-            if f in self.perms or (type == 4 and f + "/" in self.perms):
-                if type == 0o12:
+            if f in self.perms or (stat.S_ISDIR(mode) and f + "/" in self.perms):
+                if stat.S_ISLNK(mode):
                     printWarning(pkg, "permissions-symlink", f)
                     continue
 
@@ -139,13 +143,13 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
                 m = 0
                 o = "invalid"
-                if type == 4:
+                if stat.S_ISDIR(mode):
                     if f in self.perms:
                         printWarning(pkg, 'permissions-dir-without-slash', f)
                     else:
                         f += '/'
 
-                if type == 0o10 and mode & 0o111:
+                if stat.S_ISREG(mode) and mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
                     # pie binaries have 'shared object' here
                     if (pkgfile.magic.startswith('ELF ') and
                             ('shared object' not in pkgfile.magic) and
@@ -156,11 +160,11 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                 m = self.perms[f]['mode']
                 o = self.perms[f]['owner']
 
-                if mode != m:
+                if stat.S_IMODE(mode) != m:
                     printError(
                         pkg, 'permissions-incorrect',
                         '%(file)s has mode 0%(mode)o but should be 0%(m)o' %
-                        {'file': f, 'mode': mode, 'm': m})
+                        {'file': f, 'mode': stat.S_IMODE(mode), 'm': m})
 
                 if owner != o:
                     printError(
@@ -168,29 +172,29 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         '%(file)s belongs to %(owner)s but should be %(o)s' %
                         {'file': f, 'owner': owner, 'o': o})
 
-            elif type != 0o12:
+            elif not stat.S_ISLNK(mode):
 
                 if f + '/' in self.perms:
                     printWarning(
                         pkg, 'permissions-file-as-dir',
                         f + ' is a file but listed as directory')
 
-                if mode & 0o6000:
+                if mode & (stat.S_ISUID | stat.S_ISGID):
                     need_verifyscript = True
                     msg = '%(file)s is packaged with ' \
                           'setuid/setgid bits (0%(mode)o)' % \
-                          {'file': f, 'mode': mode}
-                    if type != 0o4:
+                          {'file': f, 'mode': stat.S_IMODE(mode)}
+                    if not stat.S_ISDIR(mode):
                         printError(pkg, 'permissions-file-setuid-bit', msg)
                     else:
                         printWarning(pkg, 'permissions-directory-setuid-bit', msg)
 
-                    if type == 0o10:
+                    if stat.S_ISREG(mode):
                         if ('shared object' not in pkgfile.magic and
                                 'pie executable' not in pkgfile.magic):
                             printError(pkg, 'non-position-independent-executable', f)
 
-                if mode & 0o2:
+                if mode & stat.S_IWOTH:
                     need_verifyscript = True
                     printError(pkg, 'permissions-world-writable',
                                '%(file)s is packaged with world writable permissions (0%(mode)o)' %
@@ -301,8 +305,8 @@ for _id, desc in (
             'permissions-fscaps',
             """Packaging file capabilities is currently not supported. Please
             use normal permissions instead. You may contact the security team to
-            request an entry that sets capabilities in /etc/permissions
-            instead.""",
+            request an entry that sets capabilities in
+            /usr/share/permissions/permissions instead.""",
         ),
         (
             'permissions-missing-postin',
