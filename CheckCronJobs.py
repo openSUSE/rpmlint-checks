@@ -78,7 +78,7 @@ check = CronCheck()
 for _id, desc in (
         (
             'cronjob-unauthorized-file',
-            """A cron job rule file is installed by this package. If the package is
+            """A cron job file is installed by this package. If the package is
             intended for inclusion in any SUSE product please open a bug report to request
             review of the package by the security team. Please refer to {url} for more
             information"""
