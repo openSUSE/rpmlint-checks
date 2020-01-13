@@ -147,6 +147,14 @@ _checks = [
         ],
     },
     {
+        'error': 'suse-filelist-forbidden-python-init-module',
+        'details': '''python package installs module __init__.py into sitelib,
+                      which can cause file list conflict and is not allowed in SUSE.''',
+        'bad': [
+            '/usr/lib*/python*/site-packages/__init__.py',
+        ],
+    },
+    {
         'error': 'suse-filelist-forbidden-python-test-dir',
         'details': '''python package installs testsuite to the sitelib,
                         which can cause file list conflict and is not allowed in SUSE.''',
