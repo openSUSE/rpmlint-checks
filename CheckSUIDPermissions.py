@@ -116,8 +116,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         for f in permfiles:
             # check for a .secure file first, falling back to the plain file
             for path in self._paths_to(f + '.secure', f):
-                if os.path.exists(path):
-                    self._parsefile(path)
+                if path in files:
+                    self._parsefile(pkg.dirName() + path)
                     break
 
         need_set_permissions = False
