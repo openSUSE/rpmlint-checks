@@ -10,6 +10,7 @@ from Filter import addDetails, printError
 import AbstractCheck
 import rpm
 
+
 class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
     def __init__(self):
         self.map = []
