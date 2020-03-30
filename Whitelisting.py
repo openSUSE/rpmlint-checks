@@ -110,6 +110,8 @@ class AuditEntry(object):
         # checked in setDigests() so we can skip the respective error handling
         # here.
 
+        fileinfos = pkg.files()
+
         for path, digest in self.digests().items():
             if self.isSkipDigest(digest):
                 continue
@@ -119,11 +121,30 @@ class AuditEntry(object):
             try:
                 h = hashlib.new(alg)
 
-                # NOTE: this path is dynamic and rpmlint unpacks the RPM
+                src_info = fileinfos.get(path, None)
+
+                if not src_info:
+                    raise Exception("expected file {} is not part of the RPM".format(path))
+
+                # resolve potential symbolic links
+                #
+                # this function handles both absolute and relative symlinks
+                # and does not access paths outside the RPM.
+                #
+                # it is not safe against symlink loops, however, it will
+                # result in an infinite loop it such cases. But there are
+                # probably a lot of other possibilities to DoS the RPM build
+                # process or rpmlint.
+                dst_info = pkg.readlink(src_info)
+
+                if not dst_info:
+                    raise Exception("symlink {} -> {} is broken or pointing outside this RPM".format(src_info.path, src_info.linkto))
+
+                # NOTE: this path is dynamic, rpmlint unpacks the RPM
                 # contents into a temporary directory even when outside the
                 # build environment i.e. the file content should always be
                 # available to us.
-                with open(pkg.dirName() + path, 'rb') as fd:
+                with open(dst_info.path, 'rb') as fd:
                     while True:
                         chunk = fd.read(4096)
                         if not chunk:
@@ -133,6 +154,8 @@ class AuditEntry(object):
 
                     encountered = h.hexdigest()
             except IOError as e:
+                encountered = "error:" + str(e)
+            except Exception as e:
                 encountered = "error:" + str(e)
 
             dig_res = DigestVerificationResult(path, alg, digest, encountered)
