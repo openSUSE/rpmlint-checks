@@ -364,6 +364,7 @@ class WhitelistChecker(object):
             return
 
         files = pkg.files()
+        already_tested = set()
 
         for f in files:
             for restricted in self.m_restricted_paths:
@@ -388,6 +389,14 @@ class WhitelistChecker(object):
                 printError(pkg, self.m_error_map['unauthorized'], f)
                 continue
 
+            # avoid testing the same paths multiple times thereby avoiding
+            # duplicate error messages or unnecessary re-checks of the same
+            # files.
+            # this is necessary since whitelisting entries can consist of
+            # groups of files that are all checked in one go below.
+            if f in already_tested:
+                continue
+
             # for the case that there's no match of digests, remember the most
             # recent digest verification result for diagnosis output towards
             # the user
@@ -399,11 +408,15 @@ class WhitelistChecker(object):
                 digest_matches, results = audit.compareDigests(pkg)
 
                 if digest_matches:
+                    for r in results:
+                        already_tested.add(r.path())
                     break
 
                 if not diag_results:
                     diag_results = results
             else:
+                for r in diag_results:
+                    already_tested.add(r.path())
                 # none of the digest entries matched
                 self._printVerificationResults(diag_results)
                 printError(pkg, self.m_error_map['changed'], f)
