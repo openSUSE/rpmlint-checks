@@ -18,15 +18,10 @@ import sys
 import stat
 
 _permissions_d_whitelist = (
-    "lprng",
-    "lprng.paranoid",
-    "mail-server",
-    "mail-server.paranoid",
     "postfix",
     "postfix.paranoid",
     "sendmail",
     "sendmail.paranoid",
-    "squid",
     "texlive",
     "texlive.texlive",
     "otrs",  # bsc#1118049
