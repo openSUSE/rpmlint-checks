@@ -10,8 +10,6 @@ import json
 import hashlib
 import traceback
 
-from Filter import printError
-
 AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
 
 
@@ -359,6 +357,8 @@ class WhitelistChecker(object):
         Each whitelist violation will be printed with the according error tag.
         Nothing is returned from this function.
         """
+
+        from Filter import printError
 
         if pkg.isSource():
             return
