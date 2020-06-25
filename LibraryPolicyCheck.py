@@ -286,13 +286,13 @@ _essential_dependencies = (
 
 def libname_from_soname(soname):
     libname = str.split(soname, '.so.')
-    if len(libname) == 2:
-        if libname[0][-1:].isdigit():
-            libname = '-'.join(libname)
-        else:
-            libname = ''.join(libname)
-    else:
+    if len(libname) != 2:
         libname = soname[:-3]
+    elif (libname[0][-1:].isdigit() and libname[1][0].isdigit()) or \
+         (libname[0][-1:].isalpha() and libname[1][0].isalpha()):
+        libname = '-'.join(libname)
+    else:
+        libname = ''.join(libname)
     libname = libname.replace('.', '_')
     return libname
 
