@@ -6,8 +6,9 @@
 
 import os
 import sys
-import json
 import hashlib
+import json
+import stat
 import traceback
 
 AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
@@ -202,6 +203,135 @@ class DigestAuditEntry(AuditEntryBase):
             raise Exception("Bad digest algorithm in " + digest)
 
 
+class MetaAuditEntry(AuditEntryBase):
+
+    def __init__(self, bug):
+
+        super().__init__(bug)
+        self.m_meta = {}
+
+    def paths(self):
+        return self.meta().keys()
+
+    def setMeta(self, meta):
+        for path, data in meta.items():
+            self._verifyPath(path)
+            self._verifyMetaData(path, data)
+
+        self.m_meta = meta
+
+    def meta(self):
+        """Returns a dictionary specifying file paths and their whitelisted
+        metadata attributes:
+
+        "type": one of 'c', 'd', 's' or '-'
+        "mode": integer defining the file mode
+        "owner": tuple of (user, group) defining the ownership
+        "dev": tuple of (minor, major) integers defining device file numbers
+        """
+        return self.m_meta
+
+    def _verifyMetaData(self, path, data):
+        """Verify and CONVERT metadata."""
+
+        req_fields = ("type", "mode", "owner")
+
+        for field in req_fields:
+            if field not in data:
+                raise Exception("Missing required setting '{}' for path {}".format(field, path))
+
+        _type = data["type"]
+
+        if _type not in ("c", "d", "s", "-"):
+            raise Exception("Unexpected type '{}' for path {}".format(_type, path))
+
+        try:
+            data["mode"] = int(data["mode"], 8)
+
+            if data["mode"] > 0o7777:
+                raise ValueError("octal mode too large")
+        except ValueError:
+            raise Exception("Bad 'mode' for path " + path)
+
+        if _type == "c" and "dev" not in data:
+            raise Exception("Missing 'dev' for path " + path)
+        elif _type != "c" and "dev" in data:
+            raise Exception("Unsuitable 'dev' specification for path " + path)
+
+        if "dev" in data:
+            try:
+                major, minor = data["dev"].split(",")
+                data["dev"] = int(major), int(minor)
+            except Exception as e:
+                raise Exception("Bad 'dev' specification for path {}: {}".format(path, str(e)))
+
+        try:
+            user, group = data["owner"].split(":")
+            data["owner"] = user, group
+        except Exception as e:
+            raise Exception("Bad 'owner' specification for path {}: {}".format(path, str(e)))
+
+    def _isWeakerMode(self, ours, theirs):
+        """Checks whether the mode @theirs only grants less permissions than
+        what @ours would grant."""
+
+        if (ours & stat.S_ISVTX) and not (theirs & stat.S_ISVTX):
+            # if it's the sticky bit that's missing then we can't consider the
+            # encountered mode weaker. The sticky bit might be necessary to
+            # protect shared world-writable directories.
+            return False
+
+        # otherwise if there's no extra bit in their mode then it should be
+        # weaker or equal to ours, security wise
+        return (ours | theirs) == ours
+
+    def compareMeta(self, pkg, path, their_meta):
+        our_meta = self.m_meta.get(path)
+        warning = ""
+
+        their_mode_str = stat.filemode(their_meta.mode)
+        their_type = their_mode_str[0]
+
+        if their_type != our_meta["type"]:
+            msg = "type mismatch, expected type {} but encountered type {}".format(
+                our_meta["type"], their_type
+            )
+            return (False, msg)
+
+        their_mode = stat.S_IMODE(their_meta.mode)
+
+        if their_mode != our_meta["mode"]:
+
+            if self._isWeakerMode(our_meta["mode"], their_mode):
+                # if there are no extra bits set then we can accept it
+                # anyways, however we should still warn that something is
+                # unexpected.
+                warning = "mode doesn't match but grants less permissions than expected"
+            else:
+                msg = "mode mismatch, expected mode {} but encountered mode {}".format(
+                    stat.filemode(our_meta["mode"])[1:], stat.filemode(their_meta.mode)[1:]
+                )
+                return (False, msg)
+
+        if their_meta.user != our_meta["owner"][0] or their_meta.group != our_meta["owner"][1]:
+            msg = "ownership mismatch, expected {} but encountered {}".format(
+                ':'.join(our_meta["owner"]), ':'.join(their_meta.user, their_meta.group)
+            )
+            return (False, msg)
+
+        if their_type in ("c", "b"):
+            their_rdev = their_meta.rdev
+            their_major, their_minor = os.major(their_rdev), os.minor(their_rdev)
+            our_major, our_minor = our_meta["dev"]
+
+            if their_major != our_major or their_minor != our_minor:
+                msg = "device node mismatch, expected {} but encountered {}".format(
+                    ','.join(our_major, our_minor), ','.join(their_major, their_minor)
+                )
+                return (False, msg)
+
+        return (True, warning)
+
 
 class WhitelistEntry(object):
     """This object represents a single whitelisting entry like:
@@ -337,6 +467,31 @@ class DigestWhitelistParser(WhitelistParser):
         return ret
 
 
+class MetaWhitelistParser(WhitelistParser):
+
+    def __init__(self, wl_path):
+
+        super().__init__(wl_path)
+
+    def _parseAuditEntry(self, bug, data):
+        """Parses a single JSON audit sub-entry returns an AuditEntry() object
+        for it. On non-critical error conditions None is returned, otherwise
+        an exception is raised"""
+
+        ret = MetaAuditEntry(bug)
+
+        comment = data.get("comment", None)
+        if comment:
+            ret.setComment(comment)
+
+        meta = data.get("meta", {})
+
+        if not meta:
+            raise Exception(self._getErrorPrefix() + "missing 'meta' entry for '{}'".format(bug))
+
+        ret.setMeta(meta)
+
+        return ret
 
 
 class DigestWhitelistChecker(object):
@@ -461,3 +616,110 @@ class DigestWhitelistChecker(object):
                 path=result.path(), alg=result.algorithm(),
                 expected=result.expected(), encountered=result.encountered()
             ), file=sys.stderr)
+
+
+class MetaWhitelistChecker(object):
+    """This type actually compares files found in an RPM against whitelist
+    entries."""
+
+    def __init__(self, whitelist_entries, error_map, restricted_mode, restricted_types):
+        """Instantiate a properly configured checker. For metadata
+        restrictions both `restricted_mode` and `restricted_types` need to
+        match for a check to be triggered.
+
+        :param whitelist_entries: is a dictionary data structure as returned
+                                  from MetaWhitelistParser.parse().
+        :param error_map: is a specification of rpmlint error labels for
+                          files like "unauthorized" and "mismatch"
+                          {
+                            "unauthorized": "special-file-unauthorized",
+                            "mismatch": "special-file-mismatch"
+                          }
+        :param restricted_mode: an octal bit mask that specifies file mode
+                                bits that are restricted by this whitelist.
+                                e.g. 0o001 would trigger a check for all files
+                                containing a world executable bit. 0o7777
+                                would catch any mode.
+        :param restricted_types: a sequence of file types that are restricted
+                                by this whitelist. E.g. ("f", "s") would
+                                trigger a check for all regular files and
+                                socket files. An entry of "*" will match all
+                                file types.
+        """
+
+        self.m_whitelist_entries = whitelist_entries
+        self.m_error_map = error_map
+        self.m_restricted_mode = restricted_mode
+        self.m_restricted_types = restricted_types
+
+        req_error_keys = ("unauthorized", "mismatch")
+
+        for req_key in req_error_keys:
+            if req_key not in self.m_error_map:
+                raise Exception("Missing {} error mapping".format(req_key))
+
+    def _hasRestrictedMeta(self, meta):
+
+        if self.m_restricted_mode == 0o7777:
+            # all modes should match so ignore it
+            pass
+        elif (meta.mode & self.m_restricted_mode) == 0:
+            # none of the interesting mode bits matches
+            return False
+
+        if "*" in self.m_restricted_types:
+            # match all file types
+            return True
+        elif stat.filemode(meta.mode)[0] in self.m_restricted_types:
+            # filemode() returns an ls like string like `-rwx------`.
+            # we # inspect the type character and compare it against our list
+            # of restricted file types
+            return True
+
+        return False
+
+    def _getWhitelist(self, pkg_name, path):
+        entries = self.m_whitelist_entries.get(path, [])
+        for entry in entries:
+            if entry.package() == pkg_name:
+                return entry
+
+        return None
+
+    def check(self, pkg):
+        """Checks the given RPM pkg instance against the configured whitelist
+        restriction.
+
+        Each whitelist violation will be printed with the according error tag.
+        Nothing is returned from this function.
+        """
+
+        from Filter import printError
+
+        if pkg.isSource():
+            return
+
+        files = pkg.files()
+
+        for f, meta in files.items():
+            if not self._hasRestrictedMeta(meta):
+                continue
+
+            wl_match = self._getWhitelist(pkg.name, f)
+
+            if not wl_match:
+                # no whitelist entry exists for this file
+                printError(pkg, self.m_error_map['unauthorized'], f)
+                continue
+
+            for audit in wl_match.audits():
+                res, msg = audit.compareMeta(pkg, f, meta)
+
+                if res:
+                    if msg:
+                        # a warning only message
+                        print("{}: {}".format(f, msg), file=sys.stderr)
+                    break
+
+                print("{}: {}".format(f, msg), file=sys.stderr)
+                printError(pkg, self.m_error_map['mismatch'], f)
