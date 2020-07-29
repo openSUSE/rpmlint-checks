@@ -4,38 +4,20 @@
 # Purpose       : Enforce Whitelisting for device files
 #############################################################################
 
-import os
-
-import AbstractCheck
-import Config
 import Whitelisting
-
-# this option is found in config files in /opt/testing/share/rpmlint/mini,
-# installed there by the rpmlint-mini package.
-WHITELIST_DIR = Config.getOption('WhitelistDataDir', [])
+from WhitelistingCheckBase import WhitelistingCheckBase
 
 
-class DeviceFilesCheck(AbstractCheck.AbstractCheck):
+class DeviceFilesCheck(WhitelistingCheckBase):
 
     def __init__(self):
-        AbstractCheck.AbstractCheck.__init__(self, "CheckDeviceFiles")
+        super().__init__("CheckDeviceFiles", "device-files-whitelist.json")
 
-        for wd in WHITELIST_DIR:
-            candidate = os.path.join(wd, "device-files-whitelist.json")
-            if os.path.exists(candidate):
-                whitelist_path = candidate
-                break
-        else:
-            whitelist_path = None
-
-        self.m_check_configured = whitelist_path is not None
-
-        if not self.m_check_configured:
-            return
+    def setupChecker(self, whitelist_path):
 
         parser = Whitelisting.MetaWhitelistParser(whitelist_path)
         whitelist_entries = parser.parse()
-        self.m_wl_checker = Whitelisting.MetaWhitelistChecker(
+        return Whitelisting.MetaWhitelistChecker(
             whitelist_entries,
             error_map={
                 "unauthorized": "device-unauthorized-file",
@@ -46,16 +28,6 @@ class DeviceFilesCheck(AbstractCheck.AbstractCheck):
             # regardless the mode we want to catch all device files
             restricted_mode=0o7777
         )
-
-    def check(self, pkg):
-        """This is called by rpmlint to perform the check on the given pkg."""
-
-        if not self.m_check_configured:
-            # don't ruin the whole run if this check is not configured, this
-            # was hopefully intended by the user.
-            return
-
-        self.m_wl_checker.check(pkg)
 
 
 # needs to be instantiated for the check to be registered with rpmlint
