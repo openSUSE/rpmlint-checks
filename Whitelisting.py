@@ -330,7 +330,7 @@ class DigestWhitelistParser(WhitelistParser):
         digests = data.get("digests", {})
 
         if not digests:
-            raise Exception(self._getErrorPrefix() + "no 'digests' entry for '{}'".format(bug))
+            raise Exception(self._getErrorPrefix() + "missing 'digests' for '{}'".format(bug))
 
         ret.setDigests(digests)
 
@@ -370,6 +370,21 @@ class DigestWhitelistChecker(object):
             if req_key not in self.m_error_map:
                 raise Exception("Missing {} error mapping".format(req_key))
 
+    def _isRestrictedPath(self, path):
+        for restricted in self.m_restricted_paths:
+            if path.startswith(restricted):
+                return True
+
+        return False
+
+    def _getWhitelist(self, pkg_name, path):
+        entries = self.m_whitelist_entries.get(path, [])
+        for entry in entries:
+            if entry.package() == pkg_name:
+                return entry
+
+        return None
+
     def check(self, pkg):
         """Checks the given RPM pkg instance against the configured whitelist
         restriction.
@@ -387,24 +402,16 @@ class DigestWhitelistChecker(object):
         already_tested = set()
 
         for f in files:
-            for restricted in self.m_restricted_paths:
-                if f.startswith(restricted):
-                    break
-            else:
-                # no match
+            if not self._isRestrictedPath(f):
                 continue
 
             if f in pkg.ghostFiles():
                 printError(pkg, self.m_error_map['ghost'], f)
                 continue
 
-            entries = self.m_whitelist_entries.get(f, [])
-            wl_match = None
-            for entry in entries:
-                if entry.package() == pkg.name:
-                    wl_match = entry
-                    break
-            else:
+            wl_match = self._getWhitelist(pkg.name, f)
+
+            if not wl_match:
                 # no whitelist entry exists for this file
                 printError(pkg, self.m_error_map['unauthorized'], f)
                 continue
