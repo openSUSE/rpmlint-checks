@@ -189,12 +189,6 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                 'pie executable' not in pkgfile.magic):
                             printError(pkg, 'non-position-independent-executable', f)
 
-                if mode & stat.S_IWOTH:
-                    need_verifyscript = True
-                    printError(pkg, 'permissions-world-writable',
-                               '%(file)s is packaged with world writable permissions (0%(mode)o)' %
-                               {'file': f, 'mode': mode})
-
             script = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(rpm.RPMTAG_POSTINPROG)
             found = False
             if script:
@@ -284,13 +278,6 @@ for _id, desc in (
         ),
         (
             'permissions-directory-setuid-bit',
-            """If the package is intended for inclusion in any SUSE product
-            please open a bug report to request review of the package by the
-            security team. Please refer to {url} for more
-            information."""
-        ),
-        (
-            'permissions-world-writable',
             """If the package is intended for inclusion in any SUSE product
             please open a bug report to request review of the package by the
             security team. Please refer to {url} for more
