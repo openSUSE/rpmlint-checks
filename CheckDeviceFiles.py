@@ -10,8 +10,6 @@ import AbstractCheck
 import Config
 import Whitelisting
 
-from Filter import addDetails
-
 # this option is found in config files in /opt/testing/share/rpmlint/mini,
 # installed there by the rpmlint-mini package.
 WHITELIST_DIR = Config.getOption('WhitelistDataDir', [])
@@ -63,20 +61,17 @@ class DeviceFilesCheck(AbstractCheck.AbstractCheck):
 # needs to be instantiated for the check to be registered with rpmlint
 check = DeviceFilesCheck()
 
-for _id, desc in (
-        (
-            'device-unauthorized-file',
-            """A device file is installed by this package. If the package is
-            intended for inclusion in any SUSE product please open a bug
-            report to request review of the package by the security team.
-            Please refer to {url} for more information"""
-        ),
-        (
-            'device-mismatched-attrs',
-            """A device file doesn't match the expected file properties.
-            Please open a bug report to request follow-up review of the
-            introduced changes by the security team. Please refer to {url} for
-            more information."""
-        )
-):
-    addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
+Whitelisting.registerErrorDetails((
+    (
+        'device-unauthorized-file',
+        """A device file is installed by this package.
+        {review_needed_text}"""
+    ),
+    (
+        'device-mismatched-attrs',
+        """A device file doesn't match the expected file properties.
+        Please open a bug report to request follow-up review of the
+        introduced changes by the security team. Please refer to {url} for
+        more information."""
+    )
+))

@@ -66,20 +66,15 @@ class WorldWritableCheck(AbstractCheck.AbstractCheck):
 # needs to be instantiated for the check to be registered with rpmlint
 check = WorldWritableCheck()
 
-for _id, desc in (
-        (
-            'world-writable-unauthorized-file',
-            """A world-writable file is installed by this package. If the
-            package is intended for inclusion in any SUSE product please open
-            a bug report to request review of the package by the security
-            team.  Please refer to {url} for more information"""
-        ),
-        (
-            'world-writable-mismatched-attrs',
-            """A world-writable file doesn't match the expected file
-            properties.  Please open a bug report to request follow-up review
-            of the introduced changes by the security team. Please refer to
-            {url} for more information."""
-        )
-):
-    addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
+Whitelisting.registerErrorDetails((
+    (
+        'world-writable-unauthorized-file',
+        """A world-writable file is installed by this package.
+        {review_needed_text}"""
+    ),
+    (
+        'world-writable-mismatched-attrs',
+        """A world-writable file doesn't match the expected file
+        properties. {followup_needed_text}"""
+    )
+))

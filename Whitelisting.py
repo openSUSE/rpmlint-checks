@@ -12,6 +12,32 @@ import stat
 import traceback
 
 AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#audit_bugs"
+REVIEW_NEEDED_TEXT = """If the package is
+    intended for inclusion in any SUSE product please open a bug report to request
+    review of the package by the security team. Please refer to {url} for more
+    information.""".format(url=AUDIT_BUG_URL)
+FOLLOWUP_NEEDED_TEXT = """Please open a bug report to request follow-up review of the
+    introduced changes by the security team. Please refer to {url} for more
+    information."""
+GHOST_ENCOUNTERED_TEXT = """This is not allowed, since it is impossible to
+    review. Please refer to {url} for more information."""
+
+
+def registerErrorDetails(details):
+    """details is expected to be a sequence of (id, description) pairs, where
+    id is the error id like 'cronjob-unauthorized-file' and description is a
+    human readable text describing the situation. The text may contain
+    placeholders that will be replaced by the constants above."""
+    from Filter import addDetails
+
+    for _id, desc in details:
+        addDetails(
+            _id,
+            desc.format(
+                url=AUDIT_BUG_URL,
+                review_needed_text=REVIEW_NEEDED_TEXT,
+                followup_needed_text=FOLLOWUP_NEEDED_TEXT,
+                ghost_encountered_text=GHOST_ENCOUNTERED_TEXT))
 
 
 class DigestVerificationResult(object):
