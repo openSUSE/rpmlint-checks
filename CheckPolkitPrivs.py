@@ -52,11 +52,11 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
         for filename in POLKIT_RULES_WHITELIST:
             if not os.path.exists(filename):
                 continue
-            parser = Whitelisting.WhitelistParser(filename)
+            parser = Whitelisting.DigestWhitelistParser(filename)
             res = parser.parse()
             rules_entries.update(res)
 
-        self.m_rules_checker = Whitelisting.WhitelistChecker(
+        self.m_rules_checker = Whitelisting.DigestWhitelistChecker(
             rules_entries,
             restricted_paths=(
                 "/etc/polkit-1/rules.d/", "/usr/share/polkit-1/rules.d/"

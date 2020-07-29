@@ -35,9 +35,9 @@ class CronCheck(AbstractCheck.AbstractCheck):
         if not self.m_check_configured:
             return
 
-        parser = Whitelisting.WhitelistParser(whitelist_path)
+        parser = Whitelisting.DigestWhitelistParser(whitelist_path)
         whitelist_entries = parser.parse()
-        self.m_wl_checker = Whitelisting.WhitelistChecker(
+        self.m_wl_checker = Whitelisting.DigestWhitelistChecker(
             whitelist_entries,
             restricted_paths=(
                 "/etc/cron.d/", "/etc/cron.hourly/", "/etc/cron.daily/",

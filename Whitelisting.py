@@ -15,7 +15,7 @@ AUDIT_BUG_URL = "https://en.opensuse.org/openSUSE:Package_security_guidelines#au
 
 class DigestVerificationResult(object):
     """This type represents the result of a digest verification as returned
-    from AuditEntry.compareDigests()."""
+    from DigestAuditEntry.compareDigests()."""
 
     def __init__(self, path, alg, expected, encountered):
 
@@ -42,7 +42,7 @@ class DigestVerificationResult(object):
         return self.m_encountered
 
 
-class AuditEntry(object):
+class AuditEntryBase(object):
     """This object represents a single audit entry as found in a whitelisting
     entry like:
 
@@ -61,7 +61,6 @@ class AuditEntry(object):
         self.m_bug = bug
         self._verifyBugNr()
         self.m_comment = ""
-        self.m_digests = {}
 
     def bug(self):
         return self.m_bug
@@ -72,12 +71,38 @@ class AuditEntry(object):
     def comment(self):
         return self.m_comment
 
+    def _verifyBugNr(self):
+        """Perform some sanity checks on the bug nr associated with this audit
+        entry."""
+
+        parts = self.m_bug.split('#')
+
+        if len(parts) != 2 or \
+                parts[0] not in ("bsc", "boo", "bnc") or \
+                not parts[1].isdigit():
+            raise Exception("Bad bug nr# '{}'".format(self.m_bug))
+
+    def _verifyPath(self, path):
+        if not path.startswith(os.path.sep):
+            raise Exception("Bad whitelisting path " + path)
+
+
+class DigestAuditEntry(AuditEntryBase):
+
+    def __init__(self, bug):
+
+        super().__init__(bug)
+        self.m_digests = {}
+
     def setDigests(self, digests):
         for path, digest in digests.items():
             self._verifyPath(path)
             self._verifyDigestSyntax(digest)
 
         self.m_digests = digests
+
+    def paths(self):
+        return self.digests().keys()
 
     def digests(self):
         """Returns a dictionary specifying file paths and their whitelisted
@@ -161,17 +186,6 @@ class AuditEntry(object):
 
         return (all([res.matches() for res in results]), results)
 
-    def _verifyBugNr(self):
-        """Perform some sanity checks on the bug nr associated with this audit
-        entry."""
-
-        parts = self.m_bug.split('#')
-
-        if len(parts) != 2 or \
-                parts[0] not in ("bsc", "boo", "bnc") or \
-                not parts[1].isdigit():
-            raise Exception("Bad bug nr# '{}'".format(self.m_bug))
-
     def _verifyDigestSyntax(self, digest):
         if self.isSkipDigest(digest):
             return
@@ -187,9 +201,6 @@ class AuditEntry(object):
         except ValueError:
             raise Exception("Bad digest algorithm in " + digest)
 
-    def _verifyPath(self, path):
-        if not path.startswith(os.path.sep):
-            raise Exception("Bad whitelisting path " + path)
 
 
 class WhitelistEntry(object):
@@ -255,7 +266,7 @@ class WhitelistParser(object):
                         # soft error, continue parsing
                         continue
                     for a in entry.audits():
-                        for path in a.digests():
+                        for path in a.paths():
                             entries = ret.setdefault(path, [])
                             entries.append(entry)
         except Exception as e:
@@ -292,12 +303,25 @@ class WhitelistParser(object):
 
         return ret
 
+    def _getErrorPrefix(self):
+        return self.m_path + ": ERROR: "
+
+    def _getWarnPrefix(self):
+        return self.m_path + ": WARN: "
+
+
+class DigestWhitelistParser(WhitelistParser):
+
+    def __init__(self, wl_path):
+
+        super().__init__(wl_path)
+
     def _parseAuditEntry(self, bug, data):
         """Parses a single JSON audit sub-entry returns an AuditEntry() object
         for it. On non-critical error conditions None is returned, otherwise
         an exception is raised"""
 
-        ret = AuditEntry(bug)
+        ret = DigestAuditEntry(bug)
 
         comment = data.get("comment", None)
         if comment:
@@ -312,22 +336,18 @@ class WhitelistParser(object):
 
         return ret
 
-    def _getErrorPrefix(self):
-        return self.m_path + ": ERROR: "
-
-    def _getWarnPrefix(self):
-        return self.m_path + ": WARN: "
 
 
-class WhitelistChecker(object):
-    """This type actually compares files found in an RPM against whitelist
-    entries."""
+
+class DigestWhitelistChecker(object):
+    """This type actually compares files found in an RPM against digest
+    whitelist entries."""
 
     def __init__(self, whitelist_entries, restricted_paths, error_map):
         """Instantiate a properly configured checker
 
         :param whitelist_entries: is a dictionary data structure as returned
-                                  from WhitelistParser.parse().
+                                  from DigestWhitelistParser.parse().
         :param restricted_paths: a sequence of path prefixes that will trigger
                                  the whitelisting check. All other paths will
                                  be ignored.
