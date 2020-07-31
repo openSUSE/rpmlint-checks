@@ -44,19 +44,14 @@ check = PAMModulesCheck()
 
 if Config.info:
 
-    for _id, desc in (
+    Whitelisting.registerErrorDetails((
         (
             'suse-pam-unauthorized-module',
-            """The package installs a PAM module. If the package
-            is intended for inclusion in any SUSE product please open a bug
-            report to request review of the service by the security team.
-            Please refer to {url}"""
+            """The package installs a PAM module. {review_needed_text}"""
         ),
         (
             'suse-pam-ghost-module',
-            """The package installs a PAM module as %ghost file. This is not
-            allowed as it is impossible to review. For more information please
-            refer to {url} for more information."""
+            """The package installs a PAM module as %ghost file.
+            {ghost_encountered_text}"""
         )
-    ):
-        addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
+    ))

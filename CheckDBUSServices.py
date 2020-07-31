@@ -51,19 +51,16 @@ class DBUSServiceCheck(AbstractCheck.AbstractCheck):
 check = DBUSServiceCheck()
 
 if Config.info:
-    for _id, desc in (
+    Whitelisting.registerErrorDetails((
         (
             'suse-dbus-unauthorized-service',
-            """The package installs a DBUS system service file. If the package
-            is intended for inclusion in any SUSE product please open a bug
-            report to request review of the service by the security team. Please
-            refer to {url} for more information."""
+            """The package installs a DBUS system service file.
+            {review_needed_text}"""
         ),
         (
             'suse-dbus-ghost-service',
             """This package installs a DBUS system service marked as %ghost.
-            This is not allowed, since it is impossible to review. Please
-            refer to {url} for more information."""
+            {ghost_encountered_text}
+            """
         )
-    ):
-        addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
+    ))

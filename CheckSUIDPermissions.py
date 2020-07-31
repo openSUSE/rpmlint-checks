@@ -8,7 +8,7 @@
 
 from __future__ import print_function
 
-from Filter import printWarning, printError, printInfo, addDetails
+from Filter import printWarning, printError, printInfo
 import AbstractCheck
 import Whitelisting
 import os
@@ -189,12 +189,6 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                                 'pie executable' not in pkgfile.magic):
                             printError(pkg, 'non-position-independent-executable', f)
 
-                if mode & stat.S_IWOTH:
-                    need_verifyscript = True
-                    printError(pkg, 'permissions-world-writable',
-                               '%(file)s is packaged with world writable permissions (0%(mode)o)' %
-                               {'file': f, 'mode': mode})
-
             script = pkg[rpm.RPMTAG_POSTIN] or pkg.scriptprog(rpm.RPMTAG_POSTINPROG)
             found = False
             if script:
@@ -242,90 +236,73 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
 
 check = SUIDCheck()
 
-for _id, desc in (
-        (
-            'permissions-unauthorized-file',
-            """If the package is intended for inclusion in any SUSE product
-            please open a bug report to request review of the package by the
-            security team. Please refer to {url} for more
-            information."""
-        ),
-        (
-            'permissions-symlink',
-            """permissions handling for symlinks is useless. Please contact
-            security@suse.de to remove the entry. Please refer to {url} for more
-            information."""
-        ),
-        (
-            'permissions-dir-without-slash',
-            """the entry in the permissions file refers to a directory. Please
-            contact security@suse.de to append a slash to the entry in order to
-            avoid security problems. Please refer to {url} for more information."""
-        ),
-        (
-            'permissions-file-as-dir',
-            """the entry in the permissions file refers to a directory but the
-            package actually contains a file. Please contact security@suse.de to
-            remove the slash. Please refer to {url} for more information."""
-        ),
-        (
-            'permissions-incorrect',
-            """please use the %attr macro to set the correct permissions."""
-        ),
-        (
-            'permissions-incorrect-owner',
-            """please use the %attr macro to set the correct ownership."""
-        ),
-        (
-            'permissions-file-setuid-bit',
-            """If the package is intended for inclusion in any SUSE product
-            please open a bug report to request review of the program by the
-            security team. Please refer to {url} for more information."""
-        ),
-        (
-            'permissions-directory-setuid-bit',
-            """If the package is intended for inclusion in any SUSE product
-            please open a bug report to request review of the package by the
-            security team. Please refer to {url} for more
-            information."""
-        ),
-        (
-            'permissions-world-writable',
-            """If the package is intended for inclusion in any SUSE product
-            please open a bug report to request review of the package by the
-            security team. Please refer to {url} for more
-            information."""
-        ),
-        (
-            'permissions-fscaps',
-            """Packaging file capabilities is currently not supported. Please
-            use normal permissions instead. You may contact the security team to
-            request an entry that sets capabilities in
-            /usr/share/permissions/permissions instead.""",
-        ),
-        (
-            'permissions-missing-postin',
-            """Please add an appropriate %post section"""
-        ),
-        (
-            'permissions-missing-requires',
-            """Please add 'PreReq: permissions'"""
-        ),
-        (
-            'permissions-missing-verifyscript',
-            """Please add a %verifyscript section"""
-        ),
-        (
-            'permissions-suseconfig-obsolete',
-            """The %run_permissions macro calls SuSEconfig which sets permissions for all
-            files in the system. Please use %set_permissions <filename> instead
-            to only set permissions for files contained in this package""",
-        ),
-        (
-            'permissions-ghostfile',
-            """This package installs a permissions file as a %ghost file. This
-            is not allowed as it is impossible to review. Please refer to
-            {url} for more information."""
-        )
-):
-    addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
+Whitelisting.registerErrorDetails((
+    (
+        'permissions-unauthorized-file',
+        """{review_needed_text}"""
+    ),
+    (
+        'permissions-symlink',
+        """permissions handling for symlinks is useless. Please contact
+        security@suse.de to remove the entry. Please refer to {url} for more
+        information."""
+    ),
+    (
+        'permissions-dir-without-slash',
+        """the entry in the permissions file refers to a directory. Please
+        contact security@suse.de to append a slash to the entry in order to
+        avoid security problems. Please refer to {url} for more information."""
+    ),
+    (
+        'permissions-file-as-dir',
+        """the entry in the permissions file refers to a directory but the
+        package actually contains a file. Please contact security@suse.de to
+        remove the slash. Please refer to {url} for more information."""
+    ),
+    (
+        'permissions-incorrect',
+        """please use the %attr macro to set the correct permissions."""
+    ),
+    (
+        'permissions-incorrect-owner',
+        """please use the %attr macro to set the correct ownership."""
+    ),
+    (
+        'permissions-file-setuid-bit',
+        """{review_needed_text}"""
+    ),
+    (
+        'permissions-directory-setuid-bit',
+        """{review_needed_text}"""
+    ),
+    (
+        'permissions-fscaps',
+        """Packaging file capabilities is currently not supported. Please
+        use normal permissions instead. You may contact the security team to
+        request an entry that sets capabilities in
+        /usr/share/permissions/permissions instead.""",
+    ),
+    (
+        'permissions-missing-postin',
+        """Please add an appropriate %post section"""
+    ),
+    (
+        'permissions-missing-requires',
+        """Please add 'PreReq: permissions'"""
+    ),
+    (
+        'permissions-missing-verifyscript',
+        """Please add a %verifyscript section"""
+    ),
+    (
+        'permissions-suseconfig-obsolete',
+        """The %run_permissions macro calls SuSEconfig which sets permissions for all
+        files in the system. Please use %set_permissions <filename> instead
+        to only set permissions for files contained in this package""",
+    ),
+    (
+        'permissions-ghostfile',
+        """This package installs a permissions file as a %ghost file.
+        {ghost_encountered_text}"""
+    )
+))

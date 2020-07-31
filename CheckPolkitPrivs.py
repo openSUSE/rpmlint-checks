@@ -52,11 +52,11 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
         for filename in POLKIT_RULES_WHITELIST:
             if not os.path.exists(filename):
                 continue
-            parser = Whitelisting.WhitelistParser(filename)
+            parser = Whitelisting.DigestWhitelistParser(filename)
             res = parser.parse()
             rules_entries.update(res)
 
-        self.m_rules_checker = Whitelisting.WhitelistChecker(
+        self.m_rules_checker = Whitelisting.DigestWhitelistChecker(
             rules_entries,
             restricted_paths=(
                 "/etc/polkit-1/rules.d/", "/usr/share/polkit-1/rules.d/"
@@ -196,57 +196,56 @@ class PolkitCheck(AbstractCheck.AbstractCheck):
 
 check = PolkitCheck()
 
-for _id, desc in (
-        (
-            'polkit-unauthorized-file',
-            """A custom polkit rule file is installed by this package. If the package is
-            intended for inclusion in any SUSE product please open a bug report to request
-            review of the package by the security team. Please refer to {url} for more
-            information"""
-        ),
-        (
-            'polkit-unauthorized-privilege',
-            """The package allows unprivileged users to carry out privileged
-            operations without authentication. This could cause security
-            problems if not done carefully. If the package is intended for
-            inclusion in any SUSE product please open a bug report to request
-            review of the package by the security team. Please refer to {url}
-            for more information."""
-        ),
-        (
-            'polkit-untracked-privilege',
-            """The privilege is not listed in /etc/polkit-default-privs.*
-            which makes it harder for admins to find. Furthermore polkit
-            authorization checks can easily introduce security issues. If the
-            package is intended for inclusion in any SUSE product please open
-            a bug report to request review of the package by the security team.
-            Please refer to {url} for more information."""
-        ),
-        (
-            'polkit-cant-acquire-privilege',
-            """Usability can be improved by allowing users to acquire privileges
-            via authentication. Use e.g. 'auth_admin' instead of 'no' and make
-            sure to define 'allow_any'. This is an issue only if the privilege
-            is not listed in /etc/polkit-default-privs.*"""
-        ),
-        (
-            'polkit-unauthorized-rules',
-            """A polkit rules file installed by this package is not whitelisted in the
-            polkit-whitelisting package. If the package is intended for inclusion in any
-            SUSE product please open a bug report to request review of the package by the
-            security team. Please refer to {url} for more information."""
-        ),
-        (
-            'polkit-changed-rules',
-            """A polkit rules file installed by this package changed in content. Please
-            open a bug report to request follow-up review of the introduced changes by
-            the security team. Please refer to {url} for more information."""
-        ),
-        (
-            'polkit-ghost-file',
-            """This package installs a polkit rule or policy as %ghost file.
-            This is not allowed as it is impossible to review. For more
-            information please refer to {url} for more information."""
-        )
-):
-    addDetails(_id, desc.format(url=Whitelisting.AUDIT_BUG_URL))
+Whitelisting.registerErrorDetails((
+    (
+        'polkit-unauthorized-file',
+        """A custom polkit rule file is installed by this package. If the package is
+        intended for inclusion in any SUSE product please open a bug report to request
+        review of the package by the security team. Please refer to {url} for more
+        information"""
+    ),
+    (
+        'polkit-unauthorized-privilege',
+        """The package allows unprivileged users to carry out privileged
+        operations without authentication. This could cause security
+        problems if not done carefully. If the package is intended for
+        inclusion in any SUSE product please open a bug report to request
+        review of the package by the security team. Please refer to {url}
+        for more information."""
+    ),
+    (
+        'polkit-untracked-privilege',
+        """The privilege is not listed in /etc/polkit-default-privs.*
+        which makes it harder for admins to find. Furthermore polkit
+        authorization checks can easily introduce security issues. If the
+        package is intended for inclusion in any SUSE product please open
+        a bug report to request review of the package by the security team.
+        Please refer to {url} for more information."""
+    ),
+    (
+        'polkit-cant-acquire-privilege',
+        """Usability can be improved by allowing users to acquire privileges
+        via authentication. Use e.g. 'auth_admin' instead of 'no' and make
+        sure to define 'allow_any'. This is an issue only if the privilege
+        is not listed in /etc/polkit-default-privs.*"""
+    ),
+    (
+        'polkit-unauthorized-rules',
+        """A polkit rules file installed by this package is not whitelisted in the
+        polkit-whitelisting package. If the package is intended for inclusion in any
+        SUSE product please open a bug report to request review of the package by the
+        security team. Please refer to {url} for more information."""
+    ),
+    (
+        'polkit-changed-rules',
+        """A polkit rules file installed by this package changed in content. Please
+        open a bug report to request follow-up review of the introduced changes by
+        the security team. Please refer to {url} for more information."""
+    ),
+    (
+        'polkit-ghost-file',
+        """This package installs a polkit rule or policy as %ghost file.
+        This is not allowed as it is impossible to review. For more
+        information please refer to {url} for more information."""
+    )
+))
