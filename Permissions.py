@@ -55,8 +55,13 @@ class VariablesHandler:
 
         self.m_variables = {}
 
-        with open(variables_conf_path) as fd:
-            self._parse(variables_conf_path, fd)
+        try:
+            with open(variables_conf_path) as fd:
+                self._parse(variables_conf_path, fd)
+        except FileNotFoundError:
+            # this can happen during migration in OBS when the new permissions
+            # package is not yet around
+            pass
 
     def _parse(self, label, fd):
 
