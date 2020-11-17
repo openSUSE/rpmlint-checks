@@ -11,10 +11,10 @@ from __future__ import print_function
 from Filter import printWarning, printError, printInfo
 import AbstractCheck
 import Whitelisting
+import Permissions
+
 import os
-import re
 import rpm
-import sys
 import stat
 
 _permissions_d_whitelist = (
@@ -33,9 +33,22 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
         AbstractCheck.AbstractCheck.__init__(self, "CheckSUIDPermissions")
         self.perms = {}
 
+        self.var_handler = Permissions.VariablesHandler("/usr/share/permissions/variables.conf")
+
         for fname in self._paths_to('permissions', 'permissions.secure'):
-            if os.path.exists(fname):
-                self._parsefile(fname)
+            if not os.path.exists(fname):
+                continue
+
+            self._parseProfile(fname)
+
+    def _parseProfile(self, path):
+        parser = Permissions.PermissionsParser(self.var_handler, path)
+        self.perms.update(parser.getEntries())
+
+    def _isStaticEntry(self, entry):
+        # entries coming from the fixed permissions profile are considered
+        # static
+        return entry.profile.endswith("/permissions")
 
     @staticmethod
     def _paths_to(*file_names):
@@ -48,39 +61,6 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             # first matching file must mimic that.
             yield '/usr/share/permissions/' + name
             yield '/etc/' + name
-
-    def _parsefile(self, fname):
-        lnr = 0
-        lastfn = None
-        with open(fname) as inputfile:
-            for line in inputfile:
-                lnr += 1
-                line = line.split('#')[0].split('\n')[0]
-                line = line.strip()
-                if not len(line):
-                    continue
-
-                if line.startswith("+capabilities "):
-                    line = line[len("+capabilities "):]
-                    if lastfn:
-                        self.perms[lastfn]['fscaps'] = line
-                    continue
-
-                line = re.split(r'\s+', line.strip())
-                if len(line) == 3:
-                    fn = line[0]
-                    owner = line[1].replace('.', ':')
-                    mode = line[2]
-
-                    self.perms[fn] = {"owner": owner,
-                                      "mode": int(mode, 8) & 0o7777}
-                    # for permissions that don't change and therefore
-                    # don't need special handling
-                    if fname in self._paths_to('permissions'):
-                        self.perms[fn]['static'] = True
-                else:
-                    print('%s: Malformatted line %d: %s...' %
-                          (fname, lnr, ' '.join(line)), file=sys.stderr)
 
     def check(self, pkg):
         global _permissions_d_whitelist
@@ -112,7 +92,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
             # check for a .secure file first, falling back to the plain file
             for path in self._paths_to(f + '.secure', f):
                 if path in files:
-                    self._parsefile(pkg.dirName() + path)
+                    self._parseProfile(pkg.dirName() + path)
                     break
 
         need_set_permissions = False
@@ -144,6 +124,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                     else:
                         f += '/'
 
+                entry = self.perms[f]
+
                 if stat.S_ISREG(mode) and mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
                     # pie binaries have 'shared object' here
                     if (pkgfile.magic.startswith('ELF ') and
@@ -152,8 +134,8 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         printError(pkg, 'non-position-independent-executable',
                                    f)
 
-                m = self.perms[f]['mode']
-                o = self.perms[f]['owner']
+                m = entry.mode
+                o = ':'.join((entry.owner, entry.group))
 
                 if stat.S_IMODE(mode) != m:
                     printError(
@@ -204,7 +186,7 @@ class SUIDCheck(AbstractCheck.AbstractCheck):
                         break
 
             if need_verifyscript and \
-                    (f not in self.perms or 'static' not in self.perms[f]):
+                    (f not in self.perms or not self._isStaticEntry(self.perms[f])):
 
                 if not script or not found:
                     printError(pkg, 'permissions-missing-postin',
