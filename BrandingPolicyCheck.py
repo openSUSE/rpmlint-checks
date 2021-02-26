@@ -111,7 +111,7 @@ Provides: %name-branding = %version'.""",
 
 'suse-branding-wrong-branding-supplement',
 """For consistency, the branding package should be in the form
-Supplements: packageand(basebackage:branding-<flavor>
+Supplements: packageand(basepackage:branding-<flavor>
 """,
 
 'suse-branding-supplement-missing',
