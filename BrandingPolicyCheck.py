@@ -46,14 +46,10 @@ class BrandingPolicyCheck(AbstractCheck.AbstractCheck):
 
         # verify that it only supplements with packageand
         found_packageand_supplement = False
-        correct_supplement = "packageand(%s:branding-%s)" % (branding_basename, branding_style)
+        correct_supplement = "(%s and branding-%s)" % (branding_basename, branding_style)
         for s in pkg_supplements:
-            if s.startswith('packageand('):
-                if s != correct_supplement:
-                    printError(pkg, 'suse-branding-wrong-branding-supplement', s)
+            if s == correct_supplement:
                 found_packageand_supplement = True
-            else:
-                printError(pkg, 'suse-branding-excessive-supplement', s)
 
         if not found_packageand_supplement:
             printError(pkg, 'suse-branding-supplement-missing', correct_supplement)
@@ -109,14 +105,9 @@ and not directly by numerating a name with -branding- in it.''',
 """Please make sure that your provides entry reads like:
 Provides: %name-branding = %version'.""",
 
-'suse-branding-wrong-branding-supplement',
-"""For consistency, the branding package should be in the form
-Supplements: packageand(basebackage:branding-<flavor>
-""",
-
 'suse-branding-supplement-missing',
 """branding packages should provide a supplement in the form
-Supplements: packageand(basepackage:branding-<flavour>)
+Supplements: (basepackage and branding-<flavour>)
 """,
 
 'suse-branding-unversioned-requires',
