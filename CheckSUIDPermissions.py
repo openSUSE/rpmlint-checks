@@ -23,8 +23,7 @@ _permissions_d_whitelist = (
     "sendmail",
     "sendmail.paranoid",
     "texlive",
-    "texlive.texlive",
-    "otrs",  # bsc#1118049
+    "texlive.texlive"
 )
 
 
