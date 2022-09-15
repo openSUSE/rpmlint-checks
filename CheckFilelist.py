@@ -255,7 +255,7 @@ _checks = [
     {
         'error': 'suse-filelist-forbidden-locale',
         'details': """Please use nb or nb_NO (and nn for nynorsk)"""
-        """see https://bugzilla.novell.com/show_bug.cgi?id=42748""",
+        """see https://bugzilla.suse.com/show_bug.cgi?id=42748""",
         'bad': [
             '/opt/gnome/share/locale/no',
             '/opt/gnome/share/locale/no/*',
