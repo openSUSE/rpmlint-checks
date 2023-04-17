@@ -1,10 +1,14 @@
-openSUSE specific rpmlint checks
+Deprecated, please submit openSUSE checks first to
+upstream: https://github.com/rpm-software-management/rpmlint
+
+== openSUSE specific rpmlint checks ==
 
 when adding or modifying a test make sure to update
 https://github.com/openSUSE/rpmlint-tests as well!
 
-Wwith RPMLint 2.0 the checks are merged and obsolete in upstream git repo:
-  https://github.com/rpm-software-management/rpmlint
+With RPMLint 2.0 (used in openSUSE Tumbleweed) the checks are merged and
+obsolete in upstream git repo: https://github.com/rpm-software-management/rpmlint
 
 If you have a bugfix check the code there if it is affected.
+
 If you are developing a new functionality just directly go there and do not add new tests here.
