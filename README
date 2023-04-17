@@ -1,10 +1,6 @@
-openSUSE specific rpmlint checks
+This repository is obsolete. For RPMLint 1.x we use the "master"
+branch.
 
-when adding or modifying a test make sure to update
-https://github.com/openSUSE/rpmlint-tests as well!
-
-Wwith RPMLint 2.0 the checks are merged and obsolete in upstream git repo:
+With RPMLint 2.0 the checks are merged and obsolete in upstream git repo:
   https://github.com/rpm-software-management/rpmlint
 
-If you have a bugfix check the code there if it is affected.
-If you are developing a new functionality just directly go there and do not add new tests here.
