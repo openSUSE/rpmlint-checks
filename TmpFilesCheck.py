@@ -39,6 +39,9 @@ class TmpFilesCheck(AbstractCheck.AbstractCheck):
                 printWarning(pkg, "tmpfile-not-regular-file", fn)
                 continue
 
+            if pkgfile.is_ghost:
+                continue
+
             basename = os.path.basename(fn)
             pattern = re.compile(
                 r'systemd-tmpfiles --create .*%s' % re.escape(basename))
