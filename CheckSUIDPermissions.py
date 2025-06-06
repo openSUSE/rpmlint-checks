@@ -23,7 +23,8 @@ _permissions_d_whitelist = (
     "sendmail",
     "sendmail.paranoid",
     "texlive",
-    "texlive.texlive"
+    "texlive.texlive",
+    "exim"
 )
 
 
